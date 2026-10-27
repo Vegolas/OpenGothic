@@ -3,7 +3,7 @@
   Builds a release: engine, scripts, mod archive, zip packages and SHA-256 sums.
 .DESCRIPTION
   Output in gothic25/dist/<version>/:
-    <id>-<version>-mod.zip           Data/ModVDF/<archive>, System/<ini>
+    <id>-<version>-mod.zip           Data/ModVDF/<archive>, System/<ini>, NOTICE, GothicMOD license
     <id>-<version>-engine-win64.zip  OpenGothic/<engine files>, launcher, OpenGothic license
     SHA256SUMS.txt
   The release engine is built in <repo>/build-release (Release), separate from the dev build.
@@ -84,6 +84,9 @@ if(Test-Path $stage) { Remove-Item -Recurse -Force $stage }
 Write-Step "Assembling packages in $dist"
 New-Item -ItemType Directory -Force -Path $dist | Out-Null
 $output = Get-ModOutput
+# GothicMOD Lizenz 6(a): every release carries the licence text (constitution, rule 9)
+Copy-Item (Join-Path $ModRoot 'NOTICE.txt') $output.GameDir
+Copy-Item (Join-Path $ModRoot 'content\Scripts\LICENSE-GothicMOD.txt') $output.GameDir
 New-ZipFromDirectory $output.GameDir (Join-Path $dist "$name-mod.zip")
 
 $engineSrc = Join-Path (Resolve-EngineBuildDir $BuildDir) 'opengothic'
@@ -96,6 +99,7 @@ if(Test-Path (Join-Path $engineSrc "$($manifest.engine.target).exe")) {
     Copy-Item $path $engineStage
   }
   Copy-Item (Join-Path $RepoRoot 'LICENSE') (Join-Path $engineStage 'LICENSE-OpenGothic.txt')
+  Copy-Item (Join-Path $ModRoot 'NOTICE.txt') $engineStage
   $launcher = "@echo off`r`nrem $($manifest.title) $version ($commit)`r`nrem Add -g ""<path to Gothic II>"" if the game is not detected automatically.`r`nstart """" ""%~dp0$($manifest.engine.target).exe"" -game:$($manifest.ini) %*`r`n"
   [System.IO.File]::WriteAllText((Join-Path $engineStage "$($manifest.id).bat"), $launcher, [System.Text.Encoding]::ASCII)
   New-ZipFromDirectory (Join-Path $stage 'engine') (Join-Path $dist "$name-engine-win64.zip")

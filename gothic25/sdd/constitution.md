@@ -63,3 +63,22 @@ Mod używa SemVer w `mod.json`:
 - **PATCH**: poprawki.
 
 Wydanie zawsze buduje się skryptem `tools/publish.ps1` z czystego drzewa git.
+
+## 9. Licencja GothicMOD: mod jest darmowy i niekomercyjny
+
+Skrypty bazowe pochodzą z materiałów Piranha Bytes udostępnionych na licencji GothicMOD Lizenz 1.0
+(`content/Scripts/LICENSE-GothicMOD.txt`). Mod jest na nich zbudowany, więc:
+
+- **Bez pieniędzy.** Gothic 2.5 i każda jego część są darmowe: bez opłat za pobranie, płatnych
+  wersji, płatnego wczesnego dostępu ani treści za opłatą. Każdą formę finansowania, także
+  darowizny, trzeba przed uruchomieniem zatwierdzić osobnym ADR.
+- **Copyleft.** Zmienione skrypty i inne opracowania materiałów objętych licencją rozpowszechniamy
+  na tej samej licencji. Nasze samodzielne dzieła (kod silnika na MIT, nowe zasoby) mogą mieć
+  własne licencje, ale wydanie musi jasno mówić, które części podlegają GothicMOD (`NOTICE.txt`).
+- **Inny tytuł.** Zmienione dzieło nie może nosić tytułu oryginału. Mod nazywa się „Gothic 2.5”,
+  nie „Gothic II: Noc Kruka”.
+- **Uznanie autorstwa.** Nie przedstawiamy autorów oryginału jako autorów moda. W napisach,
+  opisie i `NOTICE.txt` używamy formuły „na podstawie dzieła Piranha Bytes” oraz podajemy źródło
+  rekonstrukcji skryptów (VaanaCZ) i polskiego przekładu (CD Projekt).
+- **Licencja w paczce.** Każde wydanie zawiera tekst licencji. Dołącza go `tools/publish.ps1`.
+  Nie usuwamy ani nie zmieniamy informacji o licencji i prawach autorskich w plikach.

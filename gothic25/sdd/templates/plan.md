@@ -51,6 +51,7 @@
 - [ ] 6. Prawa do zasobów
 - [ ] 7. Język dokumentów i kodu
 - [ ] 8. Wpływ na wersję (MAJOR / MINOR / PATCH)
+- [ ] 9. Licencja GothicMOD (bez opłat, copyleft dla opracowań, uznanie autorstwa)
 
 ## Odstępstwa od konstytucji
 

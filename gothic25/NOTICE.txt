@@ -1,0 +1,19 @@
+Gothic 2.5
+==========
+
+Darmowa, niekomercyjna modyfikacja gry Gothic II: Noc Kruka. Do gry potrzebna jest własna,
+legalna kopia Gothic II: Noc Kruka.
+
+Na podstawie dzieła Piranha Bytes.
+Skrypty oparte na rekonstrukcji VaanaCZ (github.com/VaanaCZ/gothic-2-addon-scripts).
+Polskie teksty na podstawie przekładu CD Projekt.
+
+Licencje
+--------
+
+- Data/ModVDF/Gothic25.mod: skompilowane skrypty i zasoby moda. Skrypty są opracowaniem
+  materiałów Piranha Bytes i podlegają licencji GothicMOD Lizenz 1.0 (LICENSE-GothicMOD.txt):
+  wolno ich używać i rozpowszechniać wyłącznie bezpłatnie i niekomercyjnie.
+- OpenGothic (paczka engine): silnik na licencji MIT (LICENSE-OpenGothic.txt).
+
+Gothic i Gothic II są znakami towarowymi ich właścicieli. Ten projekt nie jest z nimi powiązany.
