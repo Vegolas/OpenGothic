@@ -9,12 +9,12 @@ instance PAL_2004_Bruder  (Npc_Default)
 	npctype		= NPCTYPE_MAIN;
 	
 	// ------ Attribute ------
-	slf.attribute[ATR_STRENGTH] 		= 10;
-	slf.attribute[ATR_DEXTERITY] 		= 10;
-	slf.attribute[ATR_MANA_MAX] 		= 0;
-	slf.attribute[ATR_MANA] 			= 0;
-	slf.attribute[ATR_HITPOINTS_MAX]	= 1;
-	slf.attribute[ATR_HITPOINTS] 		= 1;								
+	attribute[ATR_STRENGTH] 		= 10;
+	attribute[ATR_DEXTERITY] 		= 10;
+	attribute[ATR_MANA_MAX] 		= 0;
+	attribute[ATR_MANA] 			= 0;
+	attribute[ATR_HITPOINTS_MAX]	= 1;
+	attribute[ATR_HITPOINTS] 		= 1;								
 		
 	// ------ Kampf-Taktik ------
 	fight_tactic = FAI_HUMAN_STRONG;	

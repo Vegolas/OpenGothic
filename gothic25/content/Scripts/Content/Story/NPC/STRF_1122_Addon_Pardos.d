@@ -15,14 +15,14 @@ instance STRF_1122_Addon_Pardos (Npc_Default)
 	aivar[AIV_ToughGuyNewsOverride] = TRUE;
 	
 	// ------ Attribute ------
-		slf.level = 12;
+		level = 12;
 		
-		slf.attribute[ATR_STRENGTH] 		= 40;
-		slf.attribute[ATR_DEXTERITY] 		= 40;
-		slf.attribute[ATR_MANA_MAX] 		= 100;
-		slf.attribute[ATR_MANA] 			= 100;
-		slf.attribute[ATR_HITPOINTS_MAX]	= 120;
-		slf.attribute[ATR_HITPOINTS] 		= 70;//für MISSION															
+		attribute[ATR_STRENGTH] 		= 40;
+		attribute[ATR_DEXTERITY] 		= 40;
+		attribute[ATR_MANA_MAX] 		= 100;
+		attribute[ATR_MANA] 			= 100;
+		attribute[ATR_HITPOINTS_MAX]	= 120;
+		attribute[ATR_HITPOINTS] 		= 70;//für MISSION															
 		
 	// ------ Kampf-Taktik ------
 	fight_tactic		= FAI_HUMAN_NORMAL;	
