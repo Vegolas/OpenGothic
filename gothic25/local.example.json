@@ -4,7 +4,7 @@
   "engineBuildType": "RelWithDebInfo",
   "python": "python",
   "scriptCompiler": {
-    "command": "C:/Tools/gdc/gdc-windows-x64.exe",
+    "command": "",
     "args": [ "{src}", "--output-dat", "{dat}" ],
     "ouArgs": [ "--gen-ou", "--output-ou", "{ou}" ]
   }

@@ -1,7 +1,7 @@
 # ADR 0001: Kompilator skryptów Daedalus i baza skryptów
 
-- **Status:** Proponowana (rekomendacja poniżej, czeka na test akceptacyjny)
-- **Data:** 2026-10-27
+- **Status:** Przyjęta
+- **Data:** 2026-10-27 (zaproponowana, przetestowana i przyjęta)
 
 ## Kontekst
 
@@ -94,16 +94,27 @@ do `.mod`. Testowy `PrintDebug` w `INIT_GLOBAL` pojawił się w logu, więc gra 
 
 ## Decyzja
 
-Do zatwierdzenia przez właściciela projektu. Rekomendacja: przyjąć `gdc` v0.9.5 i `Unified-PL`, przy czym:
+Przyjęte przez właściciela projektu 2026-10-27:
 
-- poprawki 1 i 2 wprowadzamy raz, przy imporcie skryptów do `content/Scripts`, z opisem w commicie,
-- `DIA_Addon_Snaf_Abrechnung_Info` poprawiamy jawnie (dodajemy `;` i decydujemy, które zachowanie zostaje),
-- pobieranie `gdc` razem z `DaedalusBuiltins` i sumą SHA-256 zamykamy w skrypcie w `tools/`.
+- **Kompilator:** `gdc` v0.9.5. `tools/get-gdc.ps1` pobiera `gdc-windows-x64.exe` i `DaedalusBuiltins/`
+  z tagu v0.9.5 i sprawdza przypięte sumy SHA-256. Suma `.exe` zgadza się ze skrótem publikowanym
+  przez GitHub dla tego wydania. `build-scripts.ps1` używa go domyślnie.
+- **Baza skryptów:** `Unified-PL` z VaanaCZ, commit `9e9be52e`, w `content/Scripts`. Import, poprawki
+  zgodności (form feed, `slf.`) i poprawka dialogu Snafa są osobnymi commitami. Szczegóły w
+  `content/Scripts/README.md`.
+- **Dialog Snafa:** zachowujemy zachowanie oryginalnej gry. Kod zagnieżdżono tak, żeby bajtkod był
+  identyczny z oryginałem.
+- **Licencja:** GothicMOD obowiązuje mod, zob. konstytucja, zasada 9.
+
+Po tych zmianach `GOTHIC.DAT` z repozytorium różni się od referencji tylko w 4 nieszkodliwych miejscach
+(nazwa z `Ä` u Dragomira i Orica, jawne ustawienie instancji u Grega).
 
 ## Konsekwencje
 
-- **Licencja GothicMOD obowiązuje cały mod**: Gothic 2.5 musi pozostać darmowy i niekomercyjny,
-  z podaniem Piranha Bytes oraz autorów rekonstrukcji skryptów. Trzeba to dopisać do konstytucji.
+- **Licencja GothicMOD obowiązuje mod**: Gothic 2.5 musi pozostać darmowy i niekomercyjny
+  (konstytucja, zasada 9).
 - `gdc` nie jest aktywnie rozwijany. Jeśli zabraknie jakiejś funkcji języka, możemy go sforkować
   (MIT, C#, .NET 8).
-- Dopóki decyzja nie zapadnie, funkcje wymagające zmian w skryptach nie mogą przejść do implementacji.
+- Każdy deweloper potrzebuje środowiska .NET 8 i musi raz uruchomić `tools/get-gdc.ps1`.
+- Zmiany w skryptach trzeba pisać tak, żeby `gdc` i oryginalny kompilator rozumiały je tak samo:
+  bez form feed, bez `slf.` w ciałach instancji, zawsze z `;` po `if`.

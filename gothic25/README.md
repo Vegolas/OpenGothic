@@ -29,8 +29,10 @@ musi wynikać ze specyfikacji w `specs/`.
 
 1. Skopiuj `local.example.json` jako `local.json` i ustaw `gothicDir` (folder z `System/Gothic2.exe`).
 2. Zbuduj silnik: `tools/build-engine.ps1`.
-3. Spakuj i zainstaluj moda w grze: `tools/pack.ps1`, potem `tools/install.ps1`.
-4. Uruchom: `tools/run.ps1` (dodaj `-Dev`, żeby włączyć konsolę deweloperską).
+3. Pobierz kompilator skryptów (`gdc`, wymaga środowiska .NET 8): `tools/get-gdc.ps1`.
+4. Skompiluj skrypty, spakuj moda i zainstaluj go w grze: `tools/build-scripts.ps1`,
+   `tools/pack.ps1`, potem `tools/install.ps1`.
+5. Uruchom: `tools/run.ps1` (dodaj `-Dev`, żeby włączyć konsolę deweloperską).
 
 Skrypty działają w Windows PowerShell 5.1 i PowerShell 7. Jeśli zasady wykonywania blokują `.ps1`,
 uruchamiaj je przez `powershell -NoProfile -ExecutionPolicy Bypass -File gothic25/tools/<skrypt>.ps1`.
@@ -49,7 +51,8 @@ W `.claude/commands/` są komendy prowadzące przez cykl SDD:
 | Skrypt | Co robi |
 |---|---|
 | `tools/build-engine.ps1` | Buduje OpenGothic (CMake + Ninja + MSVC) do `build/` w katalogu głównym repo |
-| `tools/build-scripts.ps1` | Kompiluje skrypty Daedalus z `content/Scripts` (kompilator wg `local.json`) |
+| `tools/get-gdc.ps1` | Pobiera przypiętą wersję kompilatora `gdc` z `DaedalusBuiltins` i sprawdza sumy SHA-256 |
+| `tools/build-scripts.ps1` | Kompiluje skrypty Daedalus z `content/Scripts` do `.DAT` i plików OU (domyślnie przez `gdc`) |
 | `tools/pack.ps1` | Składa `content/` i skompilowane skrypty w `gothic25/build/Gothic25.mod` |
 | `tools/install.ps1` | Kopiuje `.mod` do `Data/ModVDF` i `.ini` do `System` w folderze gry |
 | `tools/run.ps1` | Uruchamia OpenGothic z modem (`-game:Gothic25.ini`) |

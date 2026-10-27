@@ -2,11 +2,11 @@
 .SYNOPSIS
   Compiles the Daedalus sources from content/Scripts into gothic25/build/scripts.
 .DESCRIPTION
-  For every entry in mod.json -> scripts whose .src exists, runs the compiler configured in
-  local.json -> scriptCompiler. Entries marked "ou": true also get scriptCompiler.ouArgs
-  (dialogue output units). Argument placeholders: {src} {dat} {ou} {out} {gothic}.
-  Output layout mirrors _work/Data/Scripts: _compiled/*.DAT, Content/Cutscene/OU.*
-  Without sources this is a no-op. Compiler choice: decisions/0001-kompilator-daedalus.md.
+  For every entry in mod.json -> scripts whose .src exists, runs the Daedalus compiler: gdc from
+  get-gdc.ps1, unless local.json -> scriptCompiler.command points elsewhere. Entries marked
+  "ou": true also get scriptCompiler.ouArgs (dialogue output units). Argument placeholders:
+  {src} {dat} {ou} {out} {gothic}. Output layout mirrors _work/Data/Scripts:
+  _compiled/*.DAT, Content/Cutscene/OU.*. See decisions/0001-kompilator-daedalus.md.
 #>
 param(
   [string]$GothicDir
@@ -29,10 +29,13 @@ if($jobs.Count -eq 0) {
 $compiler = Get-Prop (Get-LocalConfig) 'scriptCompiler'
 $command  = Get-Prop $compiler 'command'
 if(-not $command) {
-  throw "Daedalus sources found, but scriptCompiler.command is not set in gothic25/local.json (see decisions/0001-kompilator-daedalus.md)."
+  $command = Join-Path $GdcDir 'gdc-windows-x64.exe'
+  if(-not (Test-Path $command)) {
+    throw "Daedalus compiler not found. Run tools/get-gdc.ps1 or set scriptCompiler.command in gothic25/local.json."
+  }
 }
-$argTemplate = @(Get-Prop $compiler 'args' @('{src}', '{dat}'))
-$ouTemplate  = @(Get-Prop $compiler 'ouArgs' @())
+$argTemplate = @(Get-Prop $compiler 'args' @('{src}', '--output-dat', '{dat}'))
+$ouTemplate  = @(Get-Prop $compiler 'ouArgs' @('--gen-ou', '--output-ou', '{ou}'))
 $gothic = ''
 if((($argTemplate + $ouTemplate) -join ' ') -like '*{gothic}*') {
   $gothic = Resolve-GothicDir $GothicDir

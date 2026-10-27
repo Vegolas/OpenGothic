@@ -5,5 +5,5 @@ Decyzje, które dotyczą więcej niż jednej funkcji: narzędzia, formaty, konwe
 
 | Nr | Decyzja | Status |
 |---|---|---|
-| [0001](0001-kompilator-daedalus.md) | Kompilator skryptów Daedalus i baza skryptów | Proponowana, test akceptacyjny zaliczony (gdc + Unified-PL) |
+| [0001](0001-kompilator-daedalus.md) | Kompilator skryptów Daedalus i baza skryptów | Przyjęta (gdc 0.9.5 + Unified-PL) |
 | [0002](0002-duze-zasoby-w-repo.md) | Przechowywanie dużych zasobów binarnych | Proponowana |

@@ -5,5 +5,8 @@ local.json
 build/
 dist/
 
+# downloaded tools (tools/get-gdc.ps1)
+.tools/
+
 # python bytecode
 __pycache__/

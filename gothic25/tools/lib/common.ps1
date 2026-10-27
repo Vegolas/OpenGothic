@@ -9,6 +9,9 @@ $ErrorActionPreference = 'Stop'
 $ModRoot  = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $RepoRoot = (Resolve-Path (Join-Path $ModRoot '..')).Path
 $ModBuild = Join-Path $ModRoot 'build'
+# Pinned Daedalus compiler, installed by get-gdc.ps1 (decisions/0001-kompilator-daedalus.md)
+$GdcVersion = '0.9.5'
+$GdcDir = Join-Path $ModRoot ".tools\gdc-$GdcVersion"
 $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
 function Write-Step([string]$Message) {
