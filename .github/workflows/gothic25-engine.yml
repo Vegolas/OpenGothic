@@ -1,0 +1,90 @@
+name: Gothic 2.5 engine
+
+# Fork-only workflow: builds the engine on Windows (where the mod is played) and Linux (to keep
+# engine changes portable for upstream) when anything outside gothic25/ changes. The jobs mirror
+# the windows and linux jobs of the upstream "Build" workflow, which is disabled in this fork.
+
+env:
+  VK_SDK:     '1.4.357.0'  # keep in sync with .github/workflows/build.yml
+  BUILD_TYPE: RelWithDebInfo
+
+on:
+  push:
+    branches: [master]
+    paths-ignore: ['gothic25/**', '.claude/**', '.github/workflows/gothic25-mod.yml']
+  pull_request:
+    branches: [master]
+    paths-ignore: ['gothic25/**', '.claude/**', '.github/workflows/gothic25-mod.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/setup-vulkan
+        with:
+          os: Windows
+          vk-sdk: ${{ env.VK_SDK }}
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-glslang
+
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+
+      - name: Build
+        run: cmake --build build --target Gothic2Notr Spacer
+
+      - name: Copy runtime DLLs
+        run: |
+          cp "$MINGW_PREFIX/bin/libgcc_s_seh-1.dll" build/opengothic/
+          cp "$MINGW_PREFIX/bin/libstdc++-6.dll" build/opengothic/
+          cp "$MINGW_PREFIX/bin/libwinpthread-1.dll" build/opengothic/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: gothic25-engine-win-x64
+          path: |
+            build/opengothic/*.exe
+            build/opengothic/*.dll
+
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/setup-vulkan
+        with:
+          os: Linux
+          vk-sdk: ${{ env.VK_SDK }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y glslang-tools libasound2-dev libx11-dev libxcursor-dev
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+
+      - name: Build
+        run: cmake --build build --target Gothic2Notr Spacer -j $(nproc)

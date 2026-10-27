@@ -40,6 +40,18 @@ Pakowanie wymaga Pythona 3.10 lub nowszego (tylko biblioteka standardowa).
 
 Ścieżkę do gry można też podać parametrem `-GothicDir` albo zmienną środowiskową `G25_GOTHIC_DIR`.
 
+## CI
+
+Fork ma własne workflow. Upstreamowy `Build` (`.github/workflows/build.yml`) jest w forku wyłączony
+poleceniem `gh workflow disable`, a nie edytowany, żeby aktualizacje z Try/OpenGothic nie dawały konfliktów.
+
+- `gothic25-mod.yml`: przy zmianach w `gothic25/` pobiera `gdc`, kompiluje skrypty i buduje
+  paczkę moda (`publish.ps1 -SkipEngine`). Paczka trafia do artefaktów.
+- `gothic25-engine.yml`: przy zmianach poza `gothic25/` buduje silnik na Windowsie i Linuksie
+  (te same kroki co upstream).
+
+Buildy na macOS, Androida i paczkę `.deb` sprawdza CI upstreamu, gdy zgłaszamy tam zmiany.
+
 ## Praca z Claude Code
 
 W `.claude/commands/` są komendy prowadzące przez cykl SDD:
