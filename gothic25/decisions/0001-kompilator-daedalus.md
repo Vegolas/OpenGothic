@@ -80,6 +80,15 @@ Narzędzie porównujące: `tools/dat.py diff` (symbole, wartości, bajtkod) i `t
 do `.mod`. Testowy `PrintDebug` w `INIT_GLOBAL` pojawił się w logu, więc gra wykonała nasz
 `GOTHIC.DAT`. Brak nowych błędów względem oryginalnych skryptów.
 
+**Napisy dialogów (2026-10-28):**
+- Tekst pierwszej kwestii Xardasa (`DIA_Addon_Xardas_Hello_14_00`) zmieniony testowo na
+  „Test Gothic 2.5: Zażółć gęślą jaźń! Ten napis pochodzi z naszych skryptów.”.
+- `gdc --gen-ou` wygenerował `OU.BIN` i `OU.CSL` z pełnym tekstem w cp1250. Końcówka z polskimi
+  znakami nie została obcięta, w przeciwieństwie do błędu Spacera opisanego przez VaanaCZ.
+- OpenGothic wczytał `OU.BIN` z `.mod` i wyświetlił nowy napis w grze. Polskie znaki były poprawne;
+  potwierdził to właściciel projektu.
+- Zmianę cofnięto po teście.
+
 **Niezgodności `gdc` wymagające obejścia:**
 
 1. Znak form feed (0x0C) w kodzie powoduje błąd składni. Występuje raz:
