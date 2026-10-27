@@ -1,0 +1,35 @@
+{
+  "id": "gothic25",
+  "title": "Gothic 2.5",
+  "version": "0.1.0",
+  "authors": "Gothic 2.5 team",
+  "game": "g2notr",
+  "archive": "Gothic25.mod",
+  "ini": "Gothic25.ini",
+  "ini_values": {
+    "player": "PC_HERO",
+    "world": "NewWorld\\NewWorld.zen"
+  },
+  "pack": {
+    "exclude": [
+      "**/README.md",
+      "**/.gitkeep",
+      "Scripts/**/*.d",
+      "Scripts/**/*.src"
+    ]
+  },
+  "scripts": [
+    { "src": "Content/Gothic.src",       "dat": "GOTHIC.DAT", "ou": true },
+    { "src": "Content/Fight.src",        "dat": "FIGHT.DAT" },
+    { "src": "System/Menu.src",          "dat": "MENU.DAT" },
+    { "src": "System/Camera.src",        "dat": "CAMERA.DAT" },
+    { "src": "System/Music.src",         "dat": "MUSIC.DAT" },
+    { "src": "System/SFX.src",           "dat": "SFX.DAT" },
+    { "src": "System/ParticleFX.src",    "dat": "PARTICLEFX.DAT" },
+    { "src": "System/VisualFX.src",      "dat": "VISUALFX.DAT" }
+  ],
+  "engine": {
+    "target": "Gothic2Notr",
+    "files": [ "Gothic2Notr.exe", "Tempest.dll", "dxcompiler.dll", "dxil.dll" ]
+  }
+}

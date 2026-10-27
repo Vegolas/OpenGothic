@@ -1,0 +1,9 @@
+# per-developer settings
+local.json
+
+# build output (pack, compiled scripts) and release packages
+build/
+dist/
+
+# python bytecode
+__pycache__/
