@@ -273,22 +273,27 @@ FUNC VOID DIA_Addon_Snaf_Abrechnung_Info()
 		AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_04"); //Musisz załatwić jednego z ludzi Estebana. Człowiek, którego szukasz, uwierzy, że jesteś po jego stronie.
 		AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_05"); //Ale tak łatwo nie ujawni swojej tożsamości. Musisz wymyślić coś więcej.
 	}
-	else if (Finn_Petzt == TRUE)
-	{
-		AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_06"); //Od czasu rozmowy z tobą Finn wygląda na bardzo podekscytowanego.
-		AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_07"); //A każdy wie, że trzyma się blisko Estebana.
-		AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_08"); //To znaczy, że powiedziałeś mu coś, czego nie chciał usłyszeć.
-		AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_09"); //Człowiek, którego szukasz, będzie bardzo zadowolony...
-		AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_10"); //Ale istnieje ryzyko, że pobiegnie do Estebana – ale sam o tym przecież wiesz.
-	}
-	if (Finn_TellAll == TRUE)
-	{
-		AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_11"); //Podobno powiedziałeś Finnowi, że chętnie pracowałbyś dla Estebana.
-		AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_12"); //Nie wiem, co planujesz, ale człowiek, którego szukasz, będzie teraz bardzo ostrożny.
-	}
 	else
 	{
-		AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_13"); //No wszystko się może zdarzyć.
+		// Gothic 2.5: the source lacked ';' after the else-if chain. The original compiler
+		// made the following if/else part of the chain's last branch; nesting keeps that.
+		if (Finn_Petzt == TRUE)
+		{
+			AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_06"); //Od czasu rozmowy z tobą Finn wygląda na bardzo podekscytowanego.
+			AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_07"); //A każdy wie, że trzyma się blisko Estebana.
+			AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_08"); //To znaczy, że powiedziałeś mu coś, czego nie chciał usłyszeć.
+			AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_09"); //Człowiek, którego szukasz, będzie bardzo zadowolony...
+			AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_10"); //Ale istnieje ryzyko, że pobiegnie do Estebana – ale sam o tym przecież wiesz.
+		};
+		if (Finn_TellAll == TRUE)
+		{
+			AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_11"); //Podobno powiedziałeś Finnowi, że chętnie pracowałbyś dla Estebana.
+			AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_12"); //Nie wiem, co planujesz, ale człowiek, którego szukasz, będzie teraz bardzo ostrożny.
+		}
+		else
+		{
+			AI_Output (self, other, "DIA_Addon_Snaf_Abrechnung_01_13"); //No wszystko się może zdarzyć.
+		};
 	};
 	
 	//------------------- Abschied ----------------------------------
