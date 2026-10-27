@@ -1,0 +1,3 @@
+# Daedalus sources are cp1250 on disk (what the compiler reads) and UTF-8 in git (readable diffs).
+*.[dD] text working-tree-encoding=cp1250 eol=crlf
+*.[sS][rR][cC] text working-tree-encoding=cp1250 eol=crlf
