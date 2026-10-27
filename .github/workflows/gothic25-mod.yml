@@ -1,0 +1,39 @@
+name: Gothic 2.5 mod
+
+# Fork-only workflow: compiles the Daedalus scripts and builds the mod package when gothic25/
+# changes. The upstream "Build" workflow is disabled in this fork (gh workflow disable) rather
+# than edited, so merges from Try/OpenGothic stay conflict-free.
+
+on:
+  push:
+    branches: [master]
+    paths: ['gothic25/**', '.github/workflows/gothic25-mod.yml']
+  pull_request:
+    branches: [master]
+    paths: ['gothic25/**', '.github/workflows/gothic25-mod.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mod:
+    runs-on: windows-latest
+    # gothic25/tools target Windows PowerShell 5.1; the image ships Python and the .NET 8 runtime gdc needs
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Fetch the Daedalus compiler
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File gothic25/tools/get-gdc.ps1
+
+      - name: Compile scripts and build the mod package
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File gothic25/tools/publish.ps1 -SkipEngine
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: gothic25-mod
+          path: gothic25/dist/

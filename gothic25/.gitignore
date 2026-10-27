@@ -1,0 +1,12 @@
+# per-developer settings
+local.json
+
+# build output (pack, compiled scripts) and release packages
+build/
+dist/
+
+# downloaded tools (tools/get-gdc.ps1)
+.tools/
+
+# python bytecode
+__pycache__/
