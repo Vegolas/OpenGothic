@@ -1576,6 +1576,8 @@ bool Npc::implAttack(uint64_t dt) {
   if(bs==BS_HIT && (ws==WeaponState::Fist || ws==WeaponState::W1H || ws==WeaponState::W2H)) {
     //NOTE: 'storm' attack has BS_RUN state and not meant to be auto-rotated
     implTurnToFai(*currentTarget,dt);
+    if(fghAlgo.hasCombo(*this))
+      implComboLink();
     mvAlgo.tick(dt,MoveAlgo::FaiMove);
     return true;
     }
@@ -1876,6 +1878,34 @@ bool Npc::implAttack(uint64_t dt) {
     return true;
     }
 
+  return true;
+  }
+
+bool Npc::implComboLink() {
+  // link next attack of the series inside of combo window, same as player does
+  Pose::ComboInfo cmb;
+  if(!visual.pose().comboInfo(cmb) || !cmb.window)
+    return false;
+
+  const uint64_t now = owner.tickCount();
+  if(now<=cmb.winBegin || now>cmb.winEnd)
+    return false;
+
+  const auto act = fghAlgo.nextFromQueue(*this,*currentTarget,owner.script());
+  if(act!=FightAlgo::MV_ATTACK && act!=FightAlgo::MV_ATTACKL && act!=FightAlgo::MV_ATTACKR)
+    return false;
+  if(now<fghAlgo.comboLinkTime(*this,cmb.winBegin,cmb.winEnd,owner.script()))
+    return false;
+
+  static const Anim ani[3] = {Anim::Attack, Anim::AttackL, Anim::AttackR};
+  const auto atkType = (weaponState()==WeaponState::Fist) ? Anim::Attack : ani[act-FightAlgo::MV_ATTACK];
+  if(!doAttack(atkType,BS_HIT))
+    return false;
+
+  // NOTE: combo shifts start of the animation, so atkTotalTime is not relative to 'now'
+  if(visual.pose().comboInfo(cmb))
+    implFaiWait(cmb.hitEnd>now ? cmb.hitEnd-now+1 : 1);
+  fghAlgo.consumeAction();
   return true;
   }
 

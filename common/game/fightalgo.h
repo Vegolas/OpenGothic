@@ -47,6 +47,9 @@ class FightAlgo final {
     bool   fetchInstructions(Npc &npc, Npc &tg, GameScript& owner);
     float  qDistTo(const Npc& npc, const Npc& tg) const;
 
+    bool     hasCombo     (Npc &npc) const;
+    uint64_t comboLinkTime(Npc &npc, uint64_t winBegin, uint64_t winEnd, GameScript &owner);
+
     float  baseDistance           (const Npc &npc, const Npc &tg, GameScript &owner) const;
     float  prefferedAttackDistance(const Npc &npc, const Npc &tg, GameScript &owner) const;
     float  prefferedGDistance     (const Npc &npc, const Npc &tg, GameScript &owner) const;
@@ -71,4 +74,8 @@ class FightAlgo final {
     zenkit::FightAiMove queueId = zenkit::FightAiMove::NOP;
     Action              tr   [MV_MAX]={};
     bool                hitFlg=false;
+
+    // combo link moment, rolled once per combo window; not serialized
+    uint64_t            linkWindow = 0;
+    uint64_t            linkTime   = 0;
   };

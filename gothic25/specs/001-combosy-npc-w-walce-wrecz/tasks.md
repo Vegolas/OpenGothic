@@ -34,7 +34,7 @@ Uruchamianie gry i instalacja moda w folderze gry wymagają za każdym razem zgo
 - [x] **Z6** E2: rejestracja `C_FightAI_Combo` jako klasy nieprzezroczystej i wczytywanie opcjonalnych
       instancji `FA_COMBO_<N>` do `FightAi::FA` (parametry i znacznik obecności). Po Z4, te same pliki.
       (W5, W6, W7, W9)
-- [ ] **Z7** E4, rdzeń: łączenie ciosu z kolejki w oknie combo dla stylów z `FA_COMBO_<N>`. Nowa metoda
+- [x] **Z7** E4, rdzeń: łączenie ciosu z kolejki w oknie combo dla stylów z `FA_COMBO_<N>`. Nowa metoda
       wołana z gałęzi `BS_HIT` w `Npc::implAttack`, losowanie chwili z `link_min`/`link_max` raz
       na okno, margines przed `DEF_HIT_END`, `implFaiWait` po połączeniu, stan przejściowy
       w `FightAlgo` bez zapisu. Style bez `FA_COMBO_<N>` idą dotychczasową ścieżką. Po Z5 i Z6.

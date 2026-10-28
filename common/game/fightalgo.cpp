@@ -236,6 +236,26 @@ float FightAlgo::qDistTo(const Npc& npc, const Npc& tg) const {
   return npc.fightDistanceTo(tg).quadLength();
   }
 
+bool FightAlgo::hasCombo(Npc& npc) const {
+  return Gothic::fai()[size_t(npc.handle().fight_tactic)].combo.enabled;
+  }
+
+uint64_t FightAlgo::comboLinkTime(Npc& npc, uint64_t winBegin, uint64_t winEnd, GameScript& owner) {
+  // attack layer is removed right after DEF_HIT_END - keep some margin to not miss the window
+  static const uint64_t margin = 50;
+  if(linkWindow==winBegin)
+    return linkTime;
+
+  auto&    cmb = Gothic::fai()[size_t(npc.handle().fight_tactic)].combo;
+  uint64_t len = (winEnd>winBegin+margin) ? (winEnd-winBegin-margin) : 0;
+  uint64_t pc  = uint64_t(cmb.link_min) + owner.rand(uint32_t(cmb.link_max-cmb.link_min+1));
+
+  // NOTE: combo window begin is exclusive
+  linkWindow = winBegin;
+  linkTime   = winBegin + 1 + len*pc/100;
+  return linkTime;
+  }
+
 float FightAlgo::baseDistance(const Npc& npc, const Npc& tg,  GameScript &owner) const {
   auto&  gv      = owner.guildVal();
   float  baseTg  = float(gv.fight_range_base[tg .guild()]);
