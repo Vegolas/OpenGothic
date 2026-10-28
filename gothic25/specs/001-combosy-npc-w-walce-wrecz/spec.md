@@ -170,7 +170,8 @@ zwolnione tempo: `ztimer multiplyer 0.3`, powrót: `ztimer multiplyer 1`.
   - Oczekiwane: paladyn walczy jak w poprzedniej wersji: nie ma serii potrójnych, wirujących
     ani mistrzowskich, a jego combo do przodu nie przekracza pierwszego ciosu.
 - [ ] **K9** (W10): Zapis w trakcie serii.
-  - Kroki: jak K1, zapisz grę szybkim zapisem w chwili, gdy paladyn jest w środku serii, i wczytaj ją.
+  - Kroki: jak K1, zapisz grę z menu (w trybie deweloperskim `F5` zamraża kamerę zamiast szybkiego
+    zapisu) w chwili, gdy paladyn jest w środku serii, i wczytaj ją.
     Wczytaj też zapis zrobiony w poprzedniej wersji moda.
   - Oczekiwane: oba zapisy się wczytują, a paladyn walczy dalej bez zawieszenia.
 - [ ] **K10** (W3, W4): Orkowie i elita orków.
@@ -227,3 +228,8 @@ używa we własnej kopii.
 ## Weryfikacja
 
 <!-- Wypełniane po implementacji: kto, kiedy, na jakiej wersji, wynik dla każdego K. -->
+
+**Zapis testowy do K9 (Z1, 2026-10-28):** mod 0.1.0 (commit `eda5289a`), nowa gra, walka
+z `Pal_230_Ritter`, zapis z menu. Plik lokalny, poza gitem:
+`gothic25/build/testsaves/001-K9-v0.1.0-pal230.sav`
+(SHA-256 `a764cbba9a7a359bcc2774bf04c21657a36e23d9982ddea7ce578306ad3e1423`).

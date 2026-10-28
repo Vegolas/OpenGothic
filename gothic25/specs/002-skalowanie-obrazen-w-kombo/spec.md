@@ -138,8 +138,8 @@ oddaje, z dużą liczbą punktów życia (przygotowany w planie i wstawiany prze
     na dowolnym przeciwniku.
   - Oczekiwane: wszystkie ciosy combo zadają takie same obrażenia jak przed zmianą.
 - [ ] **K9** (W10): Zapisy.
-  - Kroki: wczytaj zapis z wersji 0.1.0. Potem zrób szybki zapis w środku combo, wczytaj go i od razu
-    uderz.
+  - Kroki: wczytaj zapis z wersji 0.1.0. Potem zapisz grę z menu w środku combo (w trybie
+    deweloperskim `F5` zamraża kamerę zamiast szybkiego zapisu), wczytaj ją i od razu uderz.
   - Oczekiwane: oba zapisy się wczytują. Odczyt W8 dla pierwszego ciosu po wczytaniu pokazuje numer
     ciosu zgodny z animacją i premię zgodną z tym numerem.
 
