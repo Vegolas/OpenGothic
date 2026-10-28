@@ -40,6 +40,7 @@ class FightAlgo final {
 
     Action nextFromQueue(Npc &npc, Npc &tg, GameScript& owner);
     void   consumeAction();
+    void   dropForwardAttacks(bool fist);
     void   onClearTarget();
     void   onTakeHit();
 

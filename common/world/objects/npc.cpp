@@ -1884,14 +1884,21 @@ bool Npc::implAttack(uint64_t dt) {
 bool Npc::implComboLink() {
   // link next attack of the series inside of combo window, same as player does
   Pose::ComboInfo cmb;
-  if(!visual.pose().comboInfo(cmb) || !cmb.window)
+  if(!visual.pose().comboInfo(cmb))
     return false;
+
+  const bool fist = (weaponState()==WeaponState::Fist);
+  auto       act  = fghAlgo.nextFromQueue(*this,*currentTarget,owner.script());
+  if(cmb.forward && cmb.last) {
+    // talent limits length of forward combo: drop the rest of forward attacks in series
+    fghAlgo.dropForwardAttacks(fist);
+    act = fghAlgo.nextFromQueue(*this,*currentTarget,owner.script());
+    }
 
   const uint64_t now = owner.tickCount();
-  if(now<=cmb.winBegin || now>cmb.winEnd)
+  if(!cmb.window || now<=cmb.winBegin || now>cmb.winEnd)
     return false;
 
-  auto       act    = fghAlgo.nextFromQueue(*this,*currentTarget,owner.script());
   const bool queued = (act==FightAlgo::MV_ATTACK || act==FightAlgo::MV_ATTACKL || act==FightAlgo::MV_ATTACKR);
   if(!queued) {
     // no series in queue: fight tactic may continue the forward combo
@@ -1905,7 +1912,7 @@ bool Npc::implComboLink() {
     return false;
 
   static const Anim ani[3] = {Anim::Attack, Anim::AttackL, Anim::AttackR};
-  const auto atkType = (weaponState()==WeaponState::Fist) ? Anim::Attack : ani[act-FightAlgo::MV_ATTACK];
+  const auto atkType = fist ? Anim::Attack : ani[act-FightAlgo::MV_ATTACK];
   if(!doAttack(atkType,BS_HIT))
     return false;
 

@@ -227,6 +227,12 @@ void FightAlgo::consumeAction() {
   tr[MV_MAX-1]=MV_NULL;
   }
 
+void FightAlgo::dropForwardAttacks(bool fist) {
+  // NOTE: fist has no side attacks - every attack is a forward one
+  while(tr[0]==MV_ATTACK || (fist && (tr[0]==MV_ATTACKL || tr[0]==MV_ATTACKR)))
+    consumeAction();
+  }
+
 void FightAlgo::onClearTarget() {
   queueId = zenkit::FightAiMove::NOP;
   tr[0]   = MV_NULL;
