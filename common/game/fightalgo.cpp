@@ -245,12 +245,22 @@ void FightAlgo::onTakeHit() {
   queueId = zenkit::FightAiMove::NOP;
   }
 
+void FightAlgo::onBreakSeries() {
+  for(auto& i:tr)
+    i = MV_NULL;
+  queueId = zenkit::FightAiMove::NOP;
+  }
+
 float FightAlgo::qDistTo(const Npc& npc, const Npc& tg) const {
   return npc.fightDistanceTo(tg).quadLength();
   }
 
 bool FightAlgo::hasCombo(Npc& npc) const {
-  return Gothic::fai()[size_t(npc.handle().fight_tactic)].combo.enabled;
+  return comboAi(npc).enabled;
+  }
+
+const FightAi::Combo& FightAlgo::comboAi(Npc& npc) const {
+  return Gothic::fai()[size_t(npc.handle().fight_tactic)].combo;
   }
 
 uint64_t FightAlgo::comboLinkTime(Npc& npc, uint64_t winBegin, uint64_t winEnd, GameScript& owner) {
@@ -259,7 +269,7 @@ uint64_t FightAlgo::comboLinkTime(Npc& npc, uint64_t winBegin, uint64_t winEnd, 
   if(linkWindow==winBegin)
     return linkTime;
 
-  auto&    cmb = Gothic::fai()[size_t(npc.handle().fight_tactic)].combo;
+  auto&    cmb = comboAi(npc);
   uint64_t len = (winEnd>winBegin+margin) ? (winEnd-winBegin-margin) : 0;
   uint64_t pc  = uint64_t(cmb.link_min) + owner.rand(uint32_t(cmb.link_max-cmb.link_min+1));
 

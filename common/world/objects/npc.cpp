@@ -1911,6 +1911,13 @@ bool Npc::implComboLink() {
   if(now<fghAlgo.comboLinkTime(*this,cmb.winBegin,cmb.winEnd,owner.script()))
     return false;
 
+  // without 'break_on_lost' series is finished even into the air
+  if(fghAlgo.comboAi(*this).break_on_lost &&
+     !(fghAlgo.isInWRange(*this,*currentTarget,owner.script()) && fghAlgo.isInFocusAngle(*this,*currentTarget))) {
+    fghAlgo.onBreakSeries();
+    return false;
+    }
+
   static const Anim ani[3] = {Anim::Attack, Anim::AttackL, Anim::AttackR};
   const auto atkType = fist ? Anim::Attack : ani[act-FightAlgo::MV_ATTACK];
   if(!doAttack(atkType,BS_HIT))

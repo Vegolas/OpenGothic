@@ -44,7 +44,7 @@ Uruchamianie gry i instalacja moda w folderze gry wymagają za każdym razem zgo
       kończy combo. (W2)
 - [x] **Z9** E4, limit talentu: na ostatnim etapie combo do przodu usunąć z kolejki kolejne ciosy
       do przodu (z uwzględnieniem pięści, gdzie ciosy boczne są ciosami do przodu). (W4)
-- [ ] **Z10** E4, utrata celu: przy `break_on_lost` przerwanie serii, gdy przeciwnik jest poza zasięgiem
+- [x] **Z10** E4, utrata celu: przy `break_on_lost` przerwanie serii, gdy przeciwnik jest poza zasięgiem
       broni albo kątem widzenia. Bez `break_on_lost` łączenie bez sprawdzania zasięgu. (W6)
 - [ ] **Z11** E4, obrona w serii: przy `defend_in_series`, gdy przeciwnik zaczyna cios (warunki jak
       w `fightalgo.cpp:45`), przerwanie serii i natychmiastowa reakcja z `FA_ENEMY_PREHIT_<N>`

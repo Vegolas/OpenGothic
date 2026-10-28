@@ -43,12 +43,14 @@ class FightAlgo final {
     void   dropForwardAttacks(bool fist);
     void   onClearTarget();
     void   onTakeHit();
+    void   onBreakSeries();
 
     bool   hasInstructions() const;
     bool   fetchInstructions(Npc &npc, Npc &tg, GameScript& owner);
     float  qDistTo(const Npc& npc, const Npc& tg) const;
 
     bool     hasCombo     (Npc &npc) const;
+    auto     comboAi      (Npc &npc) const -> const FightAi::Combo&;
     uint64_t comboLinkTime(Npc &npc, uint64_t winBegin, uint64_t winEnd, GameScript &owner);
     bool     comboContinue(Npc &npc, uint64_t winBegin, GameScript &owner);
 
