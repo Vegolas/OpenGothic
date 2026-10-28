@@ -1888,12 +1888,12 @@ bool Npc::implComboLink() {
     return false;
 
   const bool fist = (weaponState()==WeaponState::Fist);
-  auto       act  = fghAlgo.nextFromQueue(*this,*currentTarget,owner.script());
   if(cmb.forward && cmb.last) {
     // talent limits length of forward combo: drop the rest of forward attacks in series
     fghAlgo.dropForwardAttacks(fist);
-    act = fghAlgo.nextFromQueue(*this,*currentTarget,owner.script());
     }
+  // NOTE: empty queue is not an instruction, don't ask nextFromQueue about it
+  auto act = fghAlgo.hasInstructions() ? fghAlgo.nextFromQueue(*this,*currentTarget,owner.script()) : FightAlgo::MV_NULL;
 
   const uint64_t now = owner.tickCount();
   if(!cmb.window || now<=cmb.winBegin || now>cmb.winEnd)
