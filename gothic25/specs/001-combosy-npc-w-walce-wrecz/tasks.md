@@ -61,7 +61,7 @@ w instancjach `FA_COMBO_<N>` wpisujemy `1` i `0` z komentarzem.
 - [x] **Z13** [P] Orkowie i elita orków: `FA_MY_W_COMBO_12` i `FA_COMBO_12` w `FAI_Orc.d`, nowy
       `FAI_Orc_Elite.d` (styl 13, pozostałe stany skopiowane z 12), `FAI_ORC_ELITE = 13`
       w `AI_Constants.d`, `fight_tactic = FAI_ORC_ELITE` w `MST_OrcElite.d`. (W2, W3, W5, W6, W7)
-- [ ] **Z14** Wersja moda 0.2.0 w `mod.json` i wpis w `CHANGELOG.md` (bramka konstytucji, zasada 8).
+- [x] **Z14** Wersja moda 0.2.0 w `mod.json` i wpis w `CHANGELOG.md` (bramka konstytucji, zasada 8).
       Po Z12 i Z13.
 
 ## Faza 4: Weryfikacja
