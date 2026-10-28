@@ -19,7 +19,7 @@ Uruchamianie gry i instalacja moda w folderze gry wymagają za każdym razem zgo
 - [x] **Z2** [P] `content/Scripts/README.md`: sekcja „Symbole dla silnika” (ADR 0003) z opisem
       `MAX_MOVE` do 16, klasy `C_FightAI_Combo`, instancji `FA_COMBO_<N>` i znaczenia
       `FA_MY_W_COMBO_<N>`. (W9)
-- [ ] **Z3** [P] `_intern/Fight.d`: `MAX_MOVE = 12` i klasa `C_FightAI_Combo` (`link_min`, `link_max`,
+- [x] **Z3** [P] `_intern/Fight.d`: `MAX_MOVE = 12` i klasa `C_FightAI_Combo` (`link_min`, `link_max`,
       `defend_in_series`, `break_on_lost`). Bez instancji, więc bez zmiany zachowania. `dat.py diff`:
       tylko nowa klasa i większa tablica `move`. (W3, W5, W6, W7)
 
@@ -51,6 +51,9 @@ Uruchamianie gry i instalacja moda w folderze gry wymagają za każdym razem zgo
       (blok albo odskok). (W5)
 
 ## Faza 3: Treść w skryptach
+
+Uwaga z Z3: `FIGHT.DAT` nie zna stałych `TRUE` i `FALSE` (są tylko w `GOTHIC.DAT`), więc
+w instancjach `FA_COMBO_<N>` wpisujemy `1` i `0` z komentarzem.
 
 - [ ] **Z12** [P] Style ludzi według tabeli z planu: `FAI_Human_Normal.d` (42), `FAI_Human_Strong.d` (3),
       `FAI_Human_Master.d` (4): listy `FA_MY_W_FOCUS_<N>`, `FA_MY_W_COMBO_<N>` i instancje

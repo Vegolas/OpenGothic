@@ -21,7 +21,7 @@ CONST INT 	MOVE_WAIT			= 19;
 CONST INT	MOVE_WAIT_LONGER	= 23;		// Achtung: Muss 23 sein, da im Programm noch einige unbenutze Moves zwischen 19 und 22 gibt
 CONST INT	MOVE_WAIT_EXT		= 24;		// Achtung: Muss 24 sein, da im Programm noch einige unbenutze Moves zwischen 19 und 22 gibt
 
-CONST INT	MAX_MOVE			= 6;	// FightMove-Variationen pro FAI-Funktion
+CONST INT	MAX_MOVE			= 12;	// FightMove-Variationen pro FAI-Funktion (Gothic 2.5: the original engine reads 6, OpenGothic up to 16)
 
 CONST INT 	MAX_FIGHTAI			= 50;	// Anzahl vorhandener Fight-AIs //Konstante NICHT redundant im Programmcode, kann hier beliebig verändert werden
 
@@ -33,5 +33,15 @@ CONST INT 	MAX_FIGHTAI			= 50;	// Anzahl vorhandener Fight-AIs //Konstante NICHT
 CLASS C_FightAI 
 {
 	VAR INT move[MAX_MOVE];
+};
+
+// Gothic 2.5: optional per-tactic combo settings, read by OpenGothic from FA_COMBO_<N>.
+// A fight tactic without such an instance fights like in the original game.
+CLASS C_FightAI_Combo
+{
+	VAR INT link_min;			// earliest moment to link the next attack, percent of the usable combo window
+	VAR INT link_max;			// latest moment to link the next attack, percent of the usable combo window
+	VAR INT defend_in_series;	// TRUE: may break an own series to react to an enemy attack (FA_ENEMY_PREHIT_<N>)
+	VAR INT break_on_lost;		// TRUE: breaks a series when the enemy leaves weapon range or focus
 };
 
