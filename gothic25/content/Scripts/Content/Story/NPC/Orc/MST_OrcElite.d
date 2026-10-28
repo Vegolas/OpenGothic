@@ -42,7 +42,7 @@ PROTOTYPE Mst_Default_OrcElite(C_Npc)
 //	damage		[DAM_INDEX_FLY]		=	0;
 //	damage		[DAM_INDEX_MAGIC]	=	0;
 
-	fight_tactic	= 	FAI_ORC;
+	fight_tactic	= 	FAI_ORC_ELITE;	// Gothic 2.5: was FAI_ORC (spec 001)
 
 	//----- Senses & Ranges ----
 	senses			= 	SENSE_HEAR | SENSE_SEE;

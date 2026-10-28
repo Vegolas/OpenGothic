@@ -58,7 +58,7 @@ w instancjach `FA_COMBO_<N>` wpisujemy `1` i `0` z komentarzem.
 - [x] **Z12** [P] Style ludzi według tabeli z planu: `FAI_Human_Normal.d` (42), `FAI_Human_Strong.d` (3),
       `FAI_Human_Master.d` (4): listy `FA_MY_W_FOCUS_<N>`, `FA_MY_W_COMBO_<N>` i instancje
       `FA_COMBO_<N>`. Tchórz (2) bez zmian. Szkielety dostają zmiany przez swoje style. (W2, W3, W5, W6, W7)
-- [ ] **Z13** [P] Orkowie i elita orków: `FA_MY_W_COMBO_12` i `FA_COMBO_12` w `FAI_Orc.d`, nowy
+- [x] **Z13** [P] Orkowie i elita orków: `FA_MY_W_COMBO_12` i `FA_COMBO_12` w `FAI_Orc.d`, nowy
       `FAI_Orc_Elite.d` (styl 13, pozostałe stany skopiowane z 12), `FAI_ORC_ELITE = 13`
       w `AI_Constants.d`, `fight_tactic = FAI_ORC_ELITE` w `MST_OrcElite.d`. (W2, W3, W5, W6, W7)
 - [ ] **Z14** Wersja moda 0.2.0 w `mod.json` i wpis w `CHANGELOG.md` (bramka konstytucji, zasada 8).
