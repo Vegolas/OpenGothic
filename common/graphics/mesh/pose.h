@@ -27,6 +27,15 @@ class Pose final {
       Force      = 0x1,
       };
 
+    struct ComboInfo final {
+      uint64_t winBegin = 0;     // combo window of the current hit, absolute time
+      uint64_t winEnd   = 0;     // window end, clamped to hitEnd: the layer is gone afterwards
+      uint64_t hitEnd   = 0;     // DEF_HIT_END of the current hit, absolute time
+      bool     window   = false; // current hit has a combo window
+      bool     forward  = false; // multi-hit forward combo, not a single side attack
+      bool     last     = false; // current hit is the last one of the animation
+      };
+
     static uint8_t     calcAniComb(const Tempest::Vec3& dpos, float rotation);
     static uint8_t     calcAniCombVert(const Tempest::Vec3& dpos);
 
@@ -74,6 +83,7 @@ class Pose final {
 
     auto               continueCombo(const AnimationSolver &solver, const Animation::Sequence *sq, BodyState bs, uint64_t tickCount) -> const Animation::Sequence*;
     uint16_t           comboLength() const;
+    bool               comboInfo(ComboInfo& ret) const;
 
     float              translateY() const { return trY; }
     auto               rootNode() const -> const Tempest::Matrix4x4;

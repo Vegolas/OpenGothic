@@ -790,6 +790,30 @@ uint16_t Pose::comboLength() const {
   return combo.len();
   }
 
+bool Pose::comboInfo(ComboInfo& ret) const {
+  for(auto& i:lay) {
+    auto& d = *i.seq->data;
+    if(d.defWindow.empty() || d.defHitEnd.empty())
+      continue;
+
+    const size_t id = combo.len();
+    if(id>=d.defHitEnd.size())
+      return false;
+
+    ret         = ComboInfo();
+    ret.hitEnd  = i.sAnim + d.defHitEnd[id];
+    ret.forward = d.defHitEnd.size()>1;
+    ret.last    = (id+1>=d.defHitEnd.size());
+    if(id*2+1<d.defWindow.size() && !combo.isBreak()) {
+      ret.window   = true;
+      ret.winBegin = i.sAnim + d.defWindow[id*2+0];
+      ret.winEnd   = i.sAnim + std::min(d.defWindow[id*2+1], d.defHitEnd[id]);
+      }
+    return true;
+    }
+  return false;
+  }
+
 const Tempest::Matrix4x4 Pose::rootNode() const {
   size_t id = 0;
   if(skeleton->rootNodes.size())
