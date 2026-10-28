@@ -1,6 +1,6 @@
 # 001: Combosy NPC w walce wręcz
 
-- **Status:** Zatwierdzona
+- **Status:** W realizacji
 - **Utworzono:** 2026-10-28
 - **Warstwa (wstępnie):** skrypty i silnik <!-- zasoby / skrypty / silnik -->
 

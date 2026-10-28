@@ -7,3 +7,4 @@ Decyzje, które dotyczą więcej niż jednej funkcji: narzędzia, formaty, konwe
 |---|---|---|
 | [0001](0001-kompilator-daedalus.md) | Kompilator skryptów Daedalus i baza skryptów | Przyjęta (gdc 0.9.5 + Unified-PL) |
 | [0002](0002-duze-zasoby-w-repo.md) | Przechowywanie dużych zasobów binarnych | Proponowana |
+| [0003](0003-przelaczniki-silnika-w-skryptach.md) | Włączanie zmian silnika przez symbole skryptów moda | Przyjęta |
