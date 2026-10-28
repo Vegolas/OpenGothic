@@ -169,11 +169,11 @@ Wszystkie pliki w `content/Scripts/Content`, kodowanie cp1250, zmiany sprawdzane
   | Styl (plik) | `FA_MY_W_FOCUS_<N>` | `FA_MY_W_COMBO_<N>` | `FA_COMBO_<N>`: link, obrona, przerywanie |
   |---|---|---|---|
   | tchórz 2 (`FAI_Human_Coward.d`) | bez zmian | bez zmian (puste) | brak instancji: mechanizm wyłączony |
-  | normalny 42 (`FAI_Human_Normal.d`) | `ATTACK ×2, SIDEATTACK, FRONTATTACK` | puste | 60–100%, nie, nie |
-  | silny 3 (`FAI_Human_Strong.d`) | `ATTACK ×2, SIDEATTACK, FRONTATTACK, TRIPLEATTACK, JUMPBACK` | `ATTACK, WAIT` | 30–80%, nie, nie |
-  | mistrz 4 (`FAI_Human_Master.d`) | `ATTACK ×5, SIDEATTACK, FRONTATTACK, TRIPLEATTACK, WHIRLATTACK, MASTERATTACK, WAIT` | `ATTACK ×3, WAIT` | 0–40%, tak, tak |
-  | orkowie 12 (`FAI_Orc.d`) | bez zmian | `ATTACK, WAIT` | 50–100%, nie, nie |
-  | elita orków 13 (nowy `FAI_Orc_Elite.d`) | `ATTACK ×4, SIDEATTACK, FRONTATTACK, TRIPLEATTACK, WHIRLATTACK, MASTERATTACK, WAIT ×2` | `ATTACK ×2, WAIT` | 0–40%, tak, tak |
+  | normalny 42 (`FAI_Human_Normal.d`) | `ATTACK ×2, SIDEATTACK, FRONTATTACK` | puste | 100%, nie, nie |
+  | silny 3 (`FAI_Human_Strong.d`) | `ATTACK ×2, SIDEATTACK, FRONTATTACK, TRIPLEATTACK, JUMPBACK` | `ATTACK, WAIT` | 100%, nie, nie |
+  | mistrz 4 (`FAI_Human_Master.d`) | `ATTACK ×5, SIDEATTACK, FRONTATTACK, TRIPLEATTACK, WHIRLATTACK, MASTERATTACK, WAIT` | `ATTACK ×3, WAIT` | 80–100%, tak, tak |
+  | orkowie 12 (`FAI_Orc.d`) | bez zmian | `ATTACK, WAIT` | 100%, nie, nie |
+  | elita orków 13 (nowy `FAI_Orc_Elite.d`) | `ATTACK ×4, SIDEATTACK, FRONTATTACK, TRIPLEATTACK, WHIRLATTACK, MASTERATTACK, WAIT ×2` | `ATTACK ×2, WAIT` | 80–100%, tak, tak |
 
   Pozostałe stany FAI elity orków kopiujemy ze stylu 12.
 - **`AI/AI_Intern/AI_Constants.d`:** `FAI_ORC_ELITE = 13`.
@@ -233,9 +233,10 @@ z przyjętym ADR 0003.
 ## Ryzyka
 
 - **Przeskok animacji przy wczesnym łączeniu.** `continueCombo` przeskakuje do `DEF_HIT_END` etapu,
-  więc połączenie na początku okna pomija część animacji, tak samo jak u gracza. Ciosy mistrzów
-  (`link_min = 0`) mogą przez to wyglądać na szarpane. Wykrycie: K1 i K3 w zwolnionym tempie
-  (`ztimer multiplyer 0.3`). Reakcja: podnieść `link_min` w skryptach.
+  więc połączenie na początku okna pomija część animacji, tak samo jak u gracza. **Wystąpiło
+  w pierwszym teście (2026-10-29):** przy pierwotnych wartościach (mistrz 0–40%) mistrzowie pomijali
+  40–60% każdego ciosu, co wyglądało jak przyspieszone animacje. Reakcja: style mistrzowskie łączą
+  na 80–100% okna (pomijają najwyżej ok. 0,2 s), pozostałe na 100% (ok. 50 ms, margines).
 - **Spóźnione połączenie przy niskiej liczbie klatek.** Jeśli klatka trwa dłużej niż margines przed
   `DEF_HIT_END`, łączenie się nie uda i cios zacznie combo od nowa (dzisiejsze zachowanie). Wykrycie:
   K1 przy ograniczonej liczbie klatek. Reakcja: margines zależny od długości klatki.

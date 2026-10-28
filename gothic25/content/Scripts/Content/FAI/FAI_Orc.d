@@ -62,7 +62,7 @@ INSTANCE FA_MY_W_COMBO_12 (C_FightAI)
 // TRUE/FALSE are not defined in Fight.dat, so 1 and 0 are used.
 INSTANCE FA_COMBO_12 (C_FightAI_Combo)
 {
-	link_min			= 50;
+	link_min			= 100;
 	link_max			= 100;
 	defend_in_series	= 0;
 	break_on_lost		= 0;

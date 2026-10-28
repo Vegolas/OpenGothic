@@ -108,10 +108,11 @@ walki NPC, więc mistrza da się rozpoznać po samym sposobie walki.
   - pozostałe style dokańczają serię do końca, także w powietrze. Odskok gracza daje wtedy okno
     na kontrę.
 - **W7:** Kolejny cios serii NPC wypada w czasie, w którym gracz też mógłby go połączyć z poprzednim.
-  NPC nie łączy ciosów szybciej, niż pozwala na to gra graczowi. W tych granicach moment połączenia
-  jest losowy, ale nigdy tak późny, żeby combo się urwało. Style wyższe łączą ciosy średnio wcześniej
-  (szybciej) niż niższe: mistrz i elita orków najszybciej, potem silny, na końcu normalny, orkowie
-  i jaszczuroludzie.
+  NPC nie łączy ciosów szybciej, niż pozwala na to gra graczowi, i nigdy tak późno, żeby combo się
+  urwało. Animacja ciosu gra prawie w całości, bo wcześniejsze połączenie pomija jej część i wygląda
+  jak przyspieszenie. Style mistrzowskie (mistrz, elita orków) łączą ciosy losowo pod koniec okna,
+  więc ich combo jest odrobinę szybsze (pomijają najwyżej ok. 0,2 s ciosu). Pozostałe style łączą
+  ciosy na samym końcu okna.
 - **W8:** Combosy działają także w walce NPC z NPC, w pojedynkach na arenie i w walkach
   „do nieprzytomności”.
 - **W9:** Bez moda Gothic 2.5 NPC walczą tak samo jak w obecnej wersji silnika.
@@ -141,8 +142,9 @@ zwolnione tempo: `ztimer multiplyer 0.3`, powrót: `ztimer multiplyer 1`.
     jednoręczny), wykonaj kilka razy pełne combo możliwie szybko i porównaj tempo z combo
     `Pal_230_Ritter` z K1 przy `ztimer multiplyer 0.3`.
   - Oczekiwane: kolejne ciosy NPC nie wychodzą wcześniej niż najszybsze połączenie, jakie udaje się
-    wykonać graczowi. Odstępy między ciosami paladyna nie są za każdym razem identyczne, a przy
-    porównaniu z `BDT_1006_Bandit_H` (styl silny, K4) paladyn łączy ciosy wyraźnie szybciej.
+    wykonać graczowi. Combo paladyna i `BDT_1006_Bandit_H` (styl silny, K4) nie wyglądają na
+    przyspieszone: w zwolnionym tempie każdy cios jest widoczny w całości, bez wyraźnego przeskoku.
+    Combo paladyna jest najwyżej nieznacznie szybsze niż bandyty.
 - [ ] **K4** (W3): Style walki są rozróżnialne.
   - Kroki: P0, po kolei `insert BDT_1013_Bandit_L` (tchórz), `insert BDT_1003_Bandit_M` (normalny),
     `insert BDT_1006_Bandit_H` (silny), każdego obserwuj 2 minuty jak w K1 i zanotuj, jakie serie
@@ -220,7 +222,10 @@ używa we własnej kopii.
 - [x] **P5:** Czy walka na pięści (bójki, pojedynki bez broni) też ma używać combo z dwóch ciosów?
   **Rozstrzygnięcie (2026-10-28):** tak, na tych samych zasadach. Opis w W1, kryterium K12.
 - [x] **P6:** Jak szybko NPC łączy ciosy w granicach z W7? **Rozstrzygnięcie (2026-10-28):** losowo
-  w obrębie okna, wyższe style średnio wcześniej. Opis w W7, kryterium K3.
+  w obrębie okna, wyższe style średnio wcześniej. **Zmiana (2026-10-29, po pierwszym teście w grze):**
+  silnik przy połączeniu przeskakuje animację do końca trafienia, więc wczesne łączenie mistrzów
+  pomijało 40–60% każdego ciosu i wyglądało jak przyspieszone animacje. Teraz style mistrzowskie
+  łączą ciosy losowo pod koniec okna, a pozostałe na samym końcu. Opis w W7, kryterium K3.
 - [x] **P7:** Czy akceptujemy wyraźny wzrost trudności walk z mistrzami (Raven, paladyni, najemnicy
   Lee, łowcy smoków)? **Rozstrzygnięcie (2026-10-28):** akceptujemy. Po implementacji przechodzimy
   kluczowe walki fabularne, a ewentualne złagodzenia opisujemy w osobnej specyfikacji.

@@ -42,7 +42,8 @@ Składowe `C_FightAI_Combo`:
 
 - `link_min`, `link_max`: kiedy NPC łączy kolejny cios serii albo combo, w procentach użytecznej
   części okna combo (od początku okna do końca trafienia). Moment jest losowany między tymi
-  wartościami, więc niższe wartości oznaczają szybsze łączenie.
+  wartościami. Przy połączeniu silnik przeskakuje animację do końca trafienia, więc niższe
+  wartości skracają cios: 100 gra go prawie w całości, a 0 pomija nawet ponad połowę ciosu.
 - `defend_in_series`: `TRUE`, gdy NPC może przerwać własną serię, żeby zareagować na nadchodzący
   cios przeciwnika według `FA_ENEMY_PREHIT_<N>` (blok, odskok).
 - `break_on_lost`: `TRUE`, gdy NPC przerywa serię, kiedy przeciwnik wyjdzie z zasięgu broni albo
