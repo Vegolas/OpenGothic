@@ -90,6 +90,14 @@ void FightAlgo::fillQueue(Npc &npc, Npc &tg, GameScript& owner) {
   }
 
 bool FightAlgo::fillQueue(GameScript& owner, const FightAi::Moves& src) {
+  const auto mv = randomMove(owner,src);
+  if(mv==zenkit::FightAiMove::NOP)
+    return false;
+  queueId = mv;
+  return true;
+  }
+
+zenkit::FightAiMove FightAlgo::randomMove(GameScript& owner, const FightAi::Moves& src) {
   uint32_t sz=0;
   for(size_t i=0; i<FightAi::MaxMoves; ++i){
     if(src.move[i]==zenkit::FightAiMove::NOP)
@@ -97,9 +105,8 @@ bool FightAlgo::fillQueue(GameScript& owner, const FightAi::Moves& src) {
     sz++;
     }
   if(sz==0)
-    return false;
-  queueId = zenkit::FightAiMove(src.move[owner.rand(sz)]);
-  return queueId!=zenkit::FightAiMove::NOP;
+    return zenkit::FightAiMove::NOP;
+  return zenkit::FightAiMove(src.move[owner.rand(sz)]);
   }
 
 FightAlgo::Action FightAlgo::nextFromQueue(Npc& npc, Npc& tg, GameScript& owner) {
@@ -254,6 +261,17 @@ uint64_t FightAlgo::comboLinkTime(Npc& npc, uint64_t winBegin, uint64_t winEnd, 
   linkWindow = winBegin;
   linkTime   = winBegin + 1 + len*pc/100;
   return linkTime;
+  }
+
+bool FightAlgo::comboContinue(Npc& npc, uint64_t winBegin, GameScript& owner) {
+  // 'MOVE_ATTACK in ComboZone = Combo', according to G2 scripts
+  if(contWindow==winBegin)
+    return contAttack;
+
+  auto& ai = Gothic::fai()[size_t(npc.handle().fight_tactic)];
+  contWindow = winBegin;
+  contAttack = (randomMove(owner,ai.my_w_combo)==zenkit::FightAiMove::ATTACK);
+  return contAttack;
   }
 
 float FightAlgo::baseDistance(const Npc& npc, const Npc& tg,  GameScript &owner) const {

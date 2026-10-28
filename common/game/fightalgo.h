@@ -49,6 +49,7 @@ class FightAlgo final {
 
     bool     hasCombo     (Npc &npc) const;
     uint64_t comboLinkTime(Npc &npc, uint64_t winBegin, uint64_t winEnd, GameScript &owner);
+    bool     comboContinue(Npc &npc, uint64_t winBegin, GameScript &owner);
 
     float  baseDistance           (const Npc &npc, const Npc &tg, GameScript &owner) const;
     float  prefferedAttackDistance(const Npc &npc, const Npc &tg, GameScript &owner) const;
@@ -68,6 +69,7 @@ class FightAlgo final {
     void   fillQueue(Npc &npc, Npc &tg, GameScript& owner);
     bool   fillQueue(GameScript& owner, const FightAi::Moves& src);
 
+    static zenkit::FightAiMove randomMove(GameScript& owner, const FightAi::Moves& src);
     static bool   angleTest(const Npc& npc, const Npc& tg, float cosMax);
     static float  weaponRange(GameScript &owner,const Npc &npc);
 
@@ -75,7 +77,9 @@ class FightAlgo final {
     Action              tr   [MV_MAX]={};
     bool                hitFlg=false;
 
-    // combo link moment, rolled once per combo window; not serialized
+    // combo link moment and combo continuation, rolled once per combo window; not serialized
     uint64_t            linkWindow = 0;
     uint64_t            linkTime   = 0;
+    uint64_t            contWindow = 0;
+    bool                contAttack = false;
   };

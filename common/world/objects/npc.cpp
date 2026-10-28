@@ -1891,9 +1891,16 @@ bool Npc::implComboLink() {
   if(now<=cmb.winBegin || now>cmb.winEnd)
     return false;
 
-  const auto act = fghAlgo.nextFromQueue(*this,*currentTarget,owner.script());
-  if(act!=FightAlgo::MV_ATTACK && act!=FightAlgo::MV_ATTACKL && act!=FightAlgo::MV_ATTACKR)
-    return false;
+  auto       act    = fghAlgo.nextFromQueue(*this,*currentTarget,owner.script());
+  const bool queued = (act==FightAlgo::MV_ATTACK || act==FightAlgo::MV_ATTACKL || act==FightAlgo::MV_ATTACKR);
+  if(!queued) {
+    // no series in queue: fight tactic may continue the forward combo
+    if(act!=FightAlgo::MV_NULL || !cmb.forward || cmb.last)
+      return false;
+    if(!fghAlgo.comboContinue(*this,cmb.winBegin,owner.script()))
+      return false;
+    act = FightAlgo::MV_ATTACK;
+    }
   if(now<fghAlgo.comboLinkTime(*this,cmb.winBegin,cmb.winEnd,owner.script()))
     return false;
 
@@ -1905,7 +1912,8 @@ bool Npc::implComboLink() {
   // NOTE: combo shifts start of the animation, so atkTotalTime is not relative to 'now'
   if(visual.pose().comboInfo(cmb))
     implFaiWait(cmb.hitEnd>now ? cmb.hitEnd-now+1 : 1);
-  fghAlgo.consumeAction();
+  if(queued)
+    fghAlgo.consumeAction();
   return true;
   }
 

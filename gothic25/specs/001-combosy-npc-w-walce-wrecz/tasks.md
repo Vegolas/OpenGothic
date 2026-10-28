@@ -39,7 +39,7 @@ Uruchamianie gry i instalacja moda w folderze gry wymagają za każdym razem zgo
       na okno, margines przed `DEF_HIT_END`, `implFaiWait` po połączeniu, stan przejściowy
       w `FightAlgo` bez zapisu. Style bez `FA_COMBO_<N>` idą dotychczasową ścieżką. Po Z5 i Z6.
       (W1, W2, W7, W8, W9, W10)
-- [ ] **Z8** E4, kontynuacja: gdy kolejka jest pusta, raz na okno po ciosie do przodu (nie na ostatnim
+- [x] **Z8** E4, kontynuacja: gdy kolejka jest pusta, raz na okno po ciosie do przodu (nie na ostatnim
       etapie) losowanie z `FA_MY_W_COMBO_<N>`. `MOVE_ATTACK` łączy kolejny cios do przodu, reszta
       kończy combo. (W2)
 - [ ] **Z9** E4, limit talentu: na ostatnim etapie combo do przodu usunąć z kolejki kolejne ciosy
