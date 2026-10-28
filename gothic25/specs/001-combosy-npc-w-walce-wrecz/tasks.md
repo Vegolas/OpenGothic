@@ -46,7 +46,7 @@ Uruchamianie gry i instalacja moda w folderze gry wymagają za każdym razem zgo
       do przodu (z uwzględnieniem pięści, gdzie ciosy boczne są ciosami do przodu). (W4)
 - [x] **Z10** E4, utrata celu: przy `break_on_lost` przerwanie serii, gdy przeciwnik jest poza zasięgiem
       broni albo kątem widzenia. Bez `break_on_lost` łączenie bez sprawdzania zasięgu. (W6)
-- [ ] **Z11** E4, obrona w serii: przy `defend_in_series`, gdy przeciwnik zaczyna cios (warunki jak
+- [x] **Z11** E4, obrona w serii: przy `defend_in_series`, gdy przeciwnik zaczyna cios (warunki jak
       w `fightalgo.cpp:45`), przerwanie serii i natychmiastowa reakcja z `FA_ENEMY_PREHIT_<N>`
       (blok albo odskok). (W5)
 

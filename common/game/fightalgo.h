@@ -44,6 +44,7 @@ class FightAlgo final {
     void   onClearTarget();
     void   onTakeHit();
     void   onBreakSeries();
+    bool   onEnemyPrehit(Npc &npc, Npc &tg, GameScript& owner);
 
     bool   hasInstructions() const;
     bool   fetchInstructions(Npc &npc, Npc &tg, GameScript& owner);
@@ -59,6 +60,7 @@ class FightAlgo final {
     float  prefferedGDistance     (const Npc &npc, const Npc &tg, GameScript &owner) const;
     float  attackFinishDistance   (GameScript &owner) const;
 
+    bool   isEnemyPrehit          (const Npc &npc, const Npc &tg, GameScript &owner) const;
     bool   isInAttackRange        (const Npc &npc, const Npc &tg, GameScript &owner) const;
     bool   isInFinishRange        (const Npc &npc, const Npc &tg, GameScript &owner) const;
     bool   isInCloseupRange       (const Npc &npc, const Npc &tg, GameScript &owner) const;

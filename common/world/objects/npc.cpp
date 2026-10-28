@@ -1900,14 +1900,38 @@ bool Npc::implComboLink() {
     return false;
 
   const bool queued = (act==FightAlgo::MV_ATTACK || act==FightAlgo::MV_ATTACKL || act==FightAlgo::MV_ATTACKR);
-  if(!queued) {
+  bool       series = queued;
+  if(!queued && act==FightAlgo::MV_NULL && cmb.forward && !cmb.last) {
     // no series in queue: fight tactic may continue the forward combo
-    if(act!=FightAlgo::MV_NULL || !cmb.forward || cmb.last)
-      return false;
-    if(!fghAlgo.comboContinue(*this,cmb.winBegin,owner.script()))
-      return false;
-    act = FightAlgo::MV_ATTACK;
+    series = fghAlgo.comboContinue(*this,cmb.winBegin,owner.script());
     }
+
+  if(fghAlgo.comboAi(*this).defend_in_series) {
+    // break own series to react on enemy attack; block interrupts the attack, same as for player
+    if(series && fghAlgo.isEnemyPrehit(*this,*currentTarget,owner.script()) &&
+       fghAlgo.onEnemyPrehit(*this,*currentTarget,owner.script())) {
+      act    = fghAlgo.nextFromQueue(*this,*currentTarget,owner.script());
+      series = false;
+      }
+    if(act==FightAlgo::MV_BLOCK) {
+      if(!(fist ? blockFist() : blockSword()))
+        return false;
+      fghAlgo.consumeAction();
+      return true;
+      }
+    if(act==FightAlgo::MV_JUMPBACK) {
+      if(!setAnim(Npc::Anim::MoveBack))
+        return false;
+      implFaiWait(visual.pose().animationTotalTime());
+      fghAlgo.consumeAction();
+      return true;
+      }
+    }
+
+  if(!series)
+    return false;
+  if(!queued)
+    act = FightAlgo::MV_ATTACK;
   if(now<fghAlgo.comboLinkTime(*this,cmb.winBegin,cmb.winEnd,owner.script()))
     return false;
 

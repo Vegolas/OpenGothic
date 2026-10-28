@@ -42,7 +42,7 @@ void FightAlgo::fillQueue(Npc &npc, Npc &tg, GameScript& owner) {
 
   const bool focus = isInFocusAngle(npc,tg);
 
-  if(tg.isPrehit() && isInWRange(tg,npc,owner) && isInFocusAngle(tg,npc) && focus){
+  if(isEnemyPrehit(npc,tg,owner)){
     if(tg.bodyStateMasked()==BS_RUN)
       if(fillQueue(owner,ai.enemy_stormprehit))
         return;
@@ -251,6 +251,23 @@ void FightAlgo::onBreakSeries() {
   queueId = zenkit::FightAiMove::NOP;
   }
 
+bool FightAlgo::onEnemyPrehit(Npc& npc, Npc& tg, GameScript& owner) {
+  // same reaction as in fillQueue, but in the middle of own series
+  auto& ai = Gothic::fai()[size_t(npc.handle().fight_tactic)];
+  auto  mv = zenkit::FightAiMove::NOP;
+  if(tg.bodyStateMasked()==BS_RUN)
+    mv = randomMove(owner,ai.enemy_stormprehit);
+  if(mv==zenkit::FightAiMove::NOP)
+    mv = randomMove(owner,ai.enemy_prehit);
+  if(mv==zenkit::FightAiMove::NOP)
+    return false;
+
+  onBreakSeries();
+  queueId = mv;
+  nextFromQueue(npc,tg,owner);
+  return true;
+  }
+
 float FightAlgo::qDistTo(const Npc& npc, const Npc& tg) const {
   return npc.fightDistanceTo(tg).quadLength();
   }
@@ -321,6 +338,10 @@ float FightAlgo::attackFinishDistance(GameScript &owner) const {
       NPC_ATTACK_FINISH_DISTANCE = var->get_float();
     }
   return NPC_ATTACK_FINISH_DISTANCE;
+  }
+
+bool FightAlgo::isEnemyPrehit(const Npc& npc, const Npc& tg, GameScript& owner) const {
+  return tg.isPrehit() && isInWRange(tg,npc,owner) && isInFocusAngle(tg,npc) && isInFocusAngle(npc,tg);
   }
 
 bool FightAlgo::isInAttackRange(const Npc &npc, const Npc &tg, GameScript &owner) const {
