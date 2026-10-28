@@ -55,7 +55,7 @@ Uruchamianie gry i instalacja moda w folderze gry wymagają za każdym razem zgo
 Uwaga z Z3: `FIGHT.DAT` nie zna stałych `TRUE` i `FALSE` (są tylko w `GOTHIC.DAT`), więc
 w instancjach `FA_COMBO_<N>` wpisujemy `1` i `0` z komentarzem.
 
-- [ ] **Z12** [P] Style ludzi według tabeli z planu: `FAI_Human_Normal.d` (42), `FAI_Human_Strong.d` (3),
+- [x] **Z12** [P] Style ludzi według tabeli z planu: `FAI_Human_Normal.d` (42), `FAI_Human_Strong.d` (3),
       `FAI_Human_Master.d` (4): listy `FA_MY_W_FOCUS_<N>`, `FA_MY_W_COMBO_<N>` i instancje
       `FA_COMBO_<N>`. Tchórz (2) bez zmian. Szkielety dostają zmiany przez swoje style. (W2, W3, W5, W6, W7)
 - [ ] **Z13** [P] Orkowie i elita orków: `FA_MY_W_COMBO_12` i `FA_COMBO_12` w `FAI_Orc.d`, nowy
