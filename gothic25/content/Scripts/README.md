@@ -26,6 +26,28 @@ w treści, kolejne commity wprowadzają poprawki.
 - **`DIA_Addon_Snaf_Abrechnung_Info`:** dodany brakujący `;` w taki sposób, żeby zachowanie
   było identyczne z oryginalną grą.
 
+## Symbole dla silnika
+
+Fork OpenGothic czyta część symboli skryptów po nazwie. Symbole z tej tabeli włączają zachowania
+odbiegające od oryginalnego Gothica ([ADR 0003](../../decisions/0003-przelaczniki-silnika-w-skryptach.md)).
+Gdy ich nie ma, silnik działa jak upstream. Starszy silnik i oryginalna gra ignorują je bez błędów.
+
+| Symbol | Gdzie | Co robi | Spec. |
+|---|---|---|---|
+| `MAX_MOVE` | `Content/_intern/Fight.d` | Długość listy `move` w `C_FightAI`. Oryginał: 6. Fork czyta do 16 ruchów na stan FAI, starszy silnik tylko 6 pierwszych. | [001](../../specs/001-combosy-npc-w-walce-wrecz/spec.md) |
+| `C_FightAI_Combo`, `FA_COMBO_<N>` | klasa w `Content/_intern/Fight.d`, instancje w `Content/FAI/*.d` | Włącza łączenie ciosów NPC w oknie combo dla stylu walki `<N>` i ustawia jego parametry (niżej). Styl bez tej instancji walczy jak w oryginale. | [001](../../specs/001-combosy-npc-w-walce-wrecz/spec.md) |
+| `FA_MY_W_COMBO_<N>` | `Content/FAI/*.d` | Instancja z oryginału, dotąd pusta i nieużywana. Dla stylów z `FA_COMBO_<N>` silnik losuje z niej ruch raz na okno combo po ciosie do przodu, gdy NPC nie ma już zaplanowanej serii. `MOVE_ATTACK` przedłuża combo, każdy inny ruch je kończy. | [001](../../specs/001-combosy-npc-w-walce-wrecz/spec.md) |
+
+Składowe `C_FightAI_Combo`:
+
+- `link_min`, `link_max`: kiedy NPC łączy kolejny cios serii albo combo, w procentach użytecznej
+  części okna combo (od początku okna do końca trafienia). Moment jest losowany między tymi
+  wartościami, więc niższe wartości oznaczają szybsze łączenie.
+- `defend_in_series`: `TRUE`, gdy NPC może przerwać własną serię, żeby zareagować na nadchodzący
+  cios przeciwnika według `FA_ENEMY_PREHIT_<N>` (blok, odskok).
+- `break_on_lost`: `TRUE`, gdy NPC przerywa serię, kiedy przeciwnik wyjdzie z zasięgu broni albo
+  z pola widzenia z przodu. Przy `FALSE` NPC dokańcza serię, także w powietrze.
+
 ## Kodowanie
 
 Pliki są w Windows-1250. Edytor musi zapisywać je w tym kodowaniu. Przy zapisie w UTF-8

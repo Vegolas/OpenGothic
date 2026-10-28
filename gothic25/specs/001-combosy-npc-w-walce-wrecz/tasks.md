@@ -16,7 +16,7 @@ Uruchamianie gry i instalacja moda w folderze gry wymagają za każdym razem zgo
 - [x] **Z1** Zapis testowy z wersji 0.1.0 do K9: przed jakąkolwiek zmianą zbudować i zainstalować
       obecny mod, zrobić zapis w trakcie walki z `Pal_230_Ritter` i odłożyć go poza folder gry.
       Ścieżkę zanotować w sekcji „Weryfikacja” w spec.md. Bez commita, bo zapis jest plikiem lokalnym. (W10, K9)
-- [ ] **Z2** [P] `content/Scripts/README.md`: sekcja „Symbole dla silnika” (ADR 0003) z opisem
+- [x] **Z2** [P] `content/Scripts/README.md`: sekcja „Symbole dla silnika” (ADR 0003) z opisem
       `MAX_MOVE` do 16, klasy `C_FightAI_Combo`, instancji `FA_COMBO_<N>` i znaczenia
       `FA_MY_W_COMBO_<N>`. (W9)
 - [ ] **Z3** [P] `_intern/Fight.d`: `MAX_MOVE = 12` i klasa `C_FightAI_Combo` (`link_min`, `link_max`,
