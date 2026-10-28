@@ -14,6 +14,16 @@ class FightAi final {
       zenkit::FightAiMove move[MaxMoves] = {};
       };
 
+    // Optional combo settings of a tactic: FA_COMBO_<N> instance of C_FightAI_Combo.
+    // Not present in original scripts; without it a tactic fights as before.
+    struct Combo final {
+      bool    enabled          = false; // link attacks inside the combo window
+      int32_t link_min         = 0;     // link moment: percent of the usable combo window
+      int32_t link_max         = 100;
+      bool    defend_in_series = false; // may break own series to react on enemy_prehit
+      bool    break_on_lost    = false; // breaks series, if enemy is out of range or focus
+      };
+
     struct FA final {
       Moves enemy_prehit;      // Enemy attacks me
       Moves enemy_stormprehit; // Enemy makes a storm attack
@@ -40,6 +50,8 @@ class FightAi final {
 
       Moves my_fk_focus_mag;   // Opponents in focus
       Moves my_fk_nofocus_mag; // Opponents NOT in focus
+
+      Combo combo;
       };
 
     FightAi();
@@ -48,6 +60,7 @@ class FightAi final {
 
   private:
     auto loadAi(zenkit::DaedalusVm &vm, std::string_view name) -> Moves;
+    auto loadCombo(zenkit::DaedalusVm &vm, std::string_view name) -> Combo;
     FA   loadAi(zenkit::DaedalusVm &vm, size_t id);
 
     std::vector<FA> fAi;

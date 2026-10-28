@@ -1,5 +1,7 @@
 #include "fightaidefinitions.h"
 
+#include <algorithm>
+
 #include "gothic.h"
 #include "utils/string_frm.h"
 
@@ -38,6 +40,36 @@ FightAi::Moves FightAi::loadAi(zenkit::DaedalusVm& vm, std::string_view name) {
     for(size_t i=0; i<MaxMoves && i<move->count(); ++i) {
       ret.move[i] = zenkit::FightAiMove(move->get_int(uint16_t(i), fai.get()));
       }
+    return ret;
+    }
+  catch(const zenkit::DaedalusScriptError&) {
+    // There was an error during initialization. Ignore it.
+    }
+
+  return {};
+  }
+
+FightAi::Combo FightAi::loadCombo(zenkit::DaedalusVm& vm, std::string_view name) {
+  auto id = vm.find_symbol_by_name(name);
+  if(id==nullptr)
+    return {};
+  auto* linkMin = vm.find_symbol_by_name("C_FIGHTAI_COMBO.LINK_MIN");
+  auto* linkMax = vm.find_symbol_by_name("C_FIGHTAI_COMBO.LINK_MAX");
+  auto* defend  = vm.find_symbol_by_name("C_FIGHTAI_COMBO.DEFEND_IN_SERIES");
+  auto* lost    = vm.find_symbol_by_name("C_FIGHTAI_COMBO.BREAK_ON_LOST");
+  if(linkMin==nullptr || linkMax==nullptr || defend==nullptr || lost==nullptr)
+    return {};
+
+  try {
+    auto  cmb = vm.init_opaque_instance(id);
+    Combo ret = {};
+    ret.enabled          = true;
+    ret.link_min         = std::clamp(linkMin->get_int(0, cmb.get()), 0, 100);
+    ret.link_max         = std::clamp(linkMax->get_int(0, cmb.get()), 0, 100);
+    ret.defend_in_series = defend->get_int(0, cmb.get())!=0;
+    ret.break_on_lost    = lost  ->get_int(0, cmb.get())!=0;
+    if(ret.link_min>ret.link_max)
+      std::swap(ret.link_min, ret.link_max);
     return ret;
     }
   catch(const zenkit::DaedalusScriptError&) {
@@ -100,6 +132,9 @@ FightAi::FA FightAi::loadAi(zenkit::DaedalusVm &vm, size_t id) {
 
   name = string_frm("FA_MY_FK_NOFOCUS_MAG_",int(id));
   ret.my_fk_nofocus_mag = loadAi(vm,name);
+
+  name = string_frm("FA_COMBO_",int(id));
+  ret.combo = loadCombo(vm,name);
 
   return ret;
   }

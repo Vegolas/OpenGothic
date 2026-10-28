@@ -31,7 +31,7 @@ Uruchamianie gry i instalacja moda w folderze gry wymagają za każdym razem zgo
 - [x] **Z5** [P] E3: zapytanie o okno combo bieżącego ciosu w `Pose` i `MdlVisual`: początek i koniec
       okna bieżącego etapu, `DEF_HIT_END`, czy to wieloetapowe combo do przodu, czy etap jest ostatni.
       Bez użycia w logice walki. (W1, W4, W7)
-- [ ] **Z6** E2: rejestracja `C_FightAI_Combo` jako klasy nieprzezroczystej i wczytywanie opcjonalnych
+- [x] **Z6** E2: rejestracja `C_FightAI_Combo` jako klasy nieprzezroczystej i wczytywanie opcjonalnych
       instancji `FA_COMBO_<N>` do `FightAi::FA` (parametry i znacznik obecności). Po Z4, te same pliki.
       (W5, W6, W7, W9)
 - [ ] **Z7** E4, rdzeń: łączenie ciosu z kolejki w oknie combo dla stylów z `FA_COMBO_<N>`. Nowa metoda

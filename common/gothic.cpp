@@ -996,6 +996,8 @@ void Gothic::setupVmCommonApi(zenkit::DaedalusVm& vm) {
     vm.register_as_opaque(sym);
   if(auto sym = vm.find_symbol_by_name("C_FIGHTAI"))
     vm.register_as_opaque(sym);
+  if(auto sym = vm.find_symbol_by_name("C_FIGHTAI_COMBO"))
+    vm.register_as_opaque(sym);
 
   vm.register_external("concatstrings", [](std::string_view a, std::string_view b) { return Gothic::concatstrings(a, b);});
   vm.register_external("inttostring",   [](int i)   { return Gothic::inttostring(i);   });
