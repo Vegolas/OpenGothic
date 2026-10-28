@@ -89,9 +89,9 @@ void FightAlgo::fillQueue(Npc &npc, Npc &tg, GameScript& owner) {
   fillQueue(owner,ai.my_w_nofocus);
   }
 
-bool FightAlgo::fillQueue(GameScript& owner, const zenkit::IFightAi& src) {
+bool FightAlgo::fillQueue(GameScript& owner, const FightAi::Moves& src) {
   uint32_t sz=0;
-  for(size_t i=0; i<zenkit::IFightAi::move_count; ++i){
+  for(size_t i=0; i<FightAi::MaxMoves; ++i){
     if(src.move[i]==zenkit::FightAiMove::NOP)
       break;
     sz++;

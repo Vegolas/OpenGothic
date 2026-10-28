@@ -25,7 +25,7 @@ Uruchamianie gry i instalacja moda w folderze gry wymagają za każdym razem zgo
 
 ## Faza 2: Mechanizmy w silniku
 
-- [ ] **Z4** [P] E1: listy ruchów FAI dłuższe niż 6. Własny typ listy ruchów w `FightAi::FA`
+- [x] **Z4** [P] E1: listy ruchów FAI dłuższe niż 6. Własny typ listy ruchów w `FightAi::FA`
       (do 16), loader czyta liczbę ruchów z `C_FIGHTAI.MOVE`, `FightAlgo::fillQueue` losuje z nowej
       listy. Sprawdzenie: oryginalny `Fight.dat` daje te same listy co przed zmianą. (W3, W9)
 - [ ] **Z5** [P] E3: zapytanie o okno combo bieżącego ciosu w `Pose` i `MdlVisual`: początek i koniec

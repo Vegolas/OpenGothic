@@ -4,6 +4,8 @@
 #include <zenkit/addon/daedalus.hh>
 #include <Tempest/Vec>
 
+#include "game/definitions/fightaidefinitions.h"
+
 class Npc;
 class GameScript;
 class Serialize;
@@ -61,7 +63,7 @@ class FightAlgo final {
 
   private:
     void   fillQueue(Npc &npc, Npc &tg, GameScript& owner);
-    bool   fillQueue(GameScript& owner, const zenkit::IFightAi& src);
+    bool   fillQueue(GameScript& owner, const FightAi::Moves& src);
 
     static bool   angleTest(const Npc& npc, const Npc& tg, float cosMax);
     static float  weaponRange(GameScript &owner,const Npc &npc);
