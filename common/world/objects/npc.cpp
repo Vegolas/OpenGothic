@@ -6,6 +6,7 @@
 #include "graphics/mesh/skeleton.h"
 #include "graphics/visualfx.h"
 #include "game/damagecalculator.h"
+#include "game/fightlog.h"
 #include "game/serialize.h"
 #include "game/gamescript.h"
 #include "utils/string_frm.h"
@@ -3890,6 +3891,8 @@ bool Npc::doAttack(Anim anim, BodyState bs) {
   if(auto sq = visual.continueCombo(*this,anim,bs,weaponSt,wlk)) {
     (void)sq;
     // implAniWait(uint64_t(sq->atkTotalTime(visual.comboLength())+1));
+    if(FightLog::isEnabled())
+      FightLog::attack(*this,anim,bs,visual.pose().lastComboStart(),visual.comboLength(),fghAlgo);
     return true;
     }
   return false;

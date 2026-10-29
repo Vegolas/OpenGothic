@@ -8,6 +8,7 @@
 #include <cctype>
 #include <filesystem>
 
+#include "game/fightlog.h"
 #include "utils/string_frm.h"
 #include "world/objects/npc.h"
 #include "world/objects/item.h"
@@ -155,6 +156,7 @@ Marvin::Marvin() {
     {"give %c %*",                 C_Give},
     {"equip %c",                   C_Equip},
     {"screenshot %s",              C_Screenshot},
+    {"toggle fightlog",            C_ToggleFightLog},
     {"quit",                       C_Quit},
 
     {"toggle gi",                  C_ToggleGI},
@@ -482,6 +484,10 @@ bool Marvin::exec(std::string_view v) {
       }
     case C_Screenshot:
       return screenshot(ret.argv[0]);
+    case C_ToggleFightLog:
+      FightLog::setEnabled(!FightLog::isEnabled());
+      print(FightLog::isEnabled() ? "fightlog on" : "fightlog off");
+      return true;
     case C_Quit:
       Tempest::SystemApi::exit();
       return true;

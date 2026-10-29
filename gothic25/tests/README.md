@@ -132,8 +132,13 @@ expect Pal_230_Ritter series.master >= 1
 
 ## Dziennik walki
 
-Plik `fightlog.jsonl`: JSON Lines, UTF-8, jedno zdarzenie w linii. Pierwsza linia to `meta`.
-Dziennik obejmuje walkę wręcz (broń biała i pięści) wszystkich postaci, także bohatera.
+Plik `fightlog.jsonl`: JSON Lines, jedno zdarzenie w linii. Pierwsza linia to `meta`. Plik powstaje
+w katalogu wyników (`-results`), a bez tej opcji w katalogu roboczym gry, i jest zakładany od nowa
+przy pierwszym włączeniu dziennika w danym uruchomieniu gry. Dziennik obejmuje walkę wręcz (broń
+biała i pięści) wszystkich postaci, także bohatera.
+
+Teksty ze skryptów (np. imię) są w stronie kodowej gry, więc silnik zapisuje ich bajty spoza ASCII
+jako `\u00XX`. `fightlog.py` odkodowuje je jako cp1250.
 
 ### Pola wspólne
 
@@ -170,16 +175,16 @@ a nie przy każdym żądaniu ataku.
 | `weapon` | string | `fist`, `1h`, `2h` |
 | `talent` | int | poziom talentu tej broni: 0, 1, 2 |
 | `talent_pct` | int | procent talentu tej broni |
-| `dir` | string | `fwd`, `left`, `right`, `run` (atak w biegu) |
+| `dir` | string | `fwd`, `left`, `right`, `run` (atak w biegu), `finish` (dobicie leżącego) |
 | `combo` | int | etap combo do przodu tego ciosu, od 1 |
 | `link` | string | `new` (cios od postawy), `fwd` (połączenie do przodu), `side` (połączenie w bok) |
 | `win_pct` | int | przy połączeniu: chwila w oknie combo poprzedniego ciosu, 0–100; inaczej `null` |
 | `skip_ms` | int | przy połączeniu do przodu: ile ms animacji poprzedniego ciosu pominięto; inaczej `0` |
-| `src` | string | `queue` (z serii FAI), `continue` (kontynuacja combo z `FA_MY_W_COMBO_<N>`), `player`, `other` |
-| `series` | string | rodzaj ruchu FAI: `attack`, `side`, `front`, `triple`, `whirl`, `master`, `combo` (kontynuacja); `null` dla gracza |
-| `series_id` | int | numer serii tej postaci, od 1; `null` dla gracza |
-| `series_pos` | int | który to cios serii, od 1 |
-| `series_len` | int | ile ciosów ma seria |
+| `src` | string | `queue` (z serii FAI), `continue` (kontynuacja combo z `FA_MY_W_COMBO_<N>`), `player`, `other` (np. dobicie) |
+| `series` | string | rodzaj ruchu FAI: `attack`, `side`, `front`, `triple`, `whirl`, `master`; `combo` przy `src: continue`; `null` dla gracza i `other` |
+| `series_id` | int | numer serii tej postaci, od 1; `null` poza `src: queue` |
+| `series_pos` | int | który to cios serii, od 1; pozycja przeskakuje, gdy silnik pominie cios (np. cel poza zasięgiem), a wychodzi poza `series_len`, gdy w kolejce została reszta przerwanej serii |
+| `series_len` | int | ile ciosów ma ruch FAI |
 
 ### `result`: wynik ciosu
 

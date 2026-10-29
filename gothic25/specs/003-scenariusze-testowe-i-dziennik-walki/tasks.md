@@ -54,7 +54,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
       - Rodzaj ruchu, numer serii, długość i pozycja.
       - Ustawiane w `nextFromQueue` przed skasowaniem `queueId`, przesuwane w `consumeAction`.
       - Bez użycia w logice walki. (W4)
-- [ ] **Z9** T6: dziennik walki (`game/fightlog.*`).
+- [x] **Z9** T6: dziennik walki (`game/fightlog.*`).
       - Zapis JSON Lines do katalogu wyników (bez `-results` do `fightlog/` w katalogu roboczym).
       - Polecenie `toggle fightlog` i zdarzenia `attack` z `Npc::doAttack`, tylko przy prawdziwym
         ciosie według Z7, z danymi serii z Z8.

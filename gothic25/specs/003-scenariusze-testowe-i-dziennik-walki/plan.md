@@ -223,7 +223,7 @@ specyfikacji”.
 
 **T5. Katalog wyników** (W4, W6). Opcja `-results <katalog>`. Silnik zapisuje tam dziennik walki,
 zrzuty ekranu i `scenario.json`, a katalog zakłada dopiero przy pierwszym zapisie. Bez tej opcji
-dziennik na żądanie trafia do `fightlog/` w katalogu roboczym.
+pliki trafiają do katalogu roboczego.
 
 **T6. Dziennik walki** (W4, W5, W8). Nowe pliki `game/fightlog.*`. Format JSON Lines: jedno
 zdarzenie w linii, stałe pola, `t` w ms czasu gry.
