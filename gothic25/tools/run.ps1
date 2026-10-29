@@ -1,6 +1,10 @@
 <#
 .SYNOPSIS
   Starts the OpenGothic build with the mod (-game:<ini>).
+.DESCRIPTION
+  With -Dev the engine gets -results with a new gothic25/build/test-runs/<date>-<time>-dev directory:
+  the fight log switched on with "toggle fightlog" in the console and screenshots go there. The
+  directory is created only when something is written. Report: python tools/fightlog.py report <dir>.
 .EXAMPLE
   tools/run.ps1 -Dev
   tools/run.ps1 -Pack -World addonworld.zen -Window
@@ -35,7 +39,11 @@ if(-not (Test-Path (Join-Path $gothic "System\$($manifest.ini)"))) {
 }
 
 $arguments = @('-g', $gothic, "-game:$($manifest.ini)")
-if($Dev)    { $arguments += '-devmode' }
+if($Dev) {
+  $results    = Join-Path $ModBuild ("test-runs\" + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-dev')
+  $arguments += @('-devmode', '-results', $results)
+  Write-Step "Fight log (toggle fightlog) and screenshots: $results"
+}
 if($Window) { $arguments += '-window' }
 if($World)  { $arguments += @('-w', $World) }
 if($EngineArgs) { $arguments += $EngineArgs }

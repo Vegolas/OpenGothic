@@ -113,7 +113,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
       (W2, W6, W7, W10, K2, K4, K8)
 - [x] **Z17** `tools/test.ps1 -Spec <NNN>`: wszystkie scenariusze z `tests/NNN/` po kolei
       z podsumowaniem i kodem wyjścia. Po Z16, ten sam plik. (W12, K10, K11)
-- [ ] **Z18** [P] `tools/run.ps1 -Dev` przekazuje `-results` z nowym katalogiem wyników, żeby dziennik
+- [x] **Z18** [P] `tools/run.ps1 -Dev` przekazuje `-results` z nowym katalogiem wyników, żeby dziennik
       włączony w zwykłej grze deweloperskiej trafiał tam samo. (W4, K12)
 
 ## Faza 5: Scenariusze i proces
