@@ -205,9 +205,11 @@ bool Pose::startAnim(const AnimationSolver& solver, const Animation::Sequence *s
       i.comb     = comb;
       i.bs       = bs;
       onAddLayer(i);
+      ++startCnt;
       return true;
       }
   addLayer(sq,bs,comb,tickCount);
+  ++startCnt;
   return true;
   }
 
@@ -727,6 +729,7 @@ uint64_t Pose::atkTotalTime() const {
 
 const Animation::Sequence* Pose::continueCombo(const AnimationSolver &solver, const Animation::Sequence *sq,
                                                BodyState bs, uint64_t tickCount) {
+  comboStart = ComboStart();
   if(sq==nullptr)
     return nullptr;
 
@@ -747,9 +750,11 @@ const Animation::Sequence* Pose::continueCombo(const AnimationSolver &solver, co
   size_t   id    = combo.len()*2;
 
   if(0==d.defWindow.size() || 0==d.defHitEnd.size()) {
+    const uint32_t cnt = startCnt;
     if(!startAnim(solver,sq,prev->comb,bs,Pose::NoHint,tickCount))
       return nullptr;
     combo = ComboState();
+    comboStart.link = (cnt!=startCnt) ? CL_New : CL_None;
     return sq;
     }
 
@@ -757,6 +762,7 @@ const Animation::Sequence* Pose::continueCombo(const AnimationSolver &solver, co
     // hit -> block
     startAnim(solver,sq,prev->comb,bs,Pose::Force,tickCount);
     combo = ComboState();
+    comboStart.link = CL_Block;
     return sq;
     }
 
@@ -774,16 +780,33 @@ const Animation::Sequence* Pose::continueCombo(const AnimationSolver &solver, co
   if(combo.isBreak())
     return nullptr;
 
+  // link moment inside the window, the window end is clamped to the hit end as in comboInfo
+  uint64_t winBegin = d.defWindow[id+0];
+  uint64_t winEnd   = d.defWindow[id+1];
+  if(combo.len()<d.defHitEnd.size())
+    winEnd = std::min<uint64_t>(winEnd, d.defHitEnd[combo.len()]);
+  comboStart.window = winEnd>winBegin ? int32_t(std::min<uint64_t>((t-winBegin)*100/(winEnd-winBegin), 100)) : 100;
+
   if(prev->seq->name!=sq->name) {
     startAnim(solver,sq,prev->comb,bs,Pose::Force,tickCount);
     combo = ComboState();
+    comboStart.link = CL_Side;
     return sq;
     }
 
-  if(combo.len()<d.defHitEnd.size())
+  if(combo.len()<d.defHitEnd.size()) {
+    if(d.defHitEnd[combo.len()]>t)
+      comboStart.skip = d.defHitEnd[combo.len()] - t;
     prev->sAnim = tickCount - d.defHitEnd[combo.len()];
+    }
   combo.incLen();
+  comboStart.link = CL_Forward;
   return prev->seq;
+  }
+
+void Pose::setComboStart(bool newHit) {
+  comboStart      = ComboStart();
+  comboStart.link = newHit ? CL_New : CL_None;
   }
 
 uint16_t Pose::comboLength() const {

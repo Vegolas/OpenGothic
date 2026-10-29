@@ -47,7 +47,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
 
 ## Faza 3: Silnik, dziennik walki i wykonawca
 
-- [ ] **Z7** [P] `Pose::continueCombo` zapamiętuje wynik ostatniego żądania ciosu: nowy cios,
+- [x] **Z7** [P] `Pose::continueCombo` zapamiętuje wynik ostatniego żądania ciosu: nowy cios,
       połączenie do przodu, połączenie w bok, odrzucone, pominięte ms. Dostęp przez `MdlVisual`.
       Bez użycia w logice walki. (W4)
 - [ ] **Z8** [P] `FightAlgo`: przejściowe pola serii bez zapisu.

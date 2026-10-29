@@ -811,7 +811,11 @@ const Animation::Sequence* MdlVisual::continueCombo(Npc& npc, AnimationSolver::A
     if(auto ret = skInst->continueCombo(solver,sq,bs,npc.world().tickCount()))
       return ret;
     }
-  return startAnimAndGet(npc,a,0,st,wlk);
+  // not a link: the attack starts anew, or the same hit is still playing
+  const uint32_t cnt = skInst->startCount();
+  auto           ret = startAnimAndGet(npc,a,0,st,wlk);
+  skInst->setComboStart(ret!=nullptr && cnt!=skInst->startCount());
+  return ret;
   }
 
 uint16_t MdlVisual::comboLength() const {
