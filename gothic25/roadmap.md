@@ -128,6 +128,97 @@ Oba źródła zgadzają się dla wartości podstawowych. Nie sprawdzaliśmy ich 
   o narzędziach do animacji. Spowolnienie zachwiania przez nakładkę MDS odpada, bo wymagałoby
   kopii oryginalnego `.MAN` (konstytucja, zasada 6).
 
+### Oświetlenie materiałów (PBR)
+
+- **Warstwa:** silnik (shadery oświetlenia, G-buffer, wczytywanie tekstur). Same zasoby nie
+  wystarczą, bo w silniku nie ma członu odbić (specular).
+- **Cel:** metal, mokry kamień i woda połyskują w świetle słońca i pochodni, a materiały różnią się
+  nie tylko kolorem tekstury.
+- Omówione 2026-10-29. Szacunki czasu są zgrubne i zakładają osobę znającą Vulkan i GLSL.
+
+**Stan obecny w OpenGothic**
+
+- Oświetlenie to sam Lambert: słońce w `shader/lighting/direct_light.frag`, światła punktowe
+  w `shader/lighting/light.frag`, otoczenie w `shader/lighting/ambient_light.frag`. Ten sam model
+  powtarza się w wariantach VSM i RTSM oraz w GI, łącznie w około 8 shaderach.
+- G-buffer ma kolor (RGBA8) i normalną (R32U, kodowanie oktaedryczne). Alfa koloru niesie 3 bity
+  flag (`encodeHintBits` w `shader/materials/main.frag`), więc 5 bitów jest wolnych.
+- Otoczenie to tablica irradiancji 3×2 texele, czyli tylko światło rozproszone. Nie ma cubemap
+  ani sond odbić, a odbicia w przestrzeni ekranu (SSR) ma tylko woda.
+- ZenGin daje grupę materiału (`zenkit::MaterialGroup`: METAL, STONE, WOOD, EARTH, WATER, SNOW).
+  Silnik używa jej dziś do fizyki i dźwięku kroków. `DrawBuckets::BucketGpu` ma wolne pole `padd[1]`.
+- Siatki nie mają wektorów stycznych.
+
+**Etapy**
+
+- **A. Odbicia z grupy materiału (około 1–2 tygodni).** Grupa materiału trafia do wolnych bitów
+  alfy G-buffera, a światło bezpośrednie dostaje człon GGX z tabelą roughness i F0 dla każdej grupy.
+  Bez nowych tekstur. Daje odblaski od słońca i świateł oraz mokre powierzchnie w deszczu.
+  To zarazem spike: sprawdza, czy odblaski pasują do malowanego stylu Gothica.
+- **B. Opcjonalne mapy obok tekstur (około 2–4 tygodni).** Normal mapa i mapa roughness/metallic
+  są wczytywane, gdy istnieją, a bez nich działa etap A. Wymaga drugiego zestawu tekstur w ścieżce
+  bindless i zwykłej (`DrawCommands`), nowego załącznika G-buffera (RG8) i stycznych liczonych
+  z pochodnych ekranowych. Wygenerowane TGA nie są kompresowane jak `.TEX` (DXT), więc rośnie
+  zużycie VRAM.
+- **C. Odbicia otoczenia (od tygodni do miesięcy).** Dopiero ten etap sprawia, że metal w cieniu
+  i we wnętrzach nie jest czarny. Bez niego etapy A i B dają odblaski, a nie PBR. Zależy od GI v2.
+- Materiały przezroczyste (ścieżka forward w `shader/materials/main.frag`) zostają przy Lambercie.
+
+**Zależność etapu C od GI v2**
+
+- GI v2 (Try/OpenGothic#945, `-gi 2`) to pamięć podręczna irradiancji w punktach (surfele). Punkt
+  przechowuje samo `vec3 irradiance` (`shader/lighting/surfels/surf_common.glsl`), bez kierunku,
+  więc GI v2 nie daje odbić połyskliwych.
+- Daje za to infrastrukturę: promienie przez RayQuery i odczyt albedo w miejscu trafienia
+  (`surf_pathtrace.comp`). Odbicie z RT to promień z piksela, a w miejscu trafienia albedo, słońce
+  z promieniem cienia i światło pośrednie z pamięci GI.
+- Odbicia chropowatych materiałów (kamień, drewno, skóra) można przybliżyć lokalną irradiancją
+  z GI zamiast nieba, więc niebo nie prześwieca w jaskiniach. Gładki metal nadal wymaga prawdziwych
+  odbić.
+- Punkty powstają z G-buffera, więc istnieją tylko dla widocznych powierzchni. Promień odbicia,
+  który trafia poza ekran, nie ma skąd odczytać światła. Zgłoszenie wymienia pamięć w przestrzeni
+  świata jako nierozwiązany element (pomysł: klucz `(instanceID, primitiveID)`). Od niej zależy,
+  czy etap C zajmie tygodnie, czy miesiące.
+- Stan na 2026-10-29: GI v2 nie jest domyślne, brakuje wielokrotnych odbić światła (ciemne domy
+  i jaskinie), a shadery surfeli wymagają sprzętowego RT (`RAY_QUERY` włączone bezwarunkowo).
+  Try chce nim zastąpić `-gi 1` po poprawie wydajności i jakości.
+- Etapu C nie zaczynamy przed ustabilizowaniem GI v2. Bez RT etap C kończy się na niebie i SSAO.
+
+**Tekstury**
+
+- Normal mapy da się w dużej części wygenerować skryptem (wysokość z jasności), ale nie z tekstur
+  z namalowanym światłem (fałdy ubrań, twarze), bo wychodzi podwójne cieniowanie. Przy 256–512 px
+  w DXT1 skrypt wzmacnia artefakty kompresji. Potrzebne są reguły dla klas tekstur i lista wykluczeń.
+- Roughness nie wynika z jasności piksela. Etap A bierze ją z grupy materiału.
+- Metallic nie da się wygenerować mechanicznie. Tekstury zbroi i broni to atlasy, w których skóra,
+  materiał i blacha leżą na jednym arkuszu, więc potrzebna jest maska per piksel: ręcznie albo
+  segmentacją ML z przeglądem.
+- Tekstury Gothica mają wypalone AO i rozbłyski, które przy odbiciach, SSAO i GI liczą się
+  podwójnie. Usunięcie wypalonego światła (de-lighting) nie jest skryptem i zmienia styl gry.
+- Przed etapem B obejrzeć paczki normal map do renderera GD3D11 dla oryginalnego Gothica: jak
+  powstały i jak wyglądają.
+
+**Zgodność z konstytucją**
+
+- Zasada 3 to największe ryzyko. Od początku 2025 roku 103 commity zmieniły `shader/`, w tym 17
+  główne pliki oświetlenia i materiałów (`main.frag`, `direct_light.frag`, `light.frag`,
+  `ambient_light.frag`, `common.glsl`). Mechanizm jest ogólny, więc przed specyfikacją pytamy Try,
+  czy przyjąłby go do upstreamu. Działa pod ustawieniem grafiki, domyślnie wyłączonym.
+- Zasada 6: mapy wygenerowane z oryginalnych tekstur to dzieła pochodne. Generujemy je u gracza
+  (instalator albo silnik przy wczytywaniu) i ich nie dystrybuujemy. Dzięki temu nie zależymy też
+  od ADR 0002.
+
+**Otwarte**
+
+- Jak gęsto grupy materiałów są ustawione w danych Nocy Kruka. Na siatce świata raczej tak (dźwięki
+  kroków), na obiektach i zbrojach prawdopodobnie głównie UNDEFINED. Do zmierzenia na komputerze
+  z grą przed specyfikacją etapu A.
+- Pytanie do Try w Try/OpenGothic#945: czy pamięć GI w przestrzeni świata będzie dostępna
+  w dowolnym punkcie trafienia, także dla promieni odbić.
+- Czy GI ma uwzględniać metallic (`base*(1-metallic)` w odbiciu rozproszonym). Odczyt trafień
+  nie zna dziś parametrów materiału.
+- Konwencja nazw map leżących obok tekstury.
+
 ## Pomysły do dyskusji
 
 Luźne pomysły na zróżnicowanie rozgrywki, omówione 2026-10-28 pod kątem możliwości silnika.
