@@ -849,6 +849,15 @@ size_t GameScript::symbolsCount() const {
   return vm.symbols().size();
   }
 
+bool GameScript::markInfoKnown(Npc& npc, size_t infoSymbol) {
+  // the info counts as told: an important info won't start, a non-permanent one won't show up again
+  auto info = findInfo(infoSymbol);
+  if(info==nullptr)
+    return false;
+  setNpcInfoKnown(npc.handle(),*info);
+  return true;
+  }
+
 const AiState& GameScript::aiState(ScriptFn id) {
   auto it = aiStates.find(id.ptr);
   if(it!=aiStates.end())

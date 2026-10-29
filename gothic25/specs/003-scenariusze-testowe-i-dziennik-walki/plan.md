@@ -192,6 +192,9 @@ specyfikacji”.
   - Funkcje zewnętrzne są odrzucane z czytelnym komunikatem.
 - `give <instancja przedmiotu> [ile]` i `equip <instancja przedmiotu>`: ekwipunek bohatera
   (`Npc::addItem`, `Npc::useItem`). Potrzebne, bo `CreateInvItems` i `EquipItem` są zewnętrzne.
+- `info told <instancja C_INFO>` (dopisane 2026-10-30): kwestia liczy się jako przegadana
+  z bohaterem (`GameScript::setNpcInfoKnown`), więc ważny dialog, np. `DIA_Xardas_Hello` na starcie
+  nowej gry, nie zaczepia bohatera. Bez tego K1 (tryb ręczny bez wejścia od gracza) nie przejdzie.
 - `save game <slot>`:
   - zastępuje pustą pozycję,
   - przed zapisem sprawdza warunki z `MainWindow::saveGame` (dialog, przerywnik) i zgłasza błąd,

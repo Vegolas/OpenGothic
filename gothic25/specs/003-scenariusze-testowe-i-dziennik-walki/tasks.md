@@ -79,6 +79,10 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
       - `scenario.json` z wynikiem. `-scenario-exit` kończy grę po ostatniej linii i przy błędzie.
 
       Po Z6 i Z9. (W1, W2, W7, K1, K8)
+- [x] **Z22** T3 (dopisane 2026-10-30): polecenie konsoli `info told <instancja C_INFO>`, żeby
+      powitanie Xardasa nie zaczepiało bohatera w testach. Sprawdzenie: scenariusz z modem, który
+      oznacza `DIA_Xardas_Hello`, a po 60 s gry zapisuje grę (zapis w dialogu by się nie udał).
+      (W3, K1)
 - [ ] **Z13** T4: `wait <instancja|hero> <zdarzenie> [n] timeout <s>` na zdarzeniach z dziennika
       (`series`, `series-hit`, `combo`, `down`, `unconscious`, `dead`). Po upływie limitu
       scenariusz zgłasza błąd. (W1, W7, K6, K8)

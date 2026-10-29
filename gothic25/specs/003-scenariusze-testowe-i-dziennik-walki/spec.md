@@ -100,6 +100,8 @@ czyta człowiek albo Claude. Właściciel projektu ogląda tylko to, czego nie d
     w konsoli. Przykład: podniesienie talentu bohatera albo rozkaz ataku NPC na bohatera.
     Funkcji zewnętrznych silnika (np. tworzenie przedmiotów) nie da się tak wywołać, więc:
   - dodanie przedmiotu do ekwipunku bohatera i założenie go (broń, pancerz),
+  - oznaczenie kwestii dialogowej jako już przegadanej z bohaterem, żeby ważny dialog
+    (np. powitanie Xardasa na początku nowej gry) nie zaczepiał bohatera w teście,
   - zapis gry do wskazanego slotu, tak samo jak z menu,
   - zrzut ekranu do pliku PNG, bez okna konsoli na obrazie,
   - zakończenie gry.

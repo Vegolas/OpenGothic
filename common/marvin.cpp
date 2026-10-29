@@ -157,6 +157,7 @@ Marvin::Marvin() {
     {"equip %c",                   C_Equip},
     {"screenshot %s",              C_Screenshot},
     {"toggle fightlog",            C_ToggleFightLog},
+    {"info told %c",               C_InfoTold},
     {"quit",                       C_Quit},
 
     {"toggle gi",                  C_ToggleGI},
@@ -488,6 +489,17 @@ bool Marvin::exec(std::string_view v) {
       FightLog::setEnabled(!FightLog::isEnabled());
       print(FightLog::isEnabled() ? "fightlog on" : "fightlog off");
       return true;
+    case C_InfoTold: {
+      World* world  = Gothic::inst().world();
+      Npc*   player = Gothic::inst().player();
+      if(world==nullptr || player==nullptr)
+        return false;
+      if(!world->script().markInfoKnown(*player, world->script().findSymbolIndex(ret.argv[0]))) {
+        print(string_frm("info told: \"",ret.argv[0],"\" is not a dialog info"));
+        return false;
+        }
+      return true;
+      }
     case C_Quit:
       Tempest::SystemApi::exit();
       return true;

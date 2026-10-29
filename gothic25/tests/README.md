@@ -69,6 +69,7 @@ Nowe polecenia konsoli (działają też ręcznie po `F2`):
 | `save game <slot>` | zapisuje grę do slotu jak z menu; w dialogu albo przerywniku zgłasza błąd |
 | `screenshot <plik>` | zapisuje zrzut sceny 3D do PNG; ścieżka względna trafia do katalogu wyników |
 | `toggle fightlog` | włącza albo wyłącza dziennik walki (w scenariuszu jest włączony od startu) |
+| `info told <kwestia>` | kwestia dialogowa (instancja `C_INFO`) liczy się jako przegadana z bohaterem; `info told DIA_Xardas_Hello` na początku scenariusza zatrzymuje powitanie Xardasa w nowej grze |
 | `quit` | kończy grę |
 
 Argumenty `call` dobierane są według typu parametru funkcji:
@@ -111,6 +112,7 @@ Zdarzenia do czekania liczą się od chwili rozpoczęcia czekania:
 # criterion: 001 K1
 # timeout: 400
 # Paladyn-mistrz atakuje nieśmiertelnego bohatera, przyspieszenie 2.
+info told DIA_Xardas_Hello
 cheat god
 set time 12 0
 goto waypoint NW_CITY_TO_FOREST_01

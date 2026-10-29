@@ -112,6 +112,7 @@ class GameScript final {
     zenkit::DaedalusSymbol*     findSymbol(const size_t s);
     size_t                      findSymbolIndex(std::string_view s);
     size_t                      symbolsCount() const;
+    bool                        markInfoKnown(Npc& npc, size_t infoSymbol);
 
     const AiState&              aiState  (ScriptFn id);
     const zenkit::ISpell&       spellDesc(int32_t splId);
