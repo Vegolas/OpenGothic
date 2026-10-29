@@ -101,7 +101,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
       - Kod wyjścia 1 przy niezaliczonym.
 
       Po Z14, ten sam plik. (W12, K11)
-- [ ] **Z16** [P] `tools/test.ps1` dla jednego scenariusza. PowerShell 5.1, sam ASCII.
+- [x] **Z16** [P] `tools/test.ps1` dla jednego scenariusza. PowerShell 5.1, sam ASCII.
       - Budowa skryptów i paczka (bez `-NoMod`).
       - Profil testowy `gothic25/build/test/profile`: `Gothic.ini` od nowa z kopii ustawień
         użytkownika plus `scaleVideos=-1`, zapisy osobno.
