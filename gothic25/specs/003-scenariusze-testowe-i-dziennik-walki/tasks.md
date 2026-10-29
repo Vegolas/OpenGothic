@@ -15,7 +15,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
 
 ## Faza 1: Przygotowanie
 
-- [ ] **Z1** `gothic25/tests/README.md`: umowa między silnikiem a narzędziami, zanim powstanie kod.
+- [x] **Z1** `gothic25/tests/README.md`: umowa między silnikiem a narzędziami, zanim powstanie kod.
       Spisać:
       - format scenariusza: nagłówki `# criterion:` i `# timeout:`, polecenia konsoli, `wait`
         na czas i na zdarzenie, `quit`, `expect`,
