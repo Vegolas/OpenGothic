@@ -4,15 +4,13 @@
 #include <Tempest/TextCodec>
 #include <cstring>
 #include <cassert>
-
-#if defined(__APPLE__)
 #include <filesystem>
-#endif
 
 #include <algorithm>
 
 #include "utils/installdetect.h"
 #include "utils/fileutil.h"
+#include "utils/fileext.h"
 #include "utils/string_frm.h"
 
 using namespace Tempest;
@@ -73,7 +71,12 @@ CommandLine::CommandLine(int argc, const char** argv) {
       if(i<argc){
         if(std::strcmp(argv[i],"q")==0) {
           saveDef = "save_slot_0.sav";
-          } else {
+          }
+        else if(std::strpbrk(argv[i],"/\\")!=nullptr || FileExt::hasExt(argv[i],"sav")) {
+          // path to a save file
+          saveDef = argv[i];
+          }
+        else {
           saveDef = string_frm("save_slot_",argv[i],".sav");
           }
         }
@@ -184,7 +187,7 @@ CommandLine::CommandLine(int argc, const char** argv) {
   gcutscene = nestedPath({u"_work",u"Data",u"Scripts",   u"content",u"CUTSCENE"},Dir::FT_Dir);
 
   gmod    = TextCodec::toUtf16(mod);
-  if(!gmod.empty())
+  if(!gmod.empty() && !std::filesystem::path(gmod).is_absolute())
     gmod = nestedPath({u"system",gmod.c_str()},Dir::FT_File);
 
   if(!validateGothicPath()) {

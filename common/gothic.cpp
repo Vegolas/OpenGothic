@@ -66,7 +66,26 @@ GameModDescriptor::GameModDescriptor(std::u16string_view mod, std::u16string_vie
     wrldDef = CommandLine::inst().wrldDef;
     }
 
-  detectVdf(vdf, std::u16string(root), [&modvdfs, modFilter](std::u16string_view file) {
+  // mod archives next to the mod .ini (<ini>/../Data), e.g. a mod built outside of the game folder
+  std::vector<std::u16string> modLocal;
+  if(modFile!=nullptr) {
+    std::error_code ec;
+    auto modRoot = std::filesystem::path(mod).parent_path().parent_path() / u"Data";
+    if(std::filesystem::is_directory(modRoot,ec) && !std::filesystem::equivalent(modRoot,root,ec)) {
+      detectVdf(vdf, modRoot.u16string() + u"/", [&modvdfs, &modLocal](std::u16string_view file) {
+        if(std::find(modvdfs.begin(), modvdfs.end(), file)==modvdfs.end())
+          return false;
+        modLocal.emplace_back(file);
+        return true;
+        });
+      }
+    }
+
+  detectVdf(vdf, std::u16string(root), [&modvdfs, &modLocal, modFilter](std::u16string_view file) {
+      if(std::find(modLocal.begin(), modLocal.end(), file)!=modLocal.end()) {
+        // overridden by the archive next to the mod .ini
+        return false;
+        }
       if(FileExt::hasExt(file, u"vdf")) {
         return true;
         }

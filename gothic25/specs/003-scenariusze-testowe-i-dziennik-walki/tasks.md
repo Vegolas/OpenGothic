@@ -27,7 +27,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
 
 ## Faza 2: Silnik, mechanizmy ogólne
 
-- [ ] **Z2** [P] T1: `-game:` przyjmuje ścieżkę bezwzględną.
+- [x] **Z2** [P] T1: `-game:` przyjmuje ścieżkę bezwzględną.
       - Archiwa z `[FILES] VDF` są wtedy szukane w `<katalog .ini>/../Data/**`, a `.mod` o tej
         samej nazwie w folderze gry jest pomijany.
       - `-save` przyjmuje ścieżkę do pliku.
