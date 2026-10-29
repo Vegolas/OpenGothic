@@ -604,6 +604,7 @@ void Npc::onNoHealth(bool death, HitSound sndMask) {
   setOther(lastHit);
   clearAiQueue();
   attachToPoint(nullptr);
+  FightLog::state(*this,death ? "dead" : "unconscious",lastHit);
 
   const char* svm   = death ? "SVM_%d_DEAD" : "SVM_%d_AARGH";
   const char* state = death ? "ZS_Dead"     : "ZS_Unconscious";
@@ -2082,18 +2083,27 @@ bool Npc::setGoToLadder() {
   }
 
 void Npc::commitDamage() {
-  if(currentTarget==nullptr)
+  if(currentTarget==nullptr) {
+    FightLog::miss(*this,nullptr,"no_target",visual.comboLength());
     return;
-  if(!fghAlgo.isInAttackRange(*this,*currentTarget,owner.script()))
+    }
+  if(!fghAlgo.isInAttackRange(*this,*currentTarget,owner.script())) {
+    FightLog::miss(*this,currentTarget,"range",visual.comboLength());
     return;
-  if(!fghAlgo.isInFocusAngle(*this,*currentTarget))
+    }
+  if(!fghAlgo.isInFocusAngle(*this,*currentTarget)) {
+    FightLog::miss(*this,currentTarget,"angle",visual.comboLength());
     return;
+    }
   currentTarget->takeDamage(*this,nullptr);
   }
 
 void Npc::takeDamage(Npc &other, const Bullet* b) {
-  if(isDown())
+  if(isDown()) {
+    if(b==nullptr)
+      FightLog::miss(other,this,"down",other.visual.comboLength());
     return;
+    }
 
   assert(b==nullptr || !b->isSpell());
   const auto& pose    = visual.pose();
@@ -2110,6 +2120,7 @@ void Npc::takeDamage(Npc &other, const Bullet* b) {
   if(!(isBlock || isJumpb) || b!=nullptr) {
     takeDamage(other,b,COLL_DOEVERYTHING,0,false);
     } else {
+    FightLog::defend(other,*this,isJumpb,other.visual.comboLength());
     if(invent.activeWeapon()!=nullptr)
       visual.emitBlockEffect(*this,other);
     }
@@ -2142,6 +2153,9 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
   SpellCategory            splCat     = SpellCategory::SPELL_BAD;
   const bool               dontKill   = ((b==nullptr && splId==0) || (bMask & COLL_DONTKILL)) && (!isSwim());
   int32_t                  damageType = DamageCalculator::damageTypeMask(other);
+  const bool               melee      = (b==nullptr && !isSpell);
+  const int32_t            hpBefore   = attribute(ATR_HITPOINTS);
+  bool                     stagger    = false;
 
   if(isSpell) {
     auto& spl  = owner.script().spellDesc(splId);
@@ -2164,6 +2178,8 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
 
   if(isDown()) {
     onNoHealth(dontKill,HS_NoSound);
+    if(melee)
+      FightLog::hit(other,*this,other.visual.comboLength(),hitResult.value,hpBefore,false);
     return;
     }
 
@@ -2178,13 +2194,16 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
         visual.interrupt(); // TODO: put down in pipeline, at Pose and merge with setAnimAngGet
         }
 
-      if((damageType & (1<<zenkit::DamageType::FLY))==0)
+      if((damageType & (1<<zenkit::DamageType::FLY))==0) {
         setAnimAngGet(lastHitType=='A' ? Anim::StumbleA  : Anim::StumbleB);
+        stagger = true;
+        }
       }
     }
 
   // throw enemy
-  if(hitResult.hasHit && (damageType & (1<<zenkit::DamageType::FLY))) {
+  const bool fly = (hitResult.hasHit && (damageType & (1<<zenkit::DamageType::FLY)));
+  if(fly) {
     mvAlgo.accessDamFly(x-other.x, z-other.z, lastHitType);
     }
 
@@ -2207,6 +2226,14 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
         }
       }
     }
+
+  if(melee) {
+    FightLog::hit(other,*this,other.visual.comboLength(),hitResult.value,hpBefore,stagger);
+    if(stagger)
+      FightLog::state(*this,"stumble",&other);
+    if(fly)
+      FightLog::state(*this,"fly",&other);
+    }
   }
 
 void Npc::takeFallDamage(const Vec3& fallSpeed) {
@@ -2221,6 +2248,7 @@ void Npc::takeFallDamage(const Vec3& fallSpeed) {
         lastHitType='A'; else
         lastHitType='B';
       setAnim(lastHitType=='A' ? Anim::FallenA : Anim::FallenB);
+      FightLog::state(*this,"lie",nullptr);
       }
     }
   auto dmg = DamageCalculator::damageFall(*this,fallSpeed.length());

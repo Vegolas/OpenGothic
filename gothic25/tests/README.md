@@ -195,11 +195,14 @@ Zapisywany w chwili, w której cios mógł trafić (ramka trafienia animacji).
 | `n` | int | numer ciosu atakującego (pole `n` z `attack`) |
 | `tgt`, `tgt_id` | string, int | cel; `null` przy pudle bez celu |
 | `res` | string | `hit`, `block`, `jumpback`, `miss` |
-| `why` | string | przy `miss`: `no_target`, `range`, `angle`; inaczej `null` |
+| `why` | string | przy `miss`: `no_target`, `range`, `angle`, `down` (cel już leżał); inaczej `null` |
 | `combo` | int | etap combo do przodu ciosu, od 1 |
 | `dmg` | int | przy `hit`: obrażenia wyliczone przez grę; inaczej `0` |
-| `hp_before`, `hp_after` | int | przy `hit`: życie celu przed i po (różni się od `dmg` np. przy `cheat god`) |
+| `hp_before`, `hp_after` | int | przy `hit`: życie celu przed i po (różni się od `dmg` np. przy `cheat god`); inaczej `0` |
 | `stagger` | bool | czy cel się zachwiał |
+
+Gdy cios powala cel, zdarzenie `state` z `unconscious` albo `dead` trafia do dziennika przed
+`result` tego ciosu. Zachwianie i odrzut (`stumble`, `fly`) są zapisywane po nim.
 
 ### `break`: przerwanie serii albo combo
 

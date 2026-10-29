@@ -265,6 +265,70 @@ void FightLog::attack(Npc& npc, AnimationSolver::Anim anim, BodyState bs, const 
   write(j.done());
   }
 
+static void result(Npc& npc, Npc* tgt, std::string_view res, std::string_view why, uint16_t comboLen,
+                   int32_t dmg, int32_t hpBefore, int32_t hpAfter, bool stagger) {
+  switch(npc.weaponState()) {
+    case WeaponState::Bow:
+    case WeaponState::CBow:
+    case WeaponState::Mage:
+      // melee only
+      return;
+    default:
+      break;
+    }
+
+  auto& c = character(npc);
+  Json  j(npc.world().tickCount(),"result");
+  who(j,npc,c);
+  j.num("n",c.attacks);
+  if(tgt!=nullptr) {
+    auto& t = character(*tgt);
+    j.str("tgt",instanceName(*tgt)).num("tgt_id",t.id);
+    } else {
+    j.null("tgt").null("tgt_id");
+    }
+  j.str("res",res);
+  if(!why.empty())
+    j.str("why",why); else
+    j.null("why");
+  j.num("combo",comboLen+1).num("dmg",dmg).num("hp_before",hpBefore).num("hp_after",hpAfter).flag("stagger",stagger);
+  write(j.done());
+  }
+
+void FightLog::miss(Npc& npc, Npc* tgt, std::string_view why, uint16_t comboLen) {
+  if(!enabled)
+    return;
+  result(npc,tgt,"miss",why,comboLen,0,0,0,false);
+  }
+
+void FightLog::defend(Npc& npc, Npc& tgt, bool jumpBack, uint16_t comboLen) {
+  if(!enabled)
+    return;
+  result(npc,&tgt,jumpBack ? "jumpback" : "block","",comboLen,0,0,0,false);
+  }
+
+void FightLog::hit(Npc& npc, Npc& tgt, uint16_t comboLen, int32_t dmg, int32_t hpBefore, bool stagger) {
+  if(!enabled)
+    return;
+  result(npc,&tgt,"hit","",comboLen,dmg,hpBefore,tgt.attribute(ATR_HITPOINTS),stagger);
+  }
+
+void FightLog::state(Npc& npc, std::string_view st, Npc* by) {
+  if(!enabled)
+    return;
+  auto& c = character(npc);
+  Json  j(npc.world().tickCount(),"state");
+  who(j,npc,c);
+  j.str("state",st);
+  if(by!=nullptr) {
+    auto& b = character(*by);
+    j.str("by",instanceName(*by)).num("by_id",b.id);
+    } else {
+    j.null("by").null("by_id");
+    }
+  write(j.done());
+  }
+
 void FightLog::marker(std::string_view what, int32_t line, std::string_view text, std::string_view file) {
   if(!enabled)
     return;

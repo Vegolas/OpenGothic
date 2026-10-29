@@ -62,7 +62,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
       - Tylko z `-devmode`. Przy wyłączonym dzienniku jedno sprawdzenie flagi.
 
       Po Z7 i Z8. (W4, W8, K12)
-- [ ] **Z10** T6: zdarzenia `result` i `state`.
+- [x] **Z10** T6: zdarzenia `result` i `state`.
       - `result`: pudło z przyczyną w `commitDamage`, blok i odskok w `takeDamage(Npc&, Bullet*)`,
         trafienie z obrażeniami i życiem przed i po.
       - `state`: zachwianie, odrzut, nieprzytomność, śmierć. (W4)
