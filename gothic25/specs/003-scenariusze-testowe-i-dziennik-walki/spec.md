@@ -1,6 +1,6 @@
 # 003: Scenariusze testowe i dziennik walki
 
-- **Status:** Zatwierdzona
+- **Status:** W realizacji
 - **Utworzono:** 2026-10-29
 - **Warstwa (wstępnie):** silnik i narzędzia <!-- zasoby / skrypty / silnik -->
 
@@ -86,7 +86,7 @@ czyta człowiek albo Claude. Właściciel projektu ogląda tylko to, czego nie d
   niezacommitowanych. Gra wczytuje go z katalogu roboczego repozytorium, bez instalacji. Folder gry
   pozostaje nietknięty, a zainstalowany tam mod (jeśli jest) nie bierze udziału w teście.
 
-  W trybie automatycznym gra działa w małym oknie (ok. 1280×720) z dźwiękiem, żeby dało się dalej
+  W trybie automatycznym gra działa w małym oknie (800×600) z dźwiękiem, żeby dało się dalej
   pracować przy komputerze. Tryb ręczny używa zwykłych ustawień gry. Ustawienia z testu nie
   przechodzą do zwykłej gry: po teście gra uruchamia się z takimi ustawieniami jak przed nim.
 
@@ -97,7 +97,9 @@ czyta człowiek albo Claude. Właściciel projektu ogląda tylko to, czego nie d
   - wywołanie funkcji ze skryptów gry z argumentami: liczbami, nazwami stałych ze skryptów,
     tekstami i postaciami. Postać wskazuje się jako bohatera albo nazwą instancji. Gdy scenariusz
     wstawił kilka postaci tej samej instancji, chodzi o ostatnio wstawioną. Wynik albo błąd widać
-    w konsoli. Przykład: podniesienie talentu bohatera albo rozkaz ataku NPC na bohatera,
+    w konsoli. Przykład: podniesienie talentu bohatera albo rozkaz ataku NPC na bohatera.
+    Funkcji zewnętrznych silnika (np. tworzenie przedmiotów) nie da się tak wywołać, więc:
+  - dodanie przedmiotu do ekwipunku bohatera i założenie go (broń, pancerz),
   - zapis gry do wskazanego slotu, tak samo jak z menu,
   - zrzut ekranu do pliku PNG, bez okna konsoli na obrazie,
   - zakończenie gry.
