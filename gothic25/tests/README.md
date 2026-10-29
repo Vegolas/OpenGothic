@@ -278,7 +278,13 @@ Miary liczą się z całego dziennika przebiegu:
 | `state.<stan>` | liczba zdarzeń `state` postaci |
 
 Gdy miara nie ma danych (np. `skip.avg_ms` bez połączeń), oczekiwanie jest niezaliczone
-z wartością „brak danych”.
+z wartością „brak danych”. Liczniki (np. `series.triple`, `break.hit`) mają wtedy wartość 0.
+Oczekiwanie wobec postaci, której nie ma w dzienniku, jest niezaliczone, tak samo jak nieznana
+miara albo operator. Wychwytuje to literówki w scenariuszu.
+
+Oczekiwania sprawdza `tools/fightlog.py check <katalog przebiegu>`. Dopisuje je do `report.md`
+i kończy się kodem 1, gdy któreś jest niezaliczone albo scenariusz nie zakończył się wynikiem `ok`.
+Cały przebieg jest zaliczony tylko wtedy, gdy oba warunki są spełnione.
 
 ## Uruchamianie
 

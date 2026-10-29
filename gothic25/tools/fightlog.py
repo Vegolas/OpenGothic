@@ -4,14 +4,19 @@
 The log is JSON Lines (fightlog.jsonl). Script strings (names) keep their legacy codepage bytes
 as \\u00XX escapes; they are decoded here with --codepage (cp1250 by default).
 
+"check" also evaluates the "expect <who> <metric> <op> <value>" lines of the scenario, adds them to
+the report and exits with 1 when an expectation or the scenario itself failed.
+
 Usage:
   fightlog.py report RUN_DIR|FIGHTLOG [--out REPORT] [--codepage CP] [--constants AI_CONSTANTS_D]
+  fightlog.py check  RUN_DIR|FIGHTLOG [--scenario FILE] [--out REPORT] [--codepage CP] [--constants AI_CONSTANTS_D]
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import operator
 import re
 import statistics
 import sys
@@ -25,6 +30,14 @@ AI_CONSTANTS = MOD_ROOT / "content" / "Scripts" / "Content" / "AI" / "AI_Intern"
 SERIES_KINDS = ["attack", "side", "front", "triple", "whirl", "master", "combo"]
 RESULTS = ["hit", "block", "jumpback", "miss"]
 DOWN_STATES = ["stumble", "fly", "lie", "unconscious", "dead"]
+
+# metric names of tests/README.md; counters are 0 when nothing happened, statistics have no data then
+KNOWN_METRIC = re.compile(
+    r"^(attacks|attacks\.tgt_down|res\.(hit|block|jumpback|miss)|res\.miss\.\w+|taken\.(hit|block|jumpback)"
+    r"|combo\.max|combo\.count\.\d+|series\.(attack|side|front|triple|whirl|master|combo|multi)|break\.\w+"
+    r"|skip\.(max_ms|avg_ms)|link\.(min_pct|avg_pct)|damage\.stage\.\d+\.(avg|count)|state\.\w+)$")
+STATISTIC = re.compile(r"^(combo\.max|skip\.\w+|link\.\w+|damage\.stage\.\d+\.avg)$")
+OPS = {"==": operator.eq, "!=": operator.ne, "<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge}
 
 
 def decode(text: str | None, codepage: str) -> str | None:
@@ -176,6 +189,86 @@ def metrics(events: list[dict], ids: set[int]) -> dict[str, float]:
     return dict(m)
 
 
+@dataclass
+class Expectation:
+    line: int
+    text: str
+    who: str = ""
+    metric: str = ""
+    op: str = ""
+    value: float = 0
+    actual: float | None = None
+    ok: bool = False
+    note: str = ""
+
+
+def parse_expectations(path: Path) -> list[Expectation]:
+    ret = []
+    for num, line in enumerate(path.read_text(encoding="utf-8-sig").splitlines(), 1):
+        parts = line.split()
+        if not parts or parts[0].lower() != "expect":
+            continue
+        exp = Expectation(num, line.strip())
+        try:
+            _, exp.who, exp.metric, exp.op, value = parts
+            exp.value = float(value)
+        except ValueError:
+            exp.note = "niepoprawny zapis: expect <kto> <miara> <op> <wartość>"
+        if not exp.note and exp.op not in OPS:
+            exp.note = f"nieznany operator {exp.op}"
+        ret.append(exp)
+    return ret
+
+
+def evaluate(exp: Expectation, events: list[dict], chars: dict[int, Character]) -> None:
+    if exp.note:
+        return
+    if not KNOWN_METRIC.match(exp.metric):
+        exp.note = "nieznana miara"
+        return
+    if exp.who.lower() == "hero":
+        ids = {c.id for c in chars.values() if c.player}
+    else:
+        ids = {c.id for c in chars.values() if c.who.lower() == exp.who.lower()}
+    if not ids:
+        exp.note = "brak tej postaci w dzienniku"
+        return
+    value = metrics(events, ids).get(exp.metric)
+    if value is None:
+        if STATISTIC.match(exp.metric):
+            exp.note = "brak danych"
+            return
+        value = 0
+    exp.actual = value
+    exp.ok = OPS[exp.op](value, exp.value)
+
+
+def expectations_section(exps: list[Expectation], status: dict | None, scenario: Path) -> tuple[str, bool]:
+    passed = sum(e.ok for e in exps)
+    scenario_ok = status is None or status.get("result") == "ok"
+    ok = scenario_ok and passed == len(exps)
+    out = ["## Oczekiwania", ""]
+    out.append(f"- Scenariusz: `{scenario}`")
+    if not scenario_ok:
+        out.append(f"- Scenariusz nie zakończył się poprawnie: {status.get('result')}")
+    if exps:
+        out.append(f"- Zaliczone: {passed} z {len(exps)}")
+        out.append("")
+        out.append("| Linia | Kto | Miara | Oczekiwanie | Wartość | Wynik |")
+        out.append("|---|---|---|---|---|---|")
+        for e in exps:
+            result   = "zaliczone" if e.ok else "**niezaliczone**"
+            expected = f"{e.op} {fmt(e.value)}" if e.op in OPS else "–"
+            actual   = fmt(e.actual) if e.actual is not None else e.note
+            out.append(f"| {e.line} | {e.who or '–'} | {e.metric or '–'} | {expected} | {actual} | {result} |")
+    else:
+        out.append("- Scenariusz nie ma oczekiwań.")
+    out.append("")
+    out.append(f"**Wynik przebiegu: {'zaliczony' if ok else 'niezaliczony'}**")
+    out.append("")
+    return "\n".join(out), ok
+
+
 def fmt(v: float | None) -> str:
     if v is None:
         return "–"
@@ -290,16 +383,57 @@ def resolve(path: Path) -> tuple[Path, Path | None]:
     return path, None
 
 
-def cmd_report(args) -> None:
+def load_run(args) -> tuple[Path, list[dict], dict | None]:
     log, status_file = resolve(Path(args.path))
     if not log.is_file():
         raise SystemExit(f"no fight log: {log}")
     events = load_log(log, args.codepage)
     status = json.loads(status_file.read_text(encoding="utf-8")) if status_file else None
+    return log, events, status
+
+
+def find_scenario(args, log: Path, events: list[dict]) -> Path:
+    """--scenario, the copy in the run directory (tools/test.ps1), or the file the engine ran."""
+    if args.scenario:
+        return Path(args.scenario)
+    copy = log.with_name("scenario.txt")
+    if copy.is_file():
+        return copy
+    start = next((e for e in events if e["ev"] == "marker" and e["what"] == "scenario_start"), None)
+    if start is not None and start.get("text") and Path(start["text"]).is_file():
+        return Path(start["text"])
+    raise SystemExit("no scenario file: pass --scenario")
+
+
+def cmd_report(args) -> None:
+    log, events, status = load_run(args)
     text = report(events, load_tactics(Path(args.constants)), log, status)
     out = Path(args.out) if args.out else log.with_name("report.md")
     out.write_text(text + "\n", encoding="utf-8")
     print(f"report: {out}")
+
+
+def cmd_check(args) -> int:
+    log, events, status = load_run(args)
+    scenario = find_scenario(args, log, events)
+    exps = parse_expectations(scenario)
+    chars = characters(events)
+    for e in exps:
+        evaluate(e, events, chars)
+
+    section, ok = expectations_section(exps, status, scenario)
+    text = report(events, load_tactics(Path(args.constants)), log, status)
+    out = Path(args.out) if args.out else log.with_name("report.md")
+    out.write_text(text + "\n" + section, encoding="utf-8")
+
+    for e in exps:
+        actual = fmt(e.actual) if e.actual is not None else e.note
+        print(f"{'ok  ' if e.ok else 'FAIL'} line {e.line}: {e.who} {e.metric} {e.op} {fmt(e.value)} (actual: {actual})")
+    if status is not None and status.get("result") != "ok":
+        print(f"FAIL scenario: {status.get('result')} at line {status.get('line')}: {status.get('message')}")
+    print(f"report: {out}")
+    print("result: " + ("passed" if ok else "FAILED"))
+    return 0 if ok else 1
 
 
 def main() -> None:
@@ -313,8 +447,16 @@ def main() -> None:
     p.add_argument("--constants", default=str(AI_CONSTANTS), help="AI_Constants.d with the FAI_* tactic names")
     p.set_defaults(func=cmd_report)
 
+    p = sub.add_parser("check", help="report plus the expectations of the scenario; exit code 1 on failure")
+    p.add_argument("path", help="run directory with fightlog.jsonl, or the fight log itself")
+    p.add_argument("--scenario", help="scenario file (default: scenario.txt of the run, or the file the engine ran)")
+    p.add_argument("--out", help="report file (default: report.md next to the log)")
+    p.add_argument("--codepage", default="cp1250", help="codepage of script strings (default: cp1250)")
+    p.add_argument("--constants", default=str(AI_CONSTANTS), help="AI_Constants.d with the FAI_* tactic names")
+    p.set_defaults(func=cmd_check)
+
     args = parser.parse_args()
-    args.func(args)
+    return args.func(args)
 
 
 if __name__ == "__main__":

@@ -96,7 +96,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
       - przerwania według przyczyny, bloki, odskoki, trafienia, obrażenia według etapu combo.
 
       (W5, K2, K3)
-- [ ] **Z15** `tools/fightlog.py check`: oczekiwania `expect` ze scenariusza.
+- [x] **Z15** `tools/fightlog.py check`: oczekiwania `expect` ze scenariusza.
       - Wynik każdego oczekiwania (zaliczone albo niezaliczone) z wartością faktyczną, w raporcie.
       - Kod wyjścia 1 przy niezaliczonym.
 
