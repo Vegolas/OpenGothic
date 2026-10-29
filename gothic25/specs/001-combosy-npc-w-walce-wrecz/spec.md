@@ -238,3 +238,33 @@ używa we własnej kopii.
 z `Pal_230_Ritter`, zapis z menu. Plik lokalny, poza gitem:
 `gothic25/build/testsaves/001-K9-v0.1.0-pal230.sav`
 (SHA-256 `a764cbba9a7a359bcc2774bf04c21657a36e23d9982ddea7ce578306ad3e1423`).
+
+**Wstępne testy w grze (Mateusz Tomanek, 2026-10-29):** to nie jest przejście kroków K, tylko
+pierwsze wrażenie. Na commicie `59b5222a` combosy działały, ale animacje wyglądały na przyspieszone
+(zob. P6). Po zmianie tempa (commit `f4342807`) tempo wyglądało naturalnie, a log był czysty.
+
+**Sprawdzenia bez gry (Claude, 2026-10-29, commit `834d85ae`, mod 0.2.0):**
+
+- Silnik buduje się bez nowych ostrzeżeń, a skrypty kompilują się przez `gdc` 0.9.5.
+- `Gothic25.mod` (`vdf.py list`) zawiera `FIGHT.DAT` i `GOTHIC.DAT`. Spakowany `FIGHT.DAT` ma
+  `C_FIGHTAI.MOVE` jako `int[12]`, klasę `C_FIGHTAI_COMBO` i instancje `FA_COMBO_` dla stylów 4, 42,
+  3, 12 i 13. Dla tchórza (2) instancji nie ma (W3).
+- Oryginalny `FIGHT.DAT` z gry (`_work/Data/Scripts/_compiled`), z którego silnik korzysta bez moda,
+  nie ma żadnej instancji `FA_COMBO_`, ma `C_FIGHTAI.MOVE` jako `int[6]`, a `FA_MY_W_COMBO_*` są
+  puste. Nowy kod jest więc bez moda wyłączony. To wsparcie dla W9, ale nie zastępuje K8 w grze.
+- Porównanie skompilowanych skryptów z wersją sprzed zmian: w `GOTHIC.DAT` jedyna zmiana kodu poza
+  przesuniętymi numerami symboli to styl walki elity orków. W `FIGHT.DAT` zmieniły się tylko
+  style 3, 4, 12, 13 i 42.
+
+**Test ogólny w grze (Mateusz Tomanek, 2026-10-29, mod 0.2.0):** nowa gra, kilku wstawionych
+przeciwników, ich combosy działały. Nie było to przejście kroków K, więc kryteria są oznaczone
+najwyżej jako częściowo sprawdzone. Kod silnika i skryptów w 0.2.0 (`834d85ae`) jest taki sam jak
+w `f4342807`, a zmieniły się tylko `mod.json`, `CHANGELOG.md` i `tasks.md`.
+
+| K | Wynik | Wersja | Kto |
+|---|---|---|---|
+| K1, K2, K4, K10, K12 | częściowo: combosy kilku przeciwników działały, bez obserwacji według kroków (które serie, długość combo, który NPC) | 0.2.0 (`834d85ae`) | Mateusz Tomanek |
+| K3 | częściowo: tempo combo oceniane w grze jako naturalne po zmianie z P6, bez porównania z combo bohatera przy `ztimer multiplyer 0.3` | `f4342807` | Mateusz Tomanek |
+| K5, K6, K7, K11 | nie sprawdzone | | |
+| K8 | nie sprawdzone w grze (dane bez moda sprawdzone wyżej) | | |
+| K9 | nie sprawdzone: brak nowego zapisu z 0.2.0, zapis z 0.1.0 nie był wczytywany | | |
