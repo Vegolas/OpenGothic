@@ -265,10 +265,11 @@ Miary liczą się z całego dziennika przebiegu:
 | `attacks` | liczba ciosów (`attack`) |
 | `attacks.tgt_down` | ciosy w leżący cel |
 | `res.<hit\|block\|jumpback\|miss>` | wyniki ciosów postaci |
+| `res.miss.<why>` | pudła z daną przyczyną (`no_target`, `range`, `angle`, `down`) |
 | `taken.<hit\|block\|jumpback>` | wyniki ciosów wymierzonych w postać |
 | `combo.max` | najdłuższe combo do przodu (najwyższe `combo`) |
 | `combo.count.<N>` | liczba combo do przodu, które skończyły się dokładnie na `N` ciosach |
-| `series.<rodzaj>` | liczba rozpoczętych serii danego rodzaju (`attack`, `side`, `front`, `triple`, `whirl`, `master`, `combo`) |
+| `series.<rodzaj>` | liczba serii danego rodzaju (`attack`, `side`, `front`, `triple`, `whirl`, `master`), liczona po różnych `series_id`; `series.combo` to liczba ciosów z kontynuacji combo |
 | `series.multi` | liczba rozpoczętych serii z więcej niż jednym ciosem |
 | `break.<why>` | liczba przerwań z daną przyczyną |
 | `skip.max_ms`, `skip.avg_ms` | pominięte ms animacji przy połączeniach do przodu |

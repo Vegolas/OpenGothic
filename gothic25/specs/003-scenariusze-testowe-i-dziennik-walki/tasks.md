@@ -89,7 +89,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
 
 ## Faza 4: Narzędzia
 
-- [ ] **Z14** [P] `tools/fightlog.py report <katalog>`: `report.md` z podsumowaniem każdej postaci
+- [x] **Z14** [P] `tools/fightlog.py report <katalog>`: `report.md` z podsumowaniem każdej postaci
       i nazwami stylów walki z `AI_Constants.d`. Python 3, biblioteka standardowa.
       - ciosy, serie według rodzaju, rozkład i najdłuższe combo do przodu,
       - moment połączenia i pominięte ms,
