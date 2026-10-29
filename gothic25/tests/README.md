@@ -48,6 +48,16 @@ Nagłówek w komentarzach na początku pliku:
 - `criterion`: kryterium, które scenariusz sprawdza. Może wystąpić kilka razy.
 - `timeout`: limit czasu rzeczywistego całego przebiegu w sekundach. Domyślnie 600. Po nim
   `test.ps1` zamyka grę i zgłasza niepowodzenie.
+- `save`: zapis wczytywany na starcie zamiast nowej gry, ścieżka względem `gothic25/`
+  (np. `build/testsaves/001-K9-v0.1.0-pal230.sav` albo `build/test/profile/save_slot_1.sav`,
+  zapis zrobiony przez wcześniejszy scenariusz zestawu).
+- `mod: off`: scenariusz uruchamia się bez moda (np. „bez moda bez zmian”).
+
+`test.ps1 -Spec NNN` uruchamia scenariusze z `tests/NNN/` w kolejności nazw plików. Scenariusz,
+który wczytuje zapis innego scenariusza, musi mieć nazwę dalej w kolejności.
+
+`cheat god`, `ztimer multiplyer` i dziennik walki nie są częścią zapisu gry. Scenariusz, który
+wczytuje zapis, włącza je od nowa.
 
 Polecenia wykonują się po kolei, gdy świat jest już wczytany (nowa gra albo zapis wskazany przy
 starcie). Błąd w linii (nieznane polecenie, instancja, funkcja, waypoint, zły argument) kończy
