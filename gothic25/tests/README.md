@@ -79,9 +79,10 @@ Argumenty `call` dobierane są według typu parametru funkcji:
 - `string`: jedno słowo,
 - `C_NPC`: `hero` albo nazwa instancji postaci.
 
-Postać wskazana nazwą instancji to ostatnio wstawiona postać tej instancji, a gdy scenariusz żadnej
-nie wstawił, pierwsza ze świata. Liczba argumentów musi się zgadzać z funkcją. Funkcji zewnętrznych
-silnika (np. `CreateInvItems`) nie da się wywołać. Do ekwipunku służą `give` i `equip`.
+Postać wskazana nazwą instancji to ostatnio dodana do świata postać tej instancji, więc po `insert`
+to właśnie wstawiona. Liczba argumentów musi się zgadzać z funkcją. Na czas wywołania `self` to
+bohater, a `other` to jego cel (bez celu też bohater). Funkcji zewnętrznych silnika
+(np. `CreateInvItems`) nie da się wywołać. Do ekwipunku służą `give` i `equip`.
 
 ### Polecenia sterujące
 

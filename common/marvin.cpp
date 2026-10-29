@@ -55,6 +55,7 @@ Marvin::Marvin() {
    %s - any string
    %d - integer
    %f - floating point number
+   %* - rest of the input, may be empty
    */
   // http://forenarchiv.worldofplayers.de/thread.php?id=85859&post=45890#45890
   cmd = std::vector<Cmd>{
@@ -62,6 +63,7 @@ Marvin::Marvin() {
     {"p %v",                       C_PrintVar},
     // similar to "Marvin Helper" https://steamcommunity.com/sharedfiles/filedetails/?id=2847617433
     {"set var %v %s",              C_SetVar},
+    {"call %v %*",                 C_Call},
 
     // animation
     {"play ani %s",                C_PlayAni},
@@ -159,6 +161,12 @@ Marvin::CmdVal Marvin::isMatch(std::string_view inp, const Cmd& cmd) const {
   int              argc = 0;
 
   while(!ref.empty()) {
+    if(ref=="%*") {
+      if(argc<4)
+        ret.argv[argc] = inp;
+      break;
+      }
+
     size_t wr = ref.find(' ');
     if(wr==std::string_view::npos)
       wr = ref.size();
@@ -199,6 +207,9 @@ Marvin::CmdVal Marvin::isMatch(std::string_view inp, const Cmd& cmd) const {
         return C_Extra;
       break;
       }
+
+    if(inp.size()==winp.size() && ref.substr(wr+1)=="%*")
+      break;
 
     if(inp.size()==wr)
       return C_Incomplete;
@@ -457,6 +468,14 @@ bool Marvin::exec(std::string_view v) {
       return setVariable(world, ret.argv[0], ret.argv[1]);
       }
 
+    case C_Call: {
+      World* world  = Gothic::inst().world();
+      Npc*   player = Gothic::inst().player();
+      if(world==nullptr || player==nullptr)
+        return false;
+      return callFunction(*world, ret.argv[0], ret.argv[1]);
+      }
+
     case C_PlayAni: {
       Npc*   player = Gothic::inst().player();
       if(player==nullptr)
@@ -607,6 +626,177 @@ bool Marvin::goToVob(World& world, Npc& player, Camera& c, std::string_view name
   player.updateTransform();
   c.reset();
   return true;
+  }
+
+bool Marvin::callFunction(World& world, std::string_view name, std::string_view args) {
+  auto& sc = world.script();
+  auto& vm = sc.getVm();
+  auto* fn = sc.findSymbol(name);
+  if(fn==nullptr || fn->type()!=zenkit::DaedalusDataType::FUNCTION) {
+    print(string_frm("call: \"",name,"\" is not a script function"));
+    return false;
+    }
+  if(fn->is_external()) {
+    // externals are dispatched only by the BE opcode
+    print(string_frm("call: \"",name,"\" is an engine external"));
+    return false;
+    }
+
+  std::vector<std::string_view> argv;
+  for(size_t i=0; i<args.size();) {
+    size_t e = args.find(' ',i);
+    if(e==std::string_view::npos)
+      e = args.size();
+    if(e>i)
+      argv.push_back(args.substr(i,e-i));
+    i = e+1;
+    }
+
+  auto params = vm.find_parameters_for_function(fn);
+  if(params.size()!=argv.size()) {
+    print(string_frm("call: ",fn->name()," expects ",params.size()," arguments, given ",argv.size()));
+    return false;
+    }
+
+  struct Arg {
+    int32_t                                   i = 0;
+    float                                     f = 0;
+    std::shared_ptr<zenkit::DaedalusInstance> inst;
+    };
+  std::vector<Arg> val(params.size());
+  for(size_t i=0; i<params.size(); ++i) {
+    switch(params[i].type()) {
+      case zenkit::DaedalusDataType::INT:
+      case zenkit::DaedalusDataType::FUNCTION:
+        if(!intArgument(world, argv[i], val[i].i)) {
+          print(string_frm("call: \"",argv[i],"\" is not a number, constant or instance"));
+          return false;
+          }
+        break;
+      case zenkit::DaedalusDataType::FLOAT: {
+        auto err = std::from_chars(argv[i].data(), argv[i].data()+argv[i].size(), val[i].f).ec;
+        if(err!=std::errc()) {
+          print(string_frm("call: \"",argv[i],"\" is not a number"));
+          return false;
+          }
+        break;
+        }
+      case zenkit::DaedalusDataType::STRING:
+        break;
+      case zenkit::DaedalusDataType::INSTANCE: {
+        auto npc = findNpc(world, argv[i]);
+        if(npc==nullptr) {
+          print(string_frm("call: no npc \"",argv[i],"\""));
+          return false;
+          }
+        val[i].inst = npc->handlePtr();
+        break;
+        }
+      default:
+        print(string_frm("call: unsupported parameter ",params[i].name()));
+        return false;
+      }
+    }
+
+  struct ScopeVar final {
+    ScopeVar(zenkit::DaedalusSymbol* sym, const std::shared_ptr<zenkit::DaedalusInstance>& h) : sym(sym) {
+      if(sym==nullptr)
+        return;
+      prev = sym->get_instance();
+      sym->set_instance(h);
+      }
+    ~ScopeVar() {
+      if(sym!=nullptr)
+        sym->set_instance(prev);
+      }
+    zenkit::DaedalusSymbol*                   sym = nullptr;
+    std::shared_ptr<zenkit::DaedalusInstance> prev;
+    };
+
+  Npc*     player = Gothic::inst().player();
+  Npc*     target = player->target();
+  ScopeVar self (vm.global_self(),  player->handlePtr());
+  ScopeVar other(vm.global_other(), target!=nullptr ? target->handlePtr() : player->handlePtr());
+
+  try {
+    for(size_t i=0; i<params.size(); ++i) {
+      switch(params[i].type()) {
+        case zenkit::DaedalusDataType::INT:
+        case zenkit::DaedalusDataType::FUNCTION:
+          vm.push_int(val[i].i);
+          break;
+        case zenkit::DaedalusDataType::FLOAT:
+          vm.push_float(val[i].f);
+          break;
+        case zenkit::DaedalusDataType::STRING:
+          vm.push_string(argv[i]);
+          break;
+        default:
+          vm.push_instance(val[i].inst);
+          break;
+        }
+      }
+    vm.unsafe_call(fn);
+
+    if(!fn->has_return()) {
+      print(string_frm("call: ",fn->name()," done"));
+      return true;
+      }
+    switch(fn->rtype()) {
+      case zenkit::DaedalusDataType::INT:
+        print(string_frm("call: ",fn->name()," = ",vm.pop_int()));
+        break;
+      case zenkit::DaedalusDataType::FLOAT:
+        print(string_frm("call: ",fn->name()," = ",vm.pop_float()));
+        break;
+      case zenkit::DaedalusDataType::STRING:
+        print(string_frm("call: ",fn->name()," = ",std::string_view(vm.pop_string())));
+        break;
+      default:
+        print(string_frm("call: ",fn->name()," = ",vm.pop_instance().get()));
+        break;
+      }
+    }
+  catch(const std::exception& e) {
+    print(string_frm("call: ",fn->name(),": ",e.what()));
+    return false;
+    }
+  return true;
+  }
+
+bool Marvin::intArgument(World& world, std::string_view arg, int32_t& v) {
+  auto err = std::from_chars(arg.data(), arg.data()+arg.size(), v).ec;
+  if(err==std::errc())
+    return true;
+
+  // constant or instance name
+  auto* sym = world.script().findSymbol(arg);
+  if(sym==nullptr)
+    return false;
+  if(sym->type()==zenkit::DaedalusDataType::INT && !sym->is_member()) {
+    v = sym->get_int(0);
+    return true;
+    }
+  if(sym->type()==zenkit::DaedalusDataType::INSTANCE || sym->type()==zenkit::DaedalusDataType::FUNCTION) {
+    v = int32_t(sym->index());
+    return true;
+    }
+  return false;
+  }
+
+Npc* Marvin::findNpc(World& world, std::string_view name) {
+  if(compareNoCase(name,"hero"))
+    return Gothic::inst().player();
+
+  size_t id = world.script().findSymbolIndex(name);
+  if(id==size_t(-1))
+    return nullptr;
+
+  // the most recently added npc of this instance, e.g. the one from 'insert'
+  Npc* ret = nullptr;
+  for(size_t n=0; auto npc = world.findNpcByInstance(id,n); ++n)
+    ret = npc;
+  return ret;
   }
 
 std::string_view Marvin::completeInstanceName(std::string_view inp, bool& fullword) const {
