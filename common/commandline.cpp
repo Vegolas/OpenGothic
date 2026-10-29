@@ -88,6 +88,10 @@ CommandLine::CommandLine(int argc, const char** argv) {
       }
     else if(arg=="-window") {
       isWindow = true;
+      if(i+1<argc && std::string_view(argv[i+1])=="small") {
+        ++i;
+        isSmallWnd = true;
+        }
       }
     else if(arg=="-nomenu") {
       noMenu = true;

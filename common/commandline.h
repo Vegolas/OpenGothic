@@ -35,6 +35,7 @@ class CommandLine {
     bool                isDevMode()        const { return devmode;      }
     bool                isValidationMode() const { return isDebug;      }
     bool                isWindowMode()     const { return isWindow;     }
+    bool                isSmallWindow()    const { return isSmallWnd;   }
     bool                isRayQuery()       const { return isRQuery;     }
     GiMethod            isRtGi()           const { return isGi;         }
     bool                isMeshShading()    const { return isMeshSh;     }
@@ -63,6 +64,7 @@ class CommandLine {
     bool                noMenu       = false;
     Benchmark           isBenchmark  = Benchmark::None;
     bool                isWindow     = false;
+    bool                isSmallWnd   = false;
     bool                isDebug      = false;
 #if defined(__OSX__) || defined(__ANDROID__)
     bool                isRQuery     = false;

@@ -32,7 +32,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
         samej nazwie w folderze gry jest pomijany.
       - `-save` przyjmuje ścieżkę do pliku.
       - Sprawdzenie: względne `-game:` i `-save <n>` działają jak dotąd (zwykłe `tools/run.ps1`). (W2)
-- [ ] **Z3** [P] T2: opcja małego okna (`-window small`, okno Tempesta `Normal`, 800×600). Bez opcji
+- [x] **Z3** [P] T2: opcja małego okna (`-window small`, okno Tempesta `Normal`, 800×600). Bez opcji
       okno jak dotąd. (W2)
 - [ ] **Z4** [P] T3: polecenie konsoli `call <funkcja> [argumenty...]`.
       - Własne dzielenie linii, argumenty według typu parametru (liczba, stała, nazwa instancji,

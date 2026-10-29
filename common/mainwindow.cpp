@@ -30,7 +30,7 @@
 using namespace Tempest;
 
 MainWindow::MainWindow(Device& device)
-  : Window(Maximized),device(device),swapchain(device,hwnd()),
+  : Window(CommandLine::inst().isSmallWindow() ? Normal : Maximized),device(device),swapchain(device,hwnd()),
     atlas(device),rootMenu(keycodec),inventory(keycodec),
     dialogs(inventory),document(keycodec),
     console(*this),
