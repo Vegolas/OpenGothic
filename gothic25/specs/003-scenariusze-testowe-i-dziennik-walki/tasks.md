@@ -69,7 +69,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
 - [x] **Z11** T6: zdarzenia `break` z przyczyną w miejscach wywołań `onTakeHit`, `onBreakSeries`,
       `onEnemyPrehit`, `onClearTarget`, `dropForwardAttacks` (tylko przy zmianie kolejki) oraz przy
       braku okna combo. (W4)
-- [ ] **Z12** T4: wykonawca scenariuszy (`game/scenariorunner.*`), własna instancja Marvina.
+- [x] **Z12** T4: wykonawca scenariuszy (`game/scenariorunner.*`), własna instancja Marvina.
       - `-scenario <plik>` sprawdzany przy starcie, z numerami linii. Linie `#` i `expect`
         są pomijane.
       - Start po pierwszym `onWorldLoaded`, krok w `MainWindow::tick` po `Gothic::tick`.

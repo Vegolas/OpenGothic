@@ -31,6 +31,8 @@ class CommandLine {
     std::u16string      cutscenePath(ScriptLang lang) const;
     std::u16string_view modPath() const { return gmod; }
     std::u16string      resultsFile(std::string_view name) const;
+    std::u16string_view scenarioPath() const { return gscenario; }
+    bool                isScenarioExit() const { return scenarioExit; }
     std::u16string      nestedPath(const std::initializer_list<const char16_t*> &name, Tempest::Dir::FileType type) const;
 
     bool                isDevMode()        const { return devmode;      }
@@ -59,6 +61,8 @@ class CommandLine {
     GraphicBackend      graphics = GraphicBackend::Vulkan;
     std::u16string      gpath, gmod;
     std::u16string      gresults;
+    std::u16string      gscenario;
+    bool                scenarioExit = false;
     std::u16string      gscript;
     std::u16string      gcutscene;
     std::string         saveDef;

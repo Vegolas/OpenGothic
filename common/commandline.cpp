@@ -91,6 +91,14 @@ CommandLine::CommandLine(int argc, const char** argv) {
       if(i<argc)
         gresults = TextCodec::toUtf16(argv[i]);
       }
+    else if(arg=="-scenario") {
+      ++i;
+      if(i<argc)
+        gscenario = TextCodec::toUtf16(argv[i]);
+      }
+    else if(arg=="-scenario-exit") {
+      scenarioExit = true;
+      }
     else if(arg=="-window") {
       isWindow = true;
       if(i+1<argc && std::string_view(argv[i+1])=="small") {

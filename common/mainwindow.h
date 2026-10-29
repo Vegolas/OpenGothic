@@ -25,6 +25,7 @@
 #include "world/world.h"
 #include "world/focus.h"
 #include "game/playercontrol.h"
+#include "game/scenariorunner.h"
 #include "graphics/renderer.h"
 #include "ui/dialogmenu.h"
 #include "ui/inventorymenu.h"
@@ -152,6 +153,7 @@ class MainWindow : public Tempest::Window {
     DocumentMenu              document;
     ChapterScreen             chapter;
     ConsoleWidget             console;
+    ScenarioRunner            scenario;
 #if defined(__MOBILE_PLATFORM__)
     TouchInput                mobileUi;
 #endif

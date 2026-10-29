@@ -937,6 +937,7 @@ uint64_t MainWindow::tick() {
   dialogs.tick(dt);
   inventory.tick(dt);
   Gothic::inst().tick(dt);
+  scenario.tick();
   player.tickFocus();
 
   if(dialogs.isActive())
@@ -1188,6 +1189,7 @@ void MainWindow::onWorldLoaded() {
     pl->multSpeed(1.f);
   lastTick = Application::tickCount();
   player.clearFocus();
+  scenario.onWorldLoaded();
   }
 
 void MainWindow::onSessionExit() {
