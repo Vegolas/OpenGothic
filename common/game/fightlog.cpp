@@ -188,7 +188,30 @@ void FightLog::setEnabled(bool e) {
 
 void FightLog::attack(Npc& npc, AnimationSolver::Anim anim, BodyState bs, const Pose::ComboStart& cs,
                       uint16_t comboLen, const FightAlgo& fai) {
-  if(!enabled || bs==BS_PARADE || anim==AnimationSolver::AttackBlock)
+  if(!enabled)
+    return;
+
+  std::string_view weapon = "other";
+  Talent           tal    = TALENT_UNKNOWN;
+  switch(npc.weaponState()) {
+    case WeaponState::Fist: weapon = "fist";                  break;
+    case WeaponState::W1H:  weapon = "1h"; tal = TALENT_1H;   break;
+    case WeaponState::W2H:  weapon = "2h"; tal = TALENT_2H;   break;
+    default:
+      // melee only
+      return;
+    }
+
+  if(cs.broken>0) {
+    auto& c = character(npc);
+    Json  j(npc.world().tickCount(),"break");
+    who(j,npc,c);
+    j.str("what","combo").str("why",cs.link==Pose::CL_Block ? "block" : "no_window");
+    j.null("series").null("series_id").num("series_pos",cs.broken);
+    write(j.done());
+    }
+
+  if(bs==BS_PARADE || anim==AnimationSolver::AttackBlock)
     return;
 
   std::string_view link;
@@ -207,16 +230,6 @@ void FightLog::attack(Npc& npc, AnimationSolver::Anim anim, BodyState bs, const 
     case AnimationSolver::AttackL:      dir = "left";   break;
     case AnimationSolver::AttackR:      dir = "right";  break;
     case AnimationSolver::AttackFinish: dir = "finish"; break;
-    default:
-      break;
-    }
-
-  std::string_view weapon = "other";
-  Talent           tal    = TALENT_UNKNOWN;
-  switch(npc.weaponState()) {
-    case WeaponState::Fist: weapon = "fist";                  break;
-    case WeaponState::W1H:  weapon = "1h"; tal = TALENT_1H;   break;
-    case WeaponState::W2H:  weapon = "2h"; tal = TALENT_2H;   break;
     default:
       break;
     }
@@ -326,6 +339,19 @@ void FightLog::state(Npc& npc, std::string_view st, Npc* by) {
     } else {
     j.null("by").null("by_id");
     }
+  write(j.done());
+  }
+
+void FightLog::seriesBreak(Npc& npc, const FightAlgo::Series& ser, bool queued, std::string_view why) {
+  if(!enabled)
+    return;
+  auto& c = character(npc);
+  Json  j(npc.world().tickCount(),"break");
+  who(j,npc,c);
+  j.str("what","series").str("why",why);
+  if(queued && ser.len>0)
+    j.str("series",moveName(ser.move)).num("series_id",ser.id).num("series_pos",ser.done); else
+    j.str("series","combo").null("series_id").null("series_pos");
   write(j.done());
   }
 

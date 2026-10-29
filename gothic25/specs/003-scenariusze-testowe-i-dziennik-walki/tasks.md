@@ -66,7 +66,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
       - `result`: pudło z przyczyną w `commitDamage`, blok i odskok w `takeDamage(Npc&, Bullet*)`,
         trafienie z obrażeniami i życiem przed i po.
       - `state`: zachwianie, odrzut, nieprzytomność, śmierć. (W4)
-- [ ] **Z11** T6: zdarzenia `break` z przyczyną w miejscach wywołań `onTakeHit`, `onBreakSeries`,
+- [x] **Z11** T6: zdarzenia `break` z przyczyną w miejscach wywołań `onTakeHit`, `onBreakSeries`,
       `onEnemyPrehit`, `onClearTarget`, `dropForwardAttacks` (tylko przy zmianie kolejki) oraz przy
       braku okna combo. (W4)
 - [ ] **Z12** T4: wykonawca scenariuszy (`game/scenariorunner.*`), własna instancja Marvina.

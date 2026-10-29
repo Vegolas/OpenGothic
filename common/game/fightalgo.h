@@ -56,6 +56,7 @@ class FightAlgo final {
 
     bool   hasInstructions() const;
     auto   series() const -> const Series& { return ser; }
+    bool   isInSeries() const { return ser.len>0 && hasInstructions(); }
     bool   fetchInstructions(Npc &npc, Npc &tg, GameScript& owner);
     float  qDistTo(const Npc& npc, const Npc& tg) const;
 

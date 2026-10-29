@@ -1563,6 +1563,8 @@ bool Npc::implAttack(uint64_t dt) {
   if(currentTarget->isDown()){
     // NOTE: don't clear internal target, to make scripts happy
     // currentTarget=nullptr;
+    if(fghAlgo.isInSeries())
+      FightLog::seriesBreak(*this,fghAlgo.series(),true,"target_down");
     fghAlgo.onClearTarget();
     return false;
     }
@@ -1892,7 +1894,10 @@ bool Npc::implComboLink() {
   const bool fist = (weaponState()==WeaponState::Fist);
   if(cmb.forward && cmb.last) {
     // talent limits length of forward combo: drop the rest of forward attacks in series
+    const auto ser = fghAlgo.series();
     fghAlgo.dropForwardAttacks(fist);
+    if(fghAlgo.series().done!=ser.done)
+      FightLog::seriesBreak(*this,ser,true,"talent");
     }
   // NOTE: empty queue is not an instruction, don't ask nextFromQueue about it
   auto act = fghAlgo.hasInstructions() ? fghAlgo.nextFromQueue(*this,*currentTarget,owner.script()) : FightAlgo::MV_NULL;
@@ -1910,10 +1915,13 @@ bool Npc::implComboLink() {
 
   if(fghAlgo.comboAi(*this).defend_in_series) {
     // break own series to react on enemy attack; block interrupts the attack, same as for player
-    if(series && fghAlgo.isEnemyPrehit(*this,*currentTarget,owner.script()) &&
-       fghAlgo.onEnemyPrehit(*this,*currentTarget,owner.script())) {
-      act    = fghAlgo.nextFromQueue(*this,*currentTarget,owner.script());
-      series = false;
+    if(series && fghAlgo.isEnemyPrehit(*this,*currentTarget,owner.script())) {
+      const auto ser = fghAlgo.series();
+      if(fghAlgo.onEnemyPrehit(*this,*currentTarget,owner.script())) {
+        FightLog::seriesBreak(*this,ser,queued,"defend");
+        act    = fghAlgo.nextFromQueue(*this,*currentTarget,owner.script());
+        series = false;
+        }
       }
     if(act==FightAlgo::MV_BLOCK) {
       if(!(fist ? blockFist() : blockSword()))
@@ -1940,6 +1948,7 @@ bool Npc::implComboLink() {
   // without 'break_on_lost' series is finished even into the air
   if(fghAlgo.comboAi(*this).break_on_lost &&
      !(fghAlgo.isInWRange(*this,*currentTarget,owner.script()) && fghAlgo.isInFocusAngle(*this,*currentTarget))) {
+    FightLog::seriesBreak(*this,fghAlgo.series(),queued,"target_lost");
     fghAlgo.onBreakSeries();
     return false;
     }
@@ -2168,6 +2177,8 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
 
   if(!isSpell || splCat==SpellCategory::SPELL_BAD) {
     perceptionProcess(other,this,0,PERC_ASSESSDAMAGE);
+    if(fghAlgo.isInSeries())
+      FightLog::seriesBreak(*this,fghAlgo.series(),true,"hit");
     fghAlgo.onTakeHit();
     implFaiWait(0);
     }

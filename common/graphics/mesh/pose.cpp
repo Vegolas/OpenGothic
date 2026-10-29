@@ -761,19 +761,25 @@ const Animation::Sequence* Pose::continueCombo(const AnimationSolver &solver, co
   if(sq->data->defHitEnd.size()==0) {
     // hit -> block
     startAnim(solver,sq,prev->comb,bs,Pose::Force,tickCount);
+    comboStart.link   = CL_Block;
+    comboStart.broken = uint16_t(combo.len()+1);
     combo = ComboState();
-    comboStart.link = CL_Block;
     return sq;
     }
 
   if(id+1>=d.defWindow.size()) {
+    if(!combo.isBreak())
+      comboStart.broken = uint16_t(combo.len()+1);
     combo.setBreak();
     return nullptr;
     }
 
   if(!(d.defWindow[id+0]<t && t<=d.defWindow[id+1])) {
-    if(prev->seq->name==sq->name && sq->data->defHitEnd.size()>0)
+    if(prev->seq->name==sq->name && sq->data->defHitEnd.size()>0) {
+      if(!combo.isBreak())
+        comboStart.broken = uint16_t(combo.len()+1);
       combo.setBreak();
+      }
     return nullptr;
     }
 
@@ -805,8 +811,11 @@ const Animation::Sequence* Pose::continueCombo(const AnimationSolver &solver, co
   }
 
 void Pose::setComboStart(bool newHit) {
-  comboStart      = ComboStart();
-  comboStart.link = newHit ? CL_New : CL_None;
+  // keep the break from continueCombo, which ran before
+  const uint16_t broken = comboStart.broken;
+  comboStart        = ComboStart();
+  comboStart.link   = newHit ? CL_New : CL_None;
+  comboStart.broken = broken;
   }
 
 uint16_t Pose::comboLength() const {

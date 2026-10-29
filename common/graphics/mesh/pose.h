@@ -48,6 +48,7 @@ class Pose final {
       ComboLink link   = CL_None;
       uint64_t  skip   = 0;  // ms of the previous hit, skipped by a forward link
       int32_t   window = -1; // link moment inside the combo window, 0..100
+      uint16_t  broken = 0;  // forward combo stage, at which the request broke the combo; 0 - not broken
       };
 
     static uint8_t     calcAniComb(const Tempest::Vec3& dpos, float rotation);

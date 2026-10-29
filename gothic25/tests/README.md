@@ -210,7 +210,7 @@ Gdy cios powala cel, zdarzenie `state` z `unconscious` albo `dead` trafia do dzi
 |---|---|---|
 | `what` | string | `series` albo `combo` |
 | `why` | string | przyczyna (niżej) |
-| `series`, `series_id`, `series_pos` | | rodzaj i numer serii oraz ile jej ciosów padło; przy `combo` etap combo w `series_pos` |
+| `series`, `series_id`, `series_pos` | | przy `series`: rodzaj i numer serii oraz ile jej ciosów padło (`combo` i `null` dla kontynuacji combo); przy `combo`: `null`, `null` i etap combo, na którym się urwało |
 
 Przyczyny:
 
