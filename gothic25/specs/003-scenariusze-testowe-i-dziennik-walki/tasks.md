@@ -41,7 +41,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
       - Odrzucanie funkcji zewnętrznych, wypisanie wyniku albo błędu. (W3, K5)
 - [x] **Z5** T3: polecenia `give`, `equip`, `save game <slot>` (z kontrolą dialogu i przerywnika)
       i `quit`. Po Z4, ten sam plik. (W3)
-- [ ] **Z6** T3 i T5: opcja `-results <katalog>` (zakładany przy pierwszym zapisie) i polecenie
+- [x] **Z6** T3 i T5: opcja `-results <katalog>` (zakładany przy pierwszym zapisie) i polecenie
       `screenshot <plik>` (sygnał w `Gothic`, obsługa w `MainWindow` jak `F11`, PNG, ścieżka
       względna do katalogu wyników). Po Z5, ten sam plik konsoli. (W3, W6, K7)
 

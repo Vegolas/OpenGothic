@@ -79,6 +79,7 @@ class MainWindow : public Tempest::Window {
     void startGame(std::string_view slot);
     void loadGame (std::string_view slot);
     void saveGame (std::string_view slot, std::string_view name);
+    void screenshot(std::string_view file);
 
     void onVideo(std::string_view fname);
     void onStartLoading();

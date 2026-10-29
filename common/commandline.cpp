@@ -86,6 +86,11 @@ CommandLine::CommandLine(int argc, const char** argv) {
       if(i<argc)
         wrldDef = argv[i];
       }
+    else if(arg=="-results") {
+      ++i;
+      if(i<argc)
+        gresults = TextCodec::toUtf16(argv[i]);
+      }
     else if(arg=="-window") {
       isWindow = true;
       if(i+1<argc && std::string_view(argv[i+1])=="small") {
@@ -233,6 +238,17 @@ std::u16string CommandLine::cutscenePath() const {
 std::u16string CommandLine::cutscenePath(ScriptLang lang) const {
   const char16_t* scripts = toString(lang);
   return nestedPath({u"_work",u"Data",scripts},Dir::FT_Dir);
+  }
+
+std::u16string CommandLine::resultsFile(std::string_view name) const {
+  // relative names go to the -results directory, which is created on first use
+  auto path = std::filesystem::path(TextCodec::toUtf16(name));
+  if(path.is_relative() && !gresults.empty())
+    path = std::filesystem::path(gresults) / path;
+  std::error_code ec;
+  if(path.has_parent_path())
+    std::filesystem::create_directories(path.parent_path(), ec);
+  return path.u16string();
   }
 
 std::u16string CommandLine::nestedPath(const std::initializer_list<const char16_t*>& name, Tempest::Dir::FileType type) const {

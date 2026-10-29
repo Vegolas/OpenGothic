@@ -65,6 +65,7 @@ MainWindow::MainWindow(Device& device)
   Gothic::inst().onStartGame   .bind(this,&MainWindow::startGame);
   Gothic::inst().onLoadGame    .bind(this,&MainWindow::loadGame);
   Gothic::inst().onSaveGame    .bind(this,&MainWindow::saveGame);
+  Gothic::inst().onScreenshot  .bind(this,&MainWindow::screenshot);
 
   Gothic::inst().onStartLoading.bind(this,&MainWindow::onStartLoading);
   Gothic::inst().onWorldLoaded .bind(this,&MainWindow::onWorldLoaded);
@@ -474,9 +475,7 @@ void MainWindow::keyDownEvent(KeyEvent &event) {
   player.onKeyPressed(act,event.key,mapping);
 
   if(event.key==Event::K_F11) {
-    auto tex = renderer.screenshoot(cmdId, Size(int(swapchain.w()),int(swapchain.h())));
-    auto pm  = device.readPixels(textureCast<const Texture2d&>(tex));
-    pm.save("dbg.png");
+    screenshot("dbg.png");
     }
   event.accept();
   }
@@ -1084,6 +1083,14 @@ void MainWindow::loadGame(std::string_view slot) {
 
   background = Texture2d();
   update();
+  }
+
+void MainWindow::screenshot(std::string_view file) {
+  auto tex = renderer.screenshoot(cmdId, Size(int(swapchain.w()),int(swapchain.h())));
+  if(tex.isEmpty())
+    return;
+  auto pm  = device.readPixels(textureCast<const Texture2d&>(tex));
+  pm.save(std::string(file).c_str());
   }
 
 void MainWindow::saveGame(std::string_view slot, std::string_view name) {

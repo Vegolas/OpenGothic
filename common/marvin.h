@@ -66,6 +66,7 @@ class Marvin {
       C_Give,
       C_Equip,
       C_SaveGame,
+      C_Screenshot,
       C_Quit,
 
       // opengothic specific
@@ -106,6 +107,7 @@ class Marvin {
     Npc*   findNpc                 (World& world, std::string_view name);
     bool   giveItem                (World& world, Npc& player, std::string_view name, size_t count, bool equip);
     bool   saveGame                (World& world, int slot);
+    bool   screenshot              (std::string_view name);
 
     std::vector<Cmd> cmd;
   };

@@ -1,16 +1,19 @@
 #include "marvin.h"
 
 #include <Tempest/SystemApi>
+#include <Tempest/TextCodec>
 
 #include <charconv>
 #include <cstdint>
 #include <cctype>
+#include <filesystem>
 
 #include "utils/string_frm.h"
 #include "world/objects/npc.h"
 #include "world/objects/item.h"
 #include "world/triggers/abstracttrigger.h"
 #include "camera.h"
+#include "commandline.h"
 #include "gothic.h"
 
 static bool startsWith(std::string_view str, std::string_view needle) {
@@ -151,6 +154,7 @@ Marvin::Marvin() {
     {"insert %c",                  C_Insert},
     {"give %c %*",                 C_Give},
     {"equip %c",                   C_Equip},
+    {"screenshot %s",              C_Screenshot},
     {"quit",                       C_Quit},
 
     {"toggle gi",                  C_ToggleGI},
@@ -476,6 +480,8 @@ bool Marvin::exec(std::string_view v) {
         return false;
       return saveGame(*world, slot);
       }
+    case C_Screenshot:
+      return screenshot(ret.argv[0]);
     case C_Quit:
       Tempest::SystemApi::exit();
       return true;
@@ -863,6 +869,23 @@ bool Marvin::saveGame(World& world, int slot) {
   string_frm file("save_slot_",slot,".sav");
   Gothic::inst().save(file, string_frm("Console save ",slot));
   print(string_frm("save game: ",std::string_view(file)));
+  return true;
+  }
+
+bool Marvin::screenshot(std::string_view name) {
+  if(Gothic::inst().world()==nullptr)
+    return false;
+  auto file = CommandLine::inst().resultsFile(name);
+  auto path = Tempest::TextCodec::toUtf8(file);
+
+  std::error_code ec;
+  std::filesystem::remove(file, ec);
+  Gothic::inst().onScreenshot(path);
+  if(!std::filesystem::exists(file, ec)) {
+    print(string_frm("screenshot: unable to write \"",path,"\""));
+    return false;
+    }
+  print(string_frm("screenshot: ",path));
   return true;
   }
 
