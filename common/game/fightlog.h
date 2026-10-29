@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Tempest/Signal>
+
 #include <cstdint>
 #include <string_view>
 
@@ -14,6 +16,17 @@ class Npc;
 // Format: gothic25/tests/README.md. Available with -devmode only, off by default.
 class FightLog final {
   public:
+    // logged attack or state, for scenario waits
+    struct Event final {
+      Npc*             npc       = nullptr;
+      std::string_view type;          // "attack" or "state"
+      std::string_view state;         // state: stumble, fly, lie, unconscious, dead
+      int32_t          combo     = 0; // attack: forward combo stage, from 1
+      int32_t          seriesPos = 0; // attack from a FAI series: position and length; 0 otherwise
+      int32_t          seriesLen = 0;
+      };
+    inline static Tempest::Signal<void(const Event&)> onEvent;
+
     static bool isEnabled() { return enabled; }
     static void setEnabled(bool e);
 

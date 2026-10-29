@@ -12,6 +12,8 @@
 
 #include "game/fightlog.h"
 #include "utils/string_frm.h"
+#include "world/objects/npc.h"
+#include "world/world.h"
 #include "commandline.h"
 #include "gothic.h"
 
@@ -72,8 +74,13 @@ ScenarioRunner::ScenarioRunner() {
     return;
     }
   marvin.print.bind(this,&ScenarioRunner::onPrint);
+  FightLog::onEvent.bind(this,&ScenarioRunner::onFightEvent);
   exitOnEnd = cmd.isScenarioExit();
   load(cmd.scenarioPath());
+  }
+
+ScenarioRunner::~ScenarioRunner() {
+  FightLog::onEvent.ubind(this,&ScenarioRunner::onFightEvent);
   }
 
 void ScenarioRunner::load(std::u16string_view file) {
@@ -101,7 +108,13 @@ void ScenarioRunner::load(std::u16string_view file) {
     Line l;
     l.num  = num;
     l.text = s;
-    if(compareNoCase(args[0],"wait")) {
+    if(compareNoCase(args[0],"wait") && args.size()>2) {
+      if(!parseEventWait(l,args)) {
+        fail(num,"expected: wait <who> series|series-hit <n>|combo <n>|down|unconscious|dead timeout <seconds>");
+        return;
+        }
+      }
+    else if(compareNoCase(args[0],"wait")) {
       float sec = -1;
       if(args.size()==2)
         std::from_chars(args[1].data(), args[1].data()+args[1].size(), sec);
@@ -120,6 +133,45 @@ void ScenarioRunner::load(std::u16string_view file) {
 
   writeStatus("running",-1,"");
   Log::i("scenario: ",int(lines.size())," commands from \"",TextCodec::toUtf8(file),"\"");
+  }
+
+bool ScenarioRunner::parseEventWait(Line& l, const std::vector<std::string_view>& args) {
+  // wait <who> <event> [n] timeout <seconds>
+  static const struct {
+    std::string_view name;
+    EventKind        kind;
+    bool             count;
+    } events[] = {
+    {"series",      E_Series,      false},
+    {"series-hit",  E_SeriesHit,   true },
+    {"combo",       E_Combo,       true },
+    {"down",        E_Down,        false},
+    {"unconscious", E_Unconscious, false},
+    {"dead",        E_Dead,        false},
+    };
+
+  for(auto& ev:events) {
+    if(!compareNoCase(args[2],ev.name))
+      continue;
+    const size_t at = ev.count ? 4 : 3;
+    if(args.size()!=at+2 || !compareNoCase(args[at],"timeout"))
+      return false;
+    if(ev.count) {
+      auto err = std::from_chars(args[3].data(), args[3].data()+args[3].size(), l.n).ec;
+      if(err!=std::errc() || l.n<1)
+        return false;
+      }
+    float sec = -1;
+    std::from_chars(args[at+1].data(), args[at+1].data()+args[at+1].size(), sec);
+    if(sec<=0)
+      return false;
+    l.kind   = K_WaitEvent;
+    l.event  = ev.kind;
+    l.who    = std::string(args[1]);
+    l.waitMs = uint64_t(sec*1000.f);
+    return true;
+    }
+  return false;
   }
 
 void ScenarioRunner::onWorldLoaded() {
@@ -151,12 +203,20 @@ void ScenarioRunner::tick() {
     }
 
   const uint64_t now = world->tickCount();
+  if(evWait.line!=nullptr) {
+    if(!evWait.done) {
+      if(now>=evWait.deadline)
+        fail(evWait.line->num,string_frm("time limit reached: ",evWait.line->text));
+      return;
+      }
+    evWait = EventWait();
+    }
   if(now<waitUntil)
     return;
 
   while(state==S_Running && pc<lines.size()) {
     exec(lines[pc++],now);
-    if(waitUntil>now || !saveFile.empty())
+    if(waitUntil>now || !saveFile.empty() || evWait.line!=nullptr)
       return;
     if(Gothic::inst().world()!=world || Gothic::inst().checkLoading()!=Gothic::LoadState::Idle)
       return;
@@ -171,6 +231,23 @@ void ScenarioRunner::exec(const Line& l, uint64_t now) {
     case K_Wait:
       waitUntil = now + l.waitMs;
       return;
+    case K_WaitEvent: {
+      // events count from now on, see onFightEvent
+      EventWait w;
+      w.line     = &l;
+      w.deadline = now + l.waitMs;
+      if(compareNoCase(l.who,"hero")) {
+        w.hero = true;
+        } else {
+        w.instance = Gothic::inst().world()->script().findSymbolIndex(l.who);
+        if(w.instance==size_t(-1)) {
+          fail(l.num,string_frm("unknown instance \"",l.who,"\""));
+          return;
+          }
+        }
+      evWait = w;
+      return;
+      }
     case K_Quit:
       finish(true);
       return;
@@ -230,6 +307,38 @@ void ScenarioRunner::writeStatus(std::string_view result, int32_t line, std::str
       << ",\"message\":"<< jsonText(msg)
       << ",\"t\":"      << (w!=nullptr ? w->tickCount() : 0)
       << "}\n";
+  }
+
+void ScenarioRunner::onFightEvent(const FightLog::Event& e) {
+  if(evWait.line==nullptr || evWait.done || e.npc==nullptr)
+    return;
+  if(evWait.hero ? !e.npc->isPlayer() : e.npc->instanceSymbol()!=evWait.instance)
+    return;
+
+  const Line& l     = *evWait.line;
+  bool        match = false;
+  if(e.type=="attack") {
+    switch(l.event) {
+      case E_Series:    match = (e.seriesPos==1 && e.seriesLen>1); break;
+      case E_SeriesHit: match = (e.seriesPos==l.n);                break;
+      case E_Combo:     match = (e.combo==l.n);                    break;
+      default:
+        break;
+      }
+    } else {
+    switch(l.event) {
+      case E_Down:        match = (e.state=="lie" || e.state=="unconscious" || e.state=="dead"); break;
+      case E_Unconscious: match = (e.state=="unconscious"); break;
+      case E_Dead:        match = (e.state=="dead");        break;
+      default:
+        break;
+      }
+    }
+
+  if(match) {
+    evWait.done = true;
+    FightLog::marker("wait_done",l.num,l.text);
+    }
   }
 
 void ScenarioRunner::onPrint(std::string_view msg) {

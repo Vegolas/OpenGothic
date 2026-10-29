@@ -93,7 +93,9 @@ bohater, a `other` to jego cel (bez celu też bohater). Funkcji zewnętrznych si
 | `wait <kto> <zdarzenie> [n] timeout <sekundy>` | czeka na zdarzenie walki postaci; po limicie czasu gry błąd |
 | `expect <kto> <miara> <op> <wartość>` | oczekiwanie dla raportu; silnik je pomija |
 
-`<kto>` to `hero` albo nazwa instancji postaci (jak w `call`).
+`<kto>` to `hero` albo nazwa instancji. Przy czekaniu na zdarzenie liczy się każda postać tej
+instancji. Zdarzenia pochodzą z dziennika walki, więc czekanie nie działa, gdy scenariusz go wyłączy
+(`toggle fightlog`).
 
 Zdarzenia do czekania liczą się od chwili rozpoczęcia czekania:
 
@@ -102,7 +104,7 @@ Zdarzenia do czekania liczą się od chwili rozpoczęcia czekania:
 | `series` | postać zaczyna serię (pierwszy cios ruchu FAI z więcej niż jednym ciosem) |
 | `series-hit n` | postać wyprowadza `n`-ty cios serii |
 | `combo n` | postać wyprowadza `n`-ty cios combo do przodu (`combo 2` to pierwsze połączenie) |
-| `down` | postać leży: odrzut, nieprzytomność albo śmierć |
+| `down` | postać leży: upadek po odrzucie, nieprzytomność albo śmierć |
 | `unconscious` | postać traci przytomność |
 | `dead` | postać ginie |
 
@@ -131,6 +133,10 @@ expect Pal_230_Ritter series.master >= 1
 ```
 
 (Waypoint jest tylko przykładem. Właściwe miejsca wybiera zadanie Z19 planu 003.)
+
+Pora dnia: nowa gra zaczyna się rano. W próbie z 2026-10-30 paladyn wstawiony bez `set time 12 0`
+nie zaatakował bohatera przez 60 s mimo `B_Attack`, a z tą linią zaatakował po pół sekundy.
+Ustawiaj porę dnia na początku scenariusza, zanim wstawisz postacie.
 
 ## Dziennik walki
 
@@ -237,7 +243,7 @@ Przyczyny:
 
 | Pole | Znaczenie |
 |---|---|
-| `what` | `scenario_start`, `line`, `save`, `screenshot`, `fightlog_on`, `fightlog_off`, `scenario_end` |
+| `what` | `scenario_start`, `line`, `wait_done` (spełnione czekanie na zdarzenie), `save`, `screenshot`, `fightlog_on`, `fightlog_off`, `scenario_end` |
 | `line` | numer linii scenariusza; `null` poza scenariuszem |
 | `text` | treść polecenia albo komunikat |
 | `file` | przy `save` i `screenshot`: plik |

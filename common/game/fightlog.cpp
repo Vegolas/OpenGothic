@@ -276,6 +276,16 @@ void FightLog::attack(Npc& npc, AnimationSolver::Anim anim, BodyState bs, const 
     j.null("series").null("series_id").null("series_pos").null("series_len");
     }
   write(j.done());
+
+  Event e;
+  e.npc   = &npc;
+  e.type  = "attack";
+  e.combo = (cs.link==Pose::CL_Forward ? comboLen+1 : 1);
+  if(src=="queue" && ser.len>0) {
+    e.seriesPos = ser.done+1;
+    e.seriesLen = ser.len;
+    }
+  onEvent(e);
   }
 
 static void result(Npc& npc, Npc* tgt, std::string_view res, std::string_view why, uint16_t comboLen,
@@ -340,6 +350,12 @@ void FightLog::state(Npc& npc, std::string_view st, Npc* by) {
     j.null("by").null("by_id");
     }
   write(j.done());
+
+  Event e;
+  e.npc   = &npc;
+  e.type  = "state";
+  e.state = st;
+  onEvent(e);
   }
 
 void FightLog::seriesBreak(Npc& npc, const FightAlgo::Series& ser, bool queued, std::string_view why) {
