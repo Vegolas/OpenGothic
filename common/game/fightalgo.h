@@ -38,6 +38,14 @@ class FightAlgo final {
       MV_MAX      = 6
       };
 
+    // attack series of the last expanded FAI move, for the fight log; not serialized
+    struct Series final {
+      zenkit::FightAiMove move = zenkit::FightAiMove::NOP;
+      uint32_t            id   = 0; // counts series of this npc
+      uint8_t             len  = 0; // attacks in the move
+      uint8_t             done = 0; // attacks of the move consumed so far
+      };
+
     Action nextFromQueue(Npc &npc, Npc &tg, GameScript& owner);
     void   consumeAction();
     void   dropForwardAttacks(bool fist);
@@ -47,6 +55,7 @@ class FightAlgo final {
     bool   onEnemyPrehit(Npc &npc, Npc &tg, GameScript& owner);
 
     bool   hasInstructions() const;
+    auto   series() const -> const Series& { return ser; }
     bool   fetchInstructions(Npc &npc, Npc &tg, GameScript& owner);
     float  qDistTo(const Npc& npc, const Npc& tg) const;
 
@@ -73,6 +82,7 @@ class FightAlgo final {
   private:
     void   fillQueue(Npc &npc, Npc &tg, GameScript& owner);
     bool   fillQueue(GameScript& owner, const FightAi::Moves& src);
+    void   startSeries(zenkit::FightAiMove mv);
 
     static zenkit::FightAiMove randomMove(GameScript& owner, const FightAi::Moves& src);
     static bool   angleTest(const Npc& npc, const Npc& tg, float cosMax);
@@ -87,4 +97,5 @@ class FightAlgo final {
     uint64_t            linkTime   = 0;
     uint64_t            contWindow = 0;
     bool                contAttack = false;
+    Series              ser;
   };

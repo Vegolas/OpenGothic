@@ -204,6 +204,7 @@ FightAlgo::Action FightAlgo::nextFromQueue(Npc& npc, Npc& tg, GameScript& owner)
           }
         }
       }
+    startSeries(queueId);
     queueId = FightAiMove::NOP;
     }
   return tr[0];
@@ -221,7 +222,29 @@ bool FightAlgo::fetchInstructions(Npc &npc, Npc &tg, GameScript& owner) {
   return true;
   }
 
+void FightAlgo::startSeries(zenkit::FightAiMove mv) {
+  using zenkit::FightAiMove;
+  uint8_t len = 0;
+  switch(mv) {
+    case FightAiMove::ATTACK:        len = 1; break;
+    case FightAiMove::ATTACK_SIDE:   len = 2; break;
+    case FightAiMove::ATTACK_FRONT:  len = 2; break;
+    case FightAiMove::ATTACK_TRIPLE: len = 3; break;
+    case FightAiMove::ATTACK_WHIRL:  len = 4; break;
+    case FightAiMove::ATTACK_MASTER: len = 6; break;
+    default:
+      break;
+    }
+  if(len==0) {
+    ser = Series{FightAiMove::NOP, ser.id, 0, 0};
+    return;
+    }
+  ser = Series{mv, ser.id+1, len, 0};
+  }
+
 void FightAlgo::consumeAction() {
+  if(tr[0]==MV_ATTACK || tr[0]==MV_ATTACKL || tr[0]==MV_ATTACKR)
+    ser.done++;
   for(size_t i=1;i<MV_MAX;++i)
     tr[i-1]=tr[i];
   tr[MV_MAX-1]=MV_NULL;
