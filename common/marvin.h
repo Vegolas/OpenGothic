@@ -63,6 +63,11 @@ class Marvin {
       C_Insert,
       C_PlayAni,
 
+      C_Give,
+      C_Equip,
+      C_SaveGame,
+      C_Quit,
+
       // opengothic specific
       C_ToggleGI,
       C_ToggleVsm,
@@ -99,6 +104,8 @@ class Marvin {
     bool   callFunction            (World& world, std::string_view name, std::string_view args);
     bool   intArgument             (World& world, std::string_view arg, int32_t& v);
     Npc*   findNpc                 (World& world, std::string_view name);
+    bool   giveItem                (World& world, Npc& player, std::string_view name, size_t count, bool equip);
+    bool   saveGame                (World& world, int slot);
 
     std::vector<Cmd> cmd;
   };

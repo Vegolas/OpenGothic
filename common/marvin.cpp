@@ -1,5 +1,7 @@
 #include "marvin.h"
 
+#include <Tempest/SystemApi>
+
 #include <charconv>
 #include <cstdint>
 #include <cctype>
@@ -109,7 +111,7 @@ Marvin::Marvin() {
     {"LC1",                        C_Invalid},
     {"LC2",                        C_Invalid},
     {"load game",                  C_Invalid},
-    {"save game",                  C_Invalid},
+    {"save game %d",               C_SaveGame},
     {"save zen",                   C_Invalid},
     {"set time %d %d",             C_SetTime},
     {"spawnmass %d",               C_Invalid},
@@ -147,6 +149,9 @@ Marvin::Marvin() {
     {"toggle inertiatarget",       C_ToggleInertia},
     {"ztoggle timedemo",           C_ZToggleTimeDemo},
     {"insert %c",                  C_Insert},
+    {"give %c %*",                 C_Give},
+    {"equip %c",                   C_Equip},
+    {"quit",                       C_Quit},
 
     {"toggle gi",                  C_ToggleGI},
     {"toggle vsm",                 C_ToggleVsm},
@@ -447,6 +452,33 @@ bool Marvin::exec(std::string_view v) {
         return false;
       return addItemOrNpcBySymbolName(world, ret.argv[0], player->position());
       }
+    case C_Give: {
+      World* world  = Gothic::inst().world();
+      Npc*   player = Gothic::inst().player();
+      if(world==nullptr || player==nullptr)
+        return false;
+      size_t count = 1;
+      if(!ret.argv[1].empty() && (!fromString(ret.argv[1], count) || count==0))
+        return false;
+      return giveItem(*world, *player, ret.argv[0], count, false);
+      }
+    case C_Equip: {
+      World* world  = Gothic::inst().world();
+      Npc*   player = Gothic::inst().player();
+      if(world==nullptr || player==nullptr)
+        return false;
+      return giveItem(*world, *player, ret.argv[0], 1, true);
+      }
+    case C_SaveGame: {
+      World* world = Gothic::inst().world();
+      int    slot  = 0;
+      if(world==nullptr || !fromString(ret.argv[0], slot) || slot<0)
+        return false;
+      return saveGame(*world, slot);
+      }
+    case C_Quit:
+      Tempest::SystemApi::exit();
+      return true;
     case C_SetTime: {
       World* world = Gothic::inst().world();
       if(world==nullptr)
@@ -797,6 +829,41 @@ Npc* Marvin::findNpc(World& world, std::string_view name) {
   for(size_t n=0; auto npc = world.findNpcByInstance(id,n); ++n)
     ret = npc;
   return ret;
+  }
+
+bool Marvin::giveItem(World& world, Npc& player, std::string_view name, size_t count, bool equip) {
+  auto&  sc  = world.script();
+  size_t id  = sc.findSymbolIndex(name);
+  auto*  cls = id==size_t(-1) ? nullptr : sc.findSymbol(id);
+  if(cls!=nullptr && (cls->type()!=zenkit::DaedalusDataType::INSTANCE || cls->address()==0))
+    cls = nullptr;
+  while(cls!=nullptr && cls->parent()!=uint32_t(-1))
+    cls = sc.findSymbol(cls->parent());
+  if(cls==nullptr || cls->name()!="C_ITEM") {
+    print(string_frm("\"",name,"\" is not an item"));
+    return false;
+    }
+
+  if(!equip) {
+    player.addItem(id, count);
+    return true;
+    }
+  if(player.itemCount(id)==0)
+    player.addItem(id, 1);
+  player.useItem(id, Item::NSLOT, true);
+  return true;
+  }
+
+bool Marvin::saveGame(World& world, int slot) {
+  // MainWindow::saveGame silently skips these cases
+  if(Gothic::inst().checkLoading()!=Gothic::LoadState::Idle || Gothic::inst().isInDialog() || world.currentCs()!=nullptr) {
+    print("save game: not possible during loading, a dialog or a cutscene");
+    return false;
+    }
+  string_frm file("save_slot_",slot,".sav");
+  Gothic::inst().save(file, string_frm("Console save ",slot));
+  print(string_frm("save game: ",std::string_view(file)));
+  return true;
   }
 
 std::string_view Marvin::completeInstanceName(std::string_view inp, bool& fullword) const {

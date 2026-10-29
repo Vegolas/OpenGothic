@@ -39,7 +39,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
         `hero`, tekst).
       - Wywołanie przez `push_*` i `unsafe_call` z `self` i `other`, w `try/catch`.
       - Odrzucanie funkcji zewnętrznych, wypisanie wyniku albo błędu. (W3, K5)
-- [ ] **Z5** T3: polecenia `give`, `equip`, `save game <slot>` (z kontrolą dialogu i przerywnika)
+- [x] **Z5** T3: polecenia `give`, `equip`, `save game <slot>` (z kontrolą dialogu i przerywnika)
       i `quit`. Po Z4, ten sam plik. (W3)
 - [ ] **Z6** T3 i T5: opcja `-results <katalog>` (zakładany przy pierwszym zapisie) i polecenie
       `screenshot <plik>` (sygnał w `Gothic`, obsługa w `MainWindow` jak `F11`, PNG, ścieżka
