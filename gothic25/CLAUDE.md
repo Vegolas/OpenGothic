@@ -18,3 +18,11 @@ Try/OpenGothic), a katalog `gothic25/` zawiera mod i jego proces.
 - Skrypty w `tools/` muszą działać w Windows PowerShell 5.1. Pliki `.ps1` piszemy w samym ASCII,
   a pliki UTF-8 czytamy i zapisujemy przez `Read-Utf8` / `Write-Utf8` z `tools/lib/common.ps1`.
 - Nie uruchamiaj `install.ps1` ani `run.ps1` na folderze gry użytkownika bez jego zgody.
+- Scenariusze testowe w trybie automatycznym (`tools/test.ps1 -Scenario ...` albo `-Spec NNN`, bez
+  `-Manual`) uruchamiaj bez pytania (spec. 003, W11): nie zmieniają folderu gry, mod biorą
+  z repozytorium, kończą się same w małym oknie. Tryb `-Manual`, `run.ps1`, `install.ps1` i każde inne
+  uruchomienie gry nadal wymagają zgody użytkownika.
+- Testy walki: scenariusze w `tests/NNN/`, format i zasady w `tests/README.md`, zaliczanie kryteriów
+  według ADR 0004. Po zmianie w walce uruchom zestawy specyfikacji, których dotyczy, jako testy regresji.
+- Nie dodawaj ani nie usuwaj symboli w istniejących plikach skryptów: przesuwa to numery symboli
+  w `GOTHIC.DAT` i psuje stare zapisy (ADR 0005). Sprawdzenie: `tools/dat.py prefix`.

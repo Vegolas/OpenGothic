@@ -19,6 +19,21 @@ Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), wersje według
 - Silnik: listy ruchów stylów walki dłuższe niż 6, opcjonalne ustawienia combo stylu (`FA_COMBO_<N>`)
   i łączenie ciosów NPC w oknie combo. Bez skryptów moda silnik działa jak upstream
   ([ADR 0003](decisions/0003-przelaczniki-silnika-w-skryptach.md)).
+- Narzędzia deweloperskie ([specyfikacja 003](specs/003-scenariusze-testowe-i-dziennik-walki/spec.md)):
+  - scenariusze testowe (`tools/test.ps1`, `tests/`), dziennik walki wręcz i raport z oczekiwaniami
+    (`tools/fightlog.py`),
+  - nowe polecenia konsoli w trybie deweloperskim: `call`, `give`, `equip`, `save game`, `screenshot`,
+    `toggle fightlog`, `info told`, `immortal`, `quit`; `insert` stawia postać przed bohaterem,
+  - silnik wczytuje moda spoza folderu gry (`-game:` ze ścieżką bezwzględną) i zapis spod ścieżki
+    (`-save`).
+
+  Gra bez trybu deweloperskiego działa jak dotąd. Kryteria, które da się ocenić z raportu, zalicza
+  automatyczny przebieg ([ADR 0004](decisions/0004-zaliczanie-kryteriow-przez-scenariusze.md)).
+
+### Poprawiono
+
+- Zapisy z 0.1.0 znów się wczytują. Nowa stała w skryptach przesuwała numery symboli, którymi
+  OpenGothic zapisuje postacie ([ADR 0005](decisions/0005-stabilne-numery-symboli.md)).
 
 ## [0.1.0]
 

@@ -38,6 +38,8 @@ i podać numer wersji, od której obowiązuje.
 
 Specyfikacja opisuje zachowanie z perspektywy gracza oraz kroki, którymi da się je zweryfikować
 (miejsce w świecie, komenda konsoli, zapis testowy). „Działa” oznacza, że ktoś przeszedł te kroki.
+Kroki może przejść także automatyczny scenariusz testowy, gdy kryterium da się ocenić z raportu
+([ADR 0004](../decisions/0004-zaliczanie-kryteriow-przez-scenariusze.md)).
 
 ## 6. Prawa do zasobów
 

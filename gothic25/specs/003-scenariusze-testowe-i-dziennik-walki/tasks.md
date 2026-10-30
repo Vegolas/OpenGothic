@@ -134,7 +134,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
       - Progi dobrane tak, żeby zestaw nie zawodził przypadkiem. Uzasadnienie progów w komentarzach.
 
       (W9, W12, K10)
-- [ ] **Z20** [P] Proces.
+- [x] **Z20** [P] Proces.
       - Zdanie w zasadzie 5 konstytucji (ADR 0004).
       - Opis weryfikacji przez scenariusze w `sdd/workflow.md` i `.claude/commands/g25-verify.md`.
       - `gothic25/CLAUDE.md`: zgoda na tryb automatyczny (W11) i jak uruchamiać testy.

@@ -13,6 +13,8 @@ Realizujesz zadania ze specyfikacji Gothic 2.5. Argumenty: $ARGUMENTS
    ma być za flagą albo ustawieniem moda (konstytucja, zasada 3).
 4. Po zmianie zbuduj to, czego dotyczy zadanie: `gothic25/tools/build-engine.ps1` dla C++,
    `gothic25/tools/build-scripts.ps1` i `gothic25/tools/pack.ps1` dla treści.
-   Nie instaluj moda w folderze gry ani nie uruchamiaj gry bez zgody użytkownika.
+   Nie instaluj moda w folderze gry ani nie uruchamiaj gry bez zgody użytkownika. Wyjątek:
+   scenariusze testowe w trybie automatycznym (`gothic25/tools/test.ps1` bez `-Manual`) możesz
+   uruchamiać bez pytania, np. zestaw specyfikacji, której walki dotyczy zmiana (zob. `gothic25/CLAUDE.md`).
 5. Odhacz zadanie w `tasks.md` i zaproponuj komunikat commita po angielsku. Bez commitowania,
    chyba że użytkownik o to poprosi.

@@ -319,4 +319,26 @@ Cały przebieg jest zaliczony tylko wtedy, gdy oba warunki są spełnione.
 
 ## Uruchamianie
 
-Uzupełni to zadanie Z20 planu 003, gdy `tools/test.ps1` będzie gotowe.
+Silnik musi być zbudowany (`tools/build-engine.ps1`). Moda nie trzeba instalować: `test.ps1` sam
+kompiluje skrypty i pakuje moda z bieżących plików repozytorium do `build/game`.
+
+```
+tools/test.ps1 -Scenario 001/K01-pal230-mistrz        # jeden scenariusz, tryb automatyczny
+tools/test.ps1 -Scenario 001/K01-pal230-mistrz -NoMod # to samo bez moda
+tools/test.ps1 -Spec 001                              # wszystkie scenariusze 001 z podsumowaniem
+tools/test.ps1 -Scenario dev/start -Manual            # gra zostaje otwarta, zwykłe okno
+tools/test.ps1 -Scenario 001/K09b-wczytanie-zapisu -Save <plik.sav>
+```
+
+- Tryb automatyczny: okno 800×600, gra kończy się po scenariuszu, limit czasu z `# timeout:`.
+  Kod wyjścia 0 oznacza, że scenariusz skończył się wynikiem `ok`, a oczekiwania przeszły.
+- Każdy przebieg ma katalog w `build/test-runs/`. Najważniejszy jest `report.md` (podsumowanie
+  postaci, oczekiwania), a szczegóły są w `fightlog.jsonl`, `log.txt` i zrzutach ekranu.
+- Raport z dziennika włączonego ręcznie w zwykłej grze (`tools/run.ps1 -Dev`, potem w konsoli
+  `toggle fightlog`): `python tools/fightlog.py report <katalog z build/test-runs>`.
+- Raport i oczekiwania bez uruchamiania gry, np. po poprawce progu:
+  `python tools/fightlog.py check <katalog przebiegu> --scenario tests/NNN/<plik>.txt`.
+
+Nowy scenariusz: skopiuj podobny z `tests/NNN/`, zmień postacie i oczekiwania, uruchom go
+kilka razy i zapisz w komentarzu `# Progi`, z jakich wartości wynikają progi. Kryterium zalicza
+przebieg na zacommitowanym kodzie, zgodnie z ADR 0004.
