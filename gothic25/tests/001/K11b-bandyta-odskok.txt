@@ -2,24 +2,27 @@
 # timeout: 300
 # To samo dla silnego bandyty: dokańcza serię w powietrze.
 info told DIA_Xardas_Hello
-call B_RemoveNpc NONE_100_Xardas
-call B_RemoveNpc BDT_1013_Bandit_L
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
 cheat god
 set time 12 0
 insert BDT_1006_Bandit_H
 call B_Attack BDT_1006_Bandit_H hero 0 0
 wait BDT_1006_Bandit_H series timeout 90
-goto waypoint NW_XARDAS_TOWER_IN1_31
+goto waypoint NW_PASS_01
 wait 8
-goto waypoint NW_XARDAS_START
+goto waypoint NW_PASS_05
 wait BDT_1006_Bandit_H series timeout 90
-goto waypoint NW_XARDAS_TOWER_IN1_31
+goto waypoint NW_PASS_01
 wait 8
-goto waypoint NW_XARDAS_START
+goto waypoint NW_PASS_05
 wait BDT_1006_Bandit_H series timeout 90
-goto waypoint NW_XARDAS_TOWER_IN1_31
+goto waypoint NW_PASS_01
 wait 8
-goto waypoint NW_XARDAS_START
+goto waypoint NW_PASS_05
 quit
 
 # Progi (przebieg 2026-10-30):

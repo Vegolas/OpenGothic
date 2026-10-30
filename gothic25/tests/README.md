@@ -85,6 +85,7 @@ Nowe polecenia konsoli (działają też ręcznie po `F2`):
 | `save game <slot>` | zapisuje grę do slotu jak z menu; w dialogu albo przerywniku zgłasza błąd |
 | `screenshot <plik>` | zapisuje zrzut sceny 3D do PNG w rozdzielczości okna gry, bez konsoli i interfejsu; ścieżka względna trafia do katalogu wyników |
 | `toggle fightlog` | włącza albo wyłącza dziennik walki (w scenariuszu jest włączony od startu) |
+| `remove npc <instancja> <promień>` | usuwa ze świata wszystkie postacie tej instancji w promieniu (w metrach) od bohatera, np. potwory, które dołączyłyby do walki; gdy żadnej tam nie ma, zgłasza błąd |
 | `immortal <instancja>` | postać nie traci życia (flaga `NPC_FLAG_IMMORTAL`); walka NPC z NPC trwa wtedy do końca scenariusza |
 | `info told <kwestia>` | kwestia dialogowa (instancja `C_INFO`) liczy się jako przegadana z bohaterem; `info told DIA_Xardas_Hello` na początku scenariusza zatrzymuje powitanie Xardasa w nowej grze |
 | `quit` | kończy grę (w scenariuszu: kończy scenariusz, zob. polecenia sterujące) |
@@ -152,10 +153,24 @@ expect Pal_230_Ritter series.master >= 1
 
 (Waypoint jest tylko przykładem. Właściwe miejsca wybiera zadanie Z19 planu 003.)
 
-Miejsce: scenariusze 001 walczą we wnętrzu wieży Xardasa, gdzie zaczyna się nowa gra. Xardas
-atakuje wstawionych bandytów (w próbie zabił strażnika bramy zamiast pozwolić mu walczyć
-z bohaterem), więc scenariusze usuwają go na początku: `call B_RemoveNpc NONE_100_Xardas`.
-To samo z bandytą ze schodów: `call B_RemoveNpc BDT_1013_Bandit_L`.
+Miejsce: scenariusze 001 walczą przy przełęczy do Górniczej Doliny (`NW_PASS_05`), gdzie jest
+płasko i pusto. Wnętrze wieży Xardasa, gdzie zaczyna się nowa gra, się nie nadaje: NPC blokowali się
+tam na framugach i schodach, obchodząc bohatera albo pchając go przed sobą, i przestawali atakować
+nawet na 100 s (przebiegi z 2026-10-30). Początek scenariusza:
+
+```
+info told DIA_Xardas_Hello
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+```
+
+Strażnicy bramy (`PAL_297_Ritter`, `PAL_298_Ritter`) wtrącaliby się do walk z bandytami i orkami.
+Młode wilki z `NW_PASS_06` dołączają do walki. Pierwsze polecenia scenariusza wykonują się przed
+pierwszą klatką świata, więc wilki nie zdążą zauważyć bohatera. `B_RemoveNpc YWolf` by nie
+wystarczył, bo trafia tylko w ostatnio utworzonego młodego wilka w całym świecie.
 
 Przyspieszenie: przy `ztimer multiplyer 2` NPC atakują częściej w przeliczeniu na minutę czasu gry
 (w próbie K1: 58 zamiast 33 ciosów na minutę), ale udział rodzajów serii, długości combo i moment

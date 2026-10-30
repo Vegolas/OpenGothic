@@ -2,7 +2,6 @@
 # timeout: 200
 # save: build/test/profile/save_slot_1.sav
 # Wczytanie zapisu z K09a: paladyn walczy dalej. cheat god nie jest częścią zapisu.
-call B_RemoveNpc NONE_100_Xardas
 cheat god
 wait 60
 quit

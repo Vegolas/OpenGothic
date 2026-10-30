@@ -2,8 +2,11 @@
 # timeout: 200
 # Zapis z polecenia w chwili drugiego ciosu serii paladyna. Zapis wczytuje K09b.
 info told DIA_Xardas_Hello
-call B_RemoveNpc NONE_100_Xardas
-call B_RemoveNpc BDT_1013_Bandit_L
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
 cheat god
 set time 12 0
 insert Pal_230_Ritter

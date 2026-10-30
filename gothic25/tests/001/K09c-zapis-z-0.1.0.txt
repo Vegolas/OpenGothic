@@ -4,7 +4,11 @@
 # Zapis z wersji 0.1.0 (Z1 w 001) się wczytuje, a walka i combo działają na wczytanej grze.
 # W tym zapisie walka już się skończyła, a bohatera nikt nie atakuje (zostaje mu flaga rozmowy,
 # AIV_INVINCIBLE), więc walczą ze sobą wstawieni od nowa paladyn i bandyta.
-call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
 cheat god
 set time 12 0
 insert Pal_230_Ritter
