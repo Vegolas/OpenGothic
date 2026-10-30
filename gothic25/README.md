@@ -2,6 +2,8 @@
 
 Modyfikacja Gothic II: Noc Kruka budowana na forku OpenGothic. Cel: bardziej żywy świat
 (losowe zdarzenia), spójne polskie głosy i poprawione mechaniki (m.in. skradanie).
+Działa tylko na tym forku, nie w oryginalnym `Gothic2.exe`
+([ADR 0006](decisions/0006-mod-tylko-dla-opengothic.md)).
 
 Projekt prowadzimy w **Spec-Driven Development (SDD)**: każda zmiana zaczyna się od specyfikacji,
 potem plan techniczny, lista zadań i dopiero implementacja. Zasady nadrzędne są w

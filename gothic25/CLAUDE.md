@@ -4,6 +4,9 @@ Mod Gothic II: Noc Kruka na forku OpenGothic. Repozytorium główne to silnik (C
 Try/OpenGothic), a katalog `gothic25/` zawiera mod i jego proces.
 
 - Zasady nadrzędne: `sdd/constitution.md`. Przed każdym planem i implementacją sprawdź ich zgodność.
+- Mod działa tylko na OpenGothic (ADR 0006). Nie sprawdzaj zgodności z oryginalnym `Gothic2.exe`
+  i nie proponuj rozwiązań pod niego (Union, Ninja, hooki Ikarus/LeGo, kompilacja zasobów przez grę).
+- Powtarzalny krok (build, zasoby, testy) automatyzuj skryptem w `tools/` (zasada 10).
 - Cykl pracy: `sdd/workflow.md`. Komendy: `/g25-specify`, `/g25-clarify`, `/g25-plan`, `/g25-tasks`,
   `/g25-implement`, `/g25-verify`.
 - Nie implementuj niczego bez specyfikacji w statusie `Zatwierdzona` i planu w `specs/NNN-*/`.

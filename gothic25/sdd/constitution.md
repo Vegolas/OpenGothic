@@ -4,15 +4,21 @@ Zasady nadrzędne. Specyfikacja, plan albo zadanie, które łamie którąś z ni
 uzasadnić w sekcji „Odstępstwa od konstytucji” albo zostać poprawione. Zmiana konstytucji
 wymaga osobnego ADR w `decisions/`.
 
-## 1. Warstwa najniższa, która wystarczy
+## 1. Tylko OpenGothic
 
-Funkcję realizujemy w najniższej warstwie, która ją uniesie:
+Mod działa wyłącznie na naszym forku OpenGothic ([ADR 0006](../decisions/0006-mod-tylko-dla-opengothic.md)).
+Nie dbamy o zgodność z oryginalnym silnikiem (`Gothic2.exe`), Union, Ninja ani hookami pamięci
+Ikarus/LeGo i nie przejmujemy ich ograniczeń.
 
-1. **Zasoby** (dźwięki, tekstury, modele, światy). Działają też w oryginalnym silniku.
-2. **Skrypty Daedalus** (fabuła, dialogi, AI, plany dnia).
-3. **Silnik C++** (fork OpenGothic). Tylko gdy dwie pierwsze warstwy nie wystarczą.
+Funkcję realizujemy w tej warstwie, w której najprościej ją zrobić, przetestować i utrzymać:
 
-Plan każdej funkcji podaje, której warstwy dotyczy i dlaczego nie da się jej zrobić niżej.
+- **Zasoby** (dźwięki, tekstury, modele, animacje, światy) w formatach i narzędziach dobranych
+  pod nasz silnik i automatyzację.
+- **Skrypty Daedalus** (fabuła, dialogi, AI, plany dnia).
+- **Silnik C++** (fork OpenGothic): mechanizmy, formaty, nowe funkcje dla skryptów.
+
+Plan każdej funkcji podaje, której warstwy dotyczy i dlaczego ta jest najtańsza w utrzymaniu.
+Zmiana w silniku nadal podlega zasadom 2 i 3.
 
 ## 2. Silnik daje mechanizmy, skrypty decydują o treści
 
@@ -84,3 +90,17 @@ Skrypty bazowe pochodzą z materiałów Piranha Bytes udostępnionych na licencj
   rekonstrukcji skryptów (VaanaCZ) i polskiego przekładu (CD Projekt).
 - **Licencja w paczce.** Każde wydanie zawiera tekst licencji. Dołącza go `tools/publish.ps1`.
   Nie usuwamy ani nie zmieniamy informacji o licencji i prawach autorskich w plikach.
+
+## 10. Automatyzacja
+
+Każdy powtarzalny krok robi skrypt z `tools/`: build silnika i skryptów, przygotowanie zasobów
+(np. eksport i konwersja z Blendera), pakowanie, testy, wydanie.
+
+- Narzędzie działa bez interakcji, z tych samych danych daje ten sam wynik i kończy się kodem
+  błędu, gdy coś pójdzie źle. Wtedy może je uruchomić agent, CI albo inny skrypt.
+- Build i testy nie zmieniają folderu gry gracza (dane gry tylko czytają), więc mogą działać bez
+  nadzoru. Folder gry zmienia tylko instalacja (`tools/install.ps1`).
+- Kryteria akceptacji sprawdzają scenariusze testowe wszędzie, gdzie się da (zasada 5, ADR 0004).
+  Człowiek ocenia tylko to, czego nie da się zmierzyć.
+- Plan, który wprowadza ręczny krok, opisuje go w „Odstępstwach od konstytucji” i mówi, czym
+  go zautomatyzujemy.

@@ -10,3 +10,5 @@ Decyzje, które dotyczą więcej niż jednej funkcji: narzędzia, formaty, konwe
 | [0003](0003-przelaczniki-silnika-w-skryptach.md) | Włączanie zmian silnika przez symbole skryptów moda | Przyjęta |
 | [0004](0004-zaliczanie-kryteriow-przez-scenariusze.md) | Zaliczanie kryteriów przez scenariusze testowe | Przyjęta |
 | [0005](0005-stabilne-numery-symboli.md) | Stabilne numery symboli w GOTHIC.DAT (zapisy gry) | Przyjęta |
+| [0006](0006-mod-tylko-dla-opengothic.md) | Mod tylko dla OpenGothic | Przyjęta |
+| [0006](0006-mod-tylko-dla-opengothic.md) | Mod tylko dla OpenGothic | Proponowana |
