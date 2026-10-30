@@ -360,7 +360,8 @@ void FightLog::state(Npc& npc, std::string_view st, Npc* by) {
   onEvent(e);
   }
 
-void FightLog::seriesBreak(Npc& npc, const FightAlgo::Series& ser, bool queued, std::string_view why) {
+void FightLog::seriesBreak(Npc& npc, const FightAlgo::Series& ser, bool queued, std::string_view why,
+                           std::string_view detail) {
   if(!enabled)
     return;
   auto& c = character(npc);
@@ -376,6 +377,8 @@ void FightLog::seriesBreak(Npc& npc, const FightAlgo::Series& ser, bool queued, 
   if(queued && ser.len>0)
     j.str("series",moveName(ser.move)).num("series_id",ser.id).num("series_pos",ser.done); else
     j.str("series","combo").null("series_id").null("series_pos");
+  if(!detail.empty())
+    j.str("detail",detail);
   write(j.done());
   }
 

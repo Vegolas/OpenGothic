@@ -1948,7 +1948,15 @@ bool Npc::implComboLink() {
   // without 'break_on_lost' series is finished even into the air
   if(fghAlgo.comboAi(*this).break_on_lost &&
      !(fghAlgo.isInWRange(*this,*currentTarget,owner.script()) && fghAlgo.isInFocusAngle(*this,*currentTarget))) {
-    FightLog::seriesBreak(*this,fghAlgo.series(),queued,"target_lost");
+    if(FightLog::isEnabled()) {
+      // which check failed: distance against the attack range, angle to the target
+      const auto  dpos  = currentTarget->collosionCenter() - collosionCenter();
+      const float da    = rotation() - std::atan2(dpos.z,dpos.x)*180.f/float(M_PI);
+      const int   angle = int(std::abs(std::remainder(da,360.f)));
+      const int   dist  = int(std::sqrt(fghAlgo.qDistTo(*this,*currentTarget)));
+      const int   range = int(fghAlgo.prefferedAttackDistance(*this,*currentTarget,owner.script()));
+      FightLog::seriesBreak(*this,fghAlgo.series(),queued,"target_lost",string_frm("dist ",dist," range ",range," angle ",angle));
+      }
     fghAlgo.onBreakSeries();
     return false;
     }

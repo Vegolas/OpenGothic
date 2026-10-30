@@ -36,7 +36,8 @@ class FightLog final {
     static void defend(Npc& npc, Npc& tgt, bool jumpBack, uint16_t comboLen);
     static void hit   (Npc& npc, Npc& tgt, uint16_t comboLen, int32_t dmg, int32_t hpBefore, bool stagger);
     static void state (Npc& npc, std::string_view st, Npc* by);
-    static void seriesBreak(Npc& npc, const FightAlgo::Series& ser, bool queued, std::string_view why);
+    static void seriesBreak(Npc& npc, const FightAlgo::Series& ser, bool queued, std::string_view why,
+                            std::string_view detail = {});
     static void marker(std::string_view what, int32_t line = -1, std::string_view text = {}, std::string_view file = {});
 
   private:
