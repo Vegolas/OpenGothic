@@ -91,6 +91,7 @@ class Json final {
 struct Character final {
   uint32_t                    id      = 0;
   uint32_t                    attacks = 0;
+  bool                        comboBroken = false; // continuation break logged since the last attack
   std::weak_ptr<zenkit::INpc> handle;
   };
 
@@ -246,6 +247,7 @@ void FightLog::attack(Npc& npc, AnimationSolver::Anim anim, BodyState bs, const 
   auto& c   = character(npc);
   auto  tgt = npc.target();
   c.attacks++;
+  c.comboBroken = false;
 
   Json j(npc.world().tickCount(),"attack");
   who(j,npc,c);
@@ -362,6 +364,12 @@ void FightLog::seriesBreak(Npc& npc, const FightAlgo::Series& ser, bool queued, 
   if(!enabled)
     return;
   auto& c = character(npc);
+  if(!queued) {
+    // a continuation is retried every tick of its combo window: log the break once until the next attack
+    if(c.comboBroken)
+      return;
+    c.comboBroken = true;
+    }
   Json  j(npc.world().tickCount(),"break");
   who(j,npc,c);
   j.str("what","series").str("why",why);
