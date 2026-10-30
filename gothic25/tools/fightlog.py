@@ -249,7 +249,9 @@ def expectations_section(exps: list[Expectation], status: dict | None, scenario:
     ok = scenario_ok and passed == len(exps)
     out = ["## Oczekiwania", ""]
     out.append(f"- Scenariusz: `{scenario}`")
-    if not scenario_ok:
+    if not scenario_ok and status.get("result") == "running":
+        out.append("- Scenariusz się nie skończył: gra zamknęła się albo została zamknięta w trakcie")
+    elif not scenario_ok:
         out.append(f"- Scenariusz nie zakończył się poprawnie: {status.get('result')}")
     if exps:
         out.append(f"- Zaliczone: {passed} z {len(exps)}")
@@ -429,7 +431,9 @@ def cmd_check(args) -> int:
     for e in exps:
         actual = fmt(e.actual) if e.actual is not None else e.note
         print(f"{'ok  ' if e.ok else 'FAIL'} line {e.line}: {e.who} {e.metric} {e.op} {fmt(e.value)} (actual: {actual})")
-    if status is not None and status.get("result") != "ok":
+    if status is not None and status.get("result") == "running":
+        print("FAIL scenario: did not finish, the game ended or was closed during it")
+    elif status is not None and status.get("result") != "ok":
         print(f"FAIL scenario: {status.get('result')} at line {status.get('line')}: {status.get('message')}")
     print(f"report: {out}")
     print("result: " + ("passed" if ok else "FAILED"))

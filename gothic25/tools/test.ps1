@@ -228,7 +228,7 @@ function Invoke-Scenario([string]$ScenarioPath) {
     $failures += 'no scenario.json: the game ended before the scenario was loaded'
   } else {
     $status = Read-Utf8 $statusFile | ConvertFrom-Json
-    if($status.result -eq 'running') {
+    if($status.result -eq 'running' -and -not $timedOut) {
       $failures += ('the game ended during the scenario, exit code 0x{0:X8} (see log.txt and crash.log)' -f $process.ExitCode)
     } elseif($status.result -ne 'ok') {
       $failures += "scenario $($status.result) at line $($status.line): $($status.message)"
