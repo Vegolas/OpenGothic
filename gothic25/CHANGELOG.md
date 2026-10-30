@@ -23,7 +23,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), wersje według
   - scenariusze testowe (`tools/test.ps1`, `tests/`), dziennik walki wręcz i raport z oczekiwaniami
     (`tools/fightlog.py`),
   - nowe polecenia konsoli w trybie deweloperskim: `call`, `give`, `equip`, `save game`, `screenshot`,
-    `toggle fightlog`, `info told`, `immortal`, `quit`; `insert` stawia postać przed bohaterem,
+    `toggle fightlog`, `info told`, `immortal`, `remove npc`, `quit`; `insert` stawia postać przed
+    bohaterem,
   - silnik wczytuje moda spoza folderu gry (`-game:` ze ścieżką bezwzględną) i zapis spod ścieżki
     (`-save`).
 

@@ -175,6 +175,7 @@ Marvin::Marvin() {
     {"toggle fightlog",            C_ToggleFightLog},
     {"info told %c",               C_InfoTold},
     {"immortal %c",                C_Immortal},
+    {"remove npc %c %d",           C_RemoveNpc},
     {"quit",                       C_Quit},
 
     {"toggle gi",                  C_ToggleGI},
@@ -527,6 +528,14 @@ bool Marvin::exec(std::string_view v) {
         }
       npc->handle().flags = npc->handle().flags | zenkit::NpcFlag::IMMORTAL;
       return true;
+      }
+    case C_RemoveNpc: {
+      // monsters around a test place would join the fight
+      World* world  = Gothic::inst().world();
+      Npc*   player = Gothic::inst().player();
+      if(world==nullptr || player==nullptr)
+        return false;
+      return removeNpc(*world, *player, ret.argv[0], ret.argv[1]);
       }
     case C_Quit:
       Tempest::SystemApi::exit();
@@ -881,6 +890,28 @@ Npc* Marvin::findNpc(World& world, std::string_view name) {
   for(size_t n=0; auto npc = world.findNpcByInstance(id,n); ++n)
     ret = npc;
   return ret;
+  }
+
+bool Marvin::removeNpc(World& world, Npc& player, std::string_view name, std::string_view radius) {
+  size_t id = world.script().findSymbolIndex(name);
+  size_t r  = 0;
+  if(id==size_t(-1) || !fromString(radius, r))
+    return false;
+
+  std::vector<Npc*> npc;
+  world.detectNpc(player.position(), float(r)*100.f, [&](Npc& n) {
+    if(n.instanceSymbol()==id && &n!=&player)
+      npc.push_back(&n);
+    });
+  // an empty result means a wrong place or name, which a scenario should report
+  if(npc.empty()) {
+    print(string_frm("remove npc: no \"",name,"\" within ",int(r)," m"));
+    return false;
+    }
+  for(auto i:npc)
+    world.removeNpc(*i);
+  print(string_frm("remove npc: ",int(npc.size())," removed"));
+  return true;
   }
 
 bool Marvin::giveItem(World& world, Npc& player, std::string_view name, size_t count, bool equip) {

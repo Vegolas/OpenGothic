@@ -200,6 +200,12 @@ specyfikacji”.
 - `immortal <instancja>` (dopisane 2026-10-30): flaga `NPC_FLAG_IMMORTAL` postaci, którą
   `Npc::changeAttribute` już respektuje. Paladyn zabija bandytę w kilku ciosach, więc bez tego walki
   NPC z NPC z 001 K5 i K7 trwałyby za krótko na obserwację serii, obrony i przerwań.
+- `remove npc <instancja> <promień w m>` (dopisane 2026-10-30): postacie tej instancji w promieniu
+  od bohatera opuszczają świat (`World::removeNpc`). Scenariusze 001 przeniesione spod wieży Xardasa
+  na `NW_PASS_05` (Z27) muszą usunąć młode wilki z `NW_PASS_06`, które dołączają do walki,
+  a `B_RemoveNpc` trafia tylko w ostatnio utworzoną postać instancji `YWolf` w całym świecie. Brak
+  takich postaci w promieniu to błąd, żeby scenariusz w złym miejscu nie przeszedł po cichu.
+  Usuwanie wilków w `Startup.d` odpada: zmieniłoby grę dla graczy i nie działa bez moda.
 - `save game <slot>`:
   - zastępuje pustą pozycję,
   - przed zapisem sprawdza warunki z `MainWindow::saveGame` (dialog, przerywnik) i zgłasza błąd,

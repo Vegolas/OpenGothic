@@ -70,6 +70,7 @@ class Marvin {
       C_ToggleFightLog,
       C_InfoTold,
       C_Immortal,
+      C_RemoveNpc,
       C_Quit,
 
       // opengothic specific
@@ -108,6 +109,7 @@ class Marvin {
     bool   callFunction            (World& world, std::string_view name, std::string_view args);
     bool   intArgument             (World& world, std::string_view arg, int32_t& v);
     Npc*   findNpc                 (World& world, std::string_view name);
+    bool   removeNpc               (World& world, Npc& player, std::string_view name, std::string_view radius);
     bool   giveItem                (World& world, Npc& player, std::string_view name, size_t count, bool equip);
     bool   saveGame                (World& world, int slot);
     bool   screenshot              (std::string_view name);

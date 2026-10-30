@@ -103,6 +103,8 @@ czyta człowiek albo Claude. Właściciel projektu ogląda tylko to, czego nie d
   - oznaczenie kwestii dialogowej jako już przegadanej z bohaterem, żeby ważny dialog
     (np. powitanie Xardasa na początku nowej gry) nie zaczepiał bohatera w teście,
   - nieśmiertelność wskazanej postaci, żeby walka NPC z NPC trwała tyle, ile potrzebuje test,
+  - usunięcie ze świata postaci wskazanej instancji w pobliżu bohatera, żeby potwory z okolicy
+    miejsca testu nie dołączały do walki (dopisane 2026-10-30),
   - zapis gry do wskazanego slotu, tak samo jak z menu,
   - zrzut ekranu do pliku PNG, bez okna konsoli na obrazie,
   - zakończenie gry.

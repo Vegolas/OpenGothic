@@ -93,6 +93,10 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
       zamyka się tylko w trybie automatycznym (`-scenario-exit`). Wcześniej scenariusze 001 w trybie
       ręcznym zamykały grę po swoim czasie, wbrew W2 i K1. Sprawdzenie: zestaw 001 w trybie
       automatycznym kończy się jak dotąd, a K1 w trybie ręcznym zostawia grę otwartą. (W2, K1)
+- [x] **Z26** T3 (dopisane 2026-10-30, przy Z21): polecenie konsoli `remove npc <instancja> <promień w m>`
+      usuwa ze świata postacie tej instancji w pobliżu bohatera, a gdy żadnej nie ma, zgłasza błąd.
+      Sprawdzenie: scenariusze 001 po Z27 usuwają młode wilki z `NW_PASS_06`, a w dzienniku
+      nie ma `YWOLF`. (W3)
 - [x] **Z13** T4: `wait <instancja|hero> <zdarzenie> [n] timeout <s>` na zdarzeniach z dziennika
       (`series`, `series-hit`, `combo`, `down`, `unconscious`, `dead`). Po upływie limitu
       scenariusz zgłasza błąd. (W1, W7, K6, K8)
@@ -146,6 +150,17 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
       - Wpis w `CHANGELOG.md`.
 
       (W9, W10, W11, K10)
+
+- [ ] **Z27** (dopisane 2026-10-30, przy Z21): scenariusze 001 walczą przy przełęczy (`NW_PASS_05`)
+      zamiast we wnętrzu wieży Xardasa.
+      - Powód: w wieży NPC blokowali się na framugach, schodach i meblach, obchodząc bohatera
+        albo pchając go przed sobą, i przestawali atakować nawet na 100 s. Zestaw zawodził
+        przypadkiem, a właściciel projektu ruszał bohaterem, żeby ich odblokować.
+      - Przed walką scenariusze usuwają strażników bramy i młode wilki z `NW_PASS_06` (Z26).
+      - Progi sprawdzone na nowym miejscu przebiegiem kalibracyjnym. Zmiany progów osobno,
+        z uzasadnieniem w scenariuszu (ADR 0004).
+
+      (W9, W12, K10, K11)
 
 ## Faza 6: Weryfikacja
 
