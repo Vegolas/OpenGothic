@@ -8,13 +8,13 @@ call B_RemoveNpc BDT_1013_Bandit_L
 cheat god
 set time 12 0
 insert OrcWarrior_Roam
-call B_Attack OrcWarrior_Roam hero 0 0
 ztimer multiplyer 2
 wait 180
 quit
 
 # Progi (przebieg 2026-10-30):
-# W 180 s gry: combo 2, 11 ciosów z kontynuacji.
+# Orkowie atakują sami (AI potworów). Z B_Attack elita potrafiła po 35 s przestać walczyć.
+# W 180 s gry: combo 2, 11-16 ciosów z kontynuacji.
 expect OrcWarrior_Roam combo.max == 2
 expect OrcWarrior_Roam series.combo >= 1
 expect OrcWarrior_Roam series.whirl == 0

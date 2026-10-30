@@ -7,13 +7,13 @@ call B_RemoveNpc BDT_1013_Bandit_L
 cheat god
 set time 12 0
 insert OrcElite_Roam
-call B_Attack OrcElite_Roam hero 0 0
 ztimer multiplyer 2
 wait 180
 quit
 
 # Progi (przebieg 2026-10-30):
-# W 180 s gry: po 5 serii wirujących i mistrzowskich, 5 ucięć przez talent.
+# Orkowie atakują sami (AI potworów). Z B_Attack elita potrafiła po 35 s przestać walczyć.
+# W 180 s gry na własnym AI: 8 serii wirujących, 7 mistrzowskich, 6 ucięć przez talent.
 expect OrcElite_Roam series.whirl >= 1
 expect OrcElite_Roam series.master >= 1
 expect OrcElite_Roam combo.max == 2

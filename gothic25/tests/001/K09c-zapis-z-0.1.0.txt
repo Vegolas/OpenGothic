@@ -1,19 +1,24 @@
 # criterion: 001 K9
 # timeout: 200
 # save: build/testsaves/001-K9-v0.1.0-pal230.sav
-# Zapis z wersji 0.1.0 (Z1 w 001) się wczytuje. W tym zapisie walka już się skończyła, więc na
-# wczytanym zapisie wstawiamy paladyna od nowa i sprawdzamy, że walczy i łączy ciosy.
+# Zapis z wersji 0.1.0 (Z1 w 001) się wczytuje, a walka i combo działają na wczytanej grze.
+# W tym zapisie walka już się skończyła, a bohatera nikt nie atakuje (zostaje mu flaga rozmowy,
+# AIV_INVINCIBLE), więc walczą ze sobą wstawieni od nowa paladyn i bandyta.
 call B_RemoveNpc NONE_100_Xardas
 cheat god
 set time 12 0
 insert Pal_230_Ritter
-call B_Attack Pal_230_Ritter hero 0 0
+insert BDT_1006_Bandit_H
+immortal Pal_230_Ritter
+immortal BDT_1006_Bandit_H
+call B_Attack Pal_230_Ritter BDT_1006_Bandit_H 0 0
+call B_Attack BDT_1006_Bandit_H Pal_230_Ritter 0 0
 ztimer multiplyer 2
-wait 60
+wait 90
 quit
 
 # Progi (przebieg 2026-10-30):
 # Przed poprawką z ADR 0005 ten zapis się nie wczytywał (przesunięte numery symboli).
-# Po wczytaniu nie ma w nim walki, więc paladyn jest wstawiany od nowa.
-expect Pal_230_Ritter attacks >= 3
+# Próba 2026-10-30: paladyn 3 ciosy, bandyta 12 w 20 s gry bez przyspieszenia; tu 90 s przy 2.
+expect Pal_230_Ritter attacks >= 5
 expect Pal_230_Ritter combo.max >= 2

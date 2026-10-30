@@ -18,7 +18,7 @@ quit
 
 # Progi (przebieg 2026-10-30):
 # Każdy rodzaj serii to ok. 1 z 11 ruchów mistrza. W 180 s gry wypadało ich 3-8, więc obserwacja
-# trwa 300 s, żeby szansa na zero dla któregoś rodzaju spadła poniżej 1%; przy 300 s wypadło 7-10.
+# trwa 300 s, żeby szansa na zero dla któregoś rodzaju spadła poniżej 1%; przy 300 s wypadło 3-10.
 # Pominięte ms: 162-182. Połączenie na 80% okna pomija 0,2 x okno + 40 ms, czyli ok. 182 ms przy
 # najdłuższym oknie, więc próg 200 z W7 nie zależy od losu.
 # W1: pełne combo do przodu z 4 ciosów

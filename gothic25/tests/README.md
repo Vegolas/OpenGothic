@@ -156,6 +156,14 @@ Przyspieszenie: przy `ztimer multiplyer 2` NPC atakują częściej w przeliczeni
 łączenia się nie zmieniają. Scenariusze używają przyspieszenia 2. Liczb na minutę nie porównuj
 między przebiegami z różnym przyspieszeniem.
 
+Rozpoczynanie walki:
+- ludzie: `call B_Attack <NPC> <cel> 0 0`;
+- potwory i orkowie (AI potworów, `ZS_MM_AllScheduler`) atakują bohatera sami, bez `B_Attack`.
+  `B_Attack` daje im ludzki stan ataku, który kończy się po czasie pościgu, i w próbie elita orków
+  po 35 s przestała walczyć;
+- w zapisie z 0.1.0 bohatera nikt nie atakuje, bo zostaje mu flaga rozmowy (`AIV_INVINCIBLE`).
+  Na takim zapisie walkę sprawdzamy między dwoma NPC.
+
 Pora dnia: nowa gra zaczyna się rano. W próbie z 2026-10-30 paladyn wstawiony bez `set time 12 0`
 nie zaatakował bohatera przez 60 s mimo `B_Attack`, a z tą linią zaatakował po pół sekundy.
 Ustawiaj porę dnia na początku scenariusza, zanim wstawisz postacie.
@@ -241,6 +249,7 @@ Gdy cios powala cel, zdarzenie `state` z `unconscious` albo `dead` trafia do dzi
 | `what` | string | `series` albo `combo` |
 | `why` | string | przyczyna (niżej) |
 | `series`, `series_id`, `series_pos` | | przy `series`: rodzaj i numer serii oraz ile jej ciosów padło (`combo` i `null` dla kontynuacji combo); przy `combo`: `null`, `null` i etap combo, na którym się urwało |
+| `detail` | string | tylko przy `target_lost`: `dist <cm> range <cm> angle <stopnie>`, czyli odległość do celu, zasięg ataku i kąt do celu (próg 30°) |
 
 Przyczyny:
 
