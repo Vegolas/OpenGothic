@@ -195,6 +195,9 @@ specyfikacji”.
 - `info told <instancja C_INFO>` (dopisane 2026-10-30): kwestia liczy się jako przegadana
   z bohaterem (`GameScript::setNpcInfoKnown`), więc ważny dialog, np. `DIA_Xardas_Hello` na starcie
   nowej gry, nie zaczepia bohatera. Bez tego K1 (tryb ręczny bez wejścia od gracza) nie przejdzie.
+- `immortal <instancja>` (dopisane 2026-10-30): flaga `NPC_FLAG_IMMORTAL` postaci, którą
+  `Npc::changeAttribute` już respektuje. Paladyn zabija bandytę w kilku ciosach, więc bez tego walki
+  NPC z NPC z 001 K5 i K7 trwałyby za krótko na obserwację serii, obrony i przerwań.
 - `save game <slot>`:
   - zastępuje pustą pozycję,
   - przed zapisem sprawdza warunki z `MainWindow::saveGame` (dialog, przerywnik) i zgłasza błąd,

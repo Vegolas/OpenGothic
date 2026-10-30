@@ -69,6 +69,7 @@ class Marvin {
       C_Screenshot,
       C_ToggleFightLog,
       C_InfoTold,
+      C_Immortal,
       C_Quit,
 
       // opengothic specific

@@ -158,6 +158,7 @@ Marvin::Marvin() {
     {"screenshot %s",              C_Screenshot},
     {"toggle fightlog",            C_ToggleFightLog},
     {"info told %c",               C_InfoTold},
+    {"immortal %c",                C_Immortal},
     {"quit",                       C_Quit},
 
     {"toggle gi",                  C_ToggleGI},
@@ -498,6 +499,17 @@ bool Marvin::exec(std::string_view v) {
         print(string_frm("info told: \"",ret.argv[0],"\" is not a dialog info"));
         return false;
         }
+      return true;
+      }
+    case C_Immortal: {
+      // npc keeps its hit points, so a fight between npcs lasts as long as a test needs
+      World* world = Gothic::inst().world();
+      Npc*   npc   = world!=nullptr ? findNpc(*world, ret.argv[0]) : nullptr;
+      if(npc==nullptr) {
+        print(string_frm("immortal: no npc \"",ret.argv[0],"\""));
+        return false;
+        }
+      npc->handle().flags = npc->handle().flags | zenkit::NpcFlag::IMMORTAL;
       return true;
       }
     case C_Quit:
