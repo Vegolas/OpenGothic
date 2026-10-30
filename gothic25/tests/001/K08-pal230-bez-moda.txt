@@ -1,0 +1,24 @@
+# criterion: 001 K8
+# timeout: 300
+# mod: off
+# K1 bez moda: paladyn walczy jak w oryginale, bez serii potrójnych, wirujących
+# i mistrzowskich i bez combo do przodu.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+cheat god
+set time 12 0
+insert Pal_230_Ritter
+call B_Attack Pal_230_Ritter hero 0 0
+ztimer multiplyer 2
+wait 180
+quit
+
+# Progi (przebieg 2026-10-30):
+# W 180 s gry bez moda: 48 ciosów, żadnego combo ani długiej serii. Zera nie zależą od losu.
+expect Pal_230_Ritter attacks >= 10
+expect Pal_230_Ritter combo.max == 1
+expect Pal_230_Ritter series.triple == 0
+expect Pal_230_Ritter series.whirl == 0
+expect Pal_230_Ritter series.master == 0
+expect Pal_230_Ritter series.combo == 0

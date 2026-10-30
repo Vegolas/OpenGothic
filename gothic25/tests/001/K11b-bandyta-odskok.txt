@@ -1,0 +1,28 @@
+# criterion: 001 K11
+# timeout: 300
+# To samo dla silnego bandyty: dokańcza serię w powietrze.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+cheat god
+set time 12 0
+insert BDT_1006_Bandit_H
+call B_Attack BDT_1006_Bandit_H hero 0 0
+wait BDT_1006_Bandit_H series timeout 90
+goto waypoint NW_XARDAS_TOWER_IN1_31
+wait 8
+goto waypoint NW_XARDAS_START
+wait BDT_1006_Bandit_H series timeout 90
+goto waypoint NW_XARDAS_TOWER_IN1_31
+wait 8
+goto waypoint NW_XARDAS_START
+wait BDT_1006_Bandit_H series timeout 90
+goto waypoint NW_XARDAS_TOWER_IN1_31
+wait 8
+goto waypoint NW_XARDAS_START
+quit
+
+# Progi (przebieg 2026-10-30):
+# Trzy odskoki: 0 przerwań (styl silny nie ma break_on_lost), 10 pudeł w powietrze.
+expect BDT_1006_Bandit_H break.target_lost == 0
+expect BDT_1006_Bandit_H res.miss >= 1

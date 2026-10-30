@@ -1,0 +1,19 @@
+# criterion: 001 K2
+# timeout: 300
+# Wojownik broni dwuręcznej (talent 55%) ma combo najwyżej z 3 ciosów;
+# seria mistrzowska kończy się na trzecim ciosie do przodu.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+cheat god
+set time 12 0
+insert BDT_1071_Addon_Ramon
+call B_Attack BDT_1071_Addon_Ramon hero 0 0
+ztimer multiplyer 2
+wait 180
+quit
+
+# Progi (przebieg 2026-10-30):
+# W 180 s gry: najdłuższe combo 3, ucięcie przez talent 4 razy.
+expect BDT_1071_Addon_Ramon combo.max == 3
+expect BDT_1071_Addon_Ramon break.talent >= 1

@@ -1,0 +1,13 @@
+# criterion: 001 K9
+# timeout: 200
+# save: build/testsaves/001-K9-v0.1.0-pal230.sav
+# Zapis z wersji 0.1.0 (Z1 w 001) się wczytuje, a paladyn walczy dalej.
+call B_RemoveNpc NONE_100_Xardas
+cheat god
+wait 60
+quit
+
+# Progi (przebieg 2026-10-30):
+# Jak K09b. 2026-10-30 zapis się nie wczytuje: 001 dodało symbol do GOTHIC.DAT (FAI_ORC_ELITE),
+# a OpenGothic zapisuje NPC numerem symbolu. Scenariusz ma zawodzić, dopóki 001 tego nie naprawi.
+expect Pal_230_Ritter attacks >= 3

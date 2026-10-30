@@ -1,0 +1,17 @@
+# criterion: 001 K2
+# timeout: 300
+# Mistrz broni dwuręcznej (talent 85%) ma combo do przodu z 4 ciosów.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+cheat god
+set time 12 0
+insert BDT_1088_Addon_Torwache
+call B_Attack BDT_1088_Addon_Torwache hero 0 0
+ztimer multiplyer 2
+wait 180
+quit
+
+# Progi (przebieg 2026-10-30):
+# W 180 s gry combo z 4 ciosów wypadało za każdym razem (mistrz ma kontynuację combo).
+expect BDT_1088_Addon_Torwache combo.max == 4

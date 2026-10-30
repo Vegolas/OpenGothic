@@ -1,0 +1,17 @@
+# criterion: 001 K12
+# timeout: 300
+# Kopacz walczący pięściami (styl silny) łączy dwa ciosy w combo.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+cheat god
+set time 12 0
+insert BDT_10027_Addon_Buddler
+call B_Attack BDT_10027_Addon_Buddler hero 0 0
+ztimer multiplyer 2
+wait 180
+quit
+
+# Progi (przebieg 2026-10-30):
+# W 180 s gry combo z 2 ciosów pięścią wypadało za każdym razem.
+expect BDT_10027_Addon_Buddler combo.max == 2

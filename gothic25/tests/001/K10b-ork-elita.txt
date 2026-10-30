@@ -1,0 +1,20 @@
+# criterion: 001 K10
+# timeout: 300
+# Elita orków (styl 13): dodatkowo seria wirująca i mistrzowska, która kończy się na drugim ciosie do przodu.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+cheat god
+set time 12 0
+insert OrcElite_Roam
+call B_Attack OrcElite_Roam hero 0 0
+ztimer multiplyer 2
+wait 180
+quit
+
+# Progi (przebieg 2026-10-30):
+# W 180 s gry: po 5 serii wirujących i mistrzowskich, 5 ucięć przez talent.
+expect OrcElite_Roam series.whirl >= 1
+expect OrcElite_Roam series.master >= 1
+expect OrcElite_Roam combo.max == 2
+expect OrcElite_Roam break.talent >= 1

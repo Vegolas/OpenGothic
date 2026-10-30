@@ -1,0 +1,21 @@
+# criterion: 001 K10
+# timeout: 300
+# Ork wojownik (styl 12): pojedynczy cios, seria boczna, potrójna i kontynuacja combo z 2 ciosów;
+# bez serii wirującej i mistrzowskiej.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+cheat god
+set time 12 0
+insert OrcWarrior_Roam
+call B_Attack OrcWarrior_Roam hero 0 0
+ztimer multiplyer 2
+wait 180
+quit
+
+# Progi (przebieg 2026-10-30):
+# W 180 s gry: combo 2, 11 ciosów z kontynuacji.
+expect OrcWarrior_Roam combo.max == 2
+expect OrcWarrior_Roam series.combo >= 1
+expect OrcWarrior_Roam series.whirl == 0
+expect OrcWarrior_Roam series.master == 0

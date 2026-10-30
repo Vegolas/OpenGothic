@@ -1,0 +1,35 @@
+# criterion: 001 K1
+# criterion: 001 K3
+# timeout: 420
+# Paladyn-mistrz (styl 4, broń jednoręczna, talent 80%) atakuje nieśmiertelnego bohatera przez 300 s gry.
+# K3: tylko część liczbowa (ile ciosu pomija połączenie); płynność ocenia człowiek.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+cheat god
+set time 12 0
+insert Pal_230_Ritter
+call B_Attack Pal_230_Ritter hero 0 0
+screenshot start.png
+ztimer multiplyer 2
+wait 300
+screenshot end.png
+quit
+
+# Progi (przebieg 2026-10-30):
+# Każdy rodzaj serii to ok. 1 z 11 ruchów mistrza. W 180 s gry wypadało ich 3-8, więc obserwacja
+# trwa 300 s, żeby szansa na zero dla któregoś rodzaju spadła poniżej 1%; przy 300 s wypadło 7-10.
+# Pominięte ms: 162-182. Połączenie na 80% okna pomija 0,2 x okno + 40 ms, czyli ok. 182 ms przy
+# najdłuższym oknie, więc próg 200 z W7 nie zależy od losu.
+# W1: pełne combo do przodu z 4 ciosów
+expect Pal_230_Ritter combo.max == 4
+# W2, W3: każda seria mistrza i kontynuacja combo
+expect Pal_230_Ritter series.side >= 1
+expect Pal_230_Ritter series.front >= 1
+expect Pal_230_Ritter series.triple >= 1
+expect Pal_230_Ritter series.whirl >= 1
+expect Pal_230_Ritter series.master >= 1
+expect Pal_230_Ritter series.combo >= 1
+# W7: mistrz pomija najwyżej ok. 0,2 s ciosu
+expect Pal_230_Ritter skip.max_ms <= 200
+expect hero taken.hit >= 1

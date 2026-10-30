@@ -83,6 +83,9 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
       powitanie Xardasa nie zaczepiało bohatera w testach. Sprawdzenie: scenariusz z modem, który
       oznacza `DIA_Xardas_Hello`, a po 60 s gry zapisuje grę (zapis w dialogu by się nie udał).
       (W3, K1)
+- [x] **Z23** T3 (dopisane 2026-10-30): polecenie konsoli `immortal <instancja>` (flaga
+      `NPC_FLAG_IMMORTAL`), żeby walki NPC z NPC w scenariuszach 001 K5 i K7 trwały do końca
+      obserwacji. Sprawdzenie w scenariuszach Z19. (W3, K10)
 - [x] **Z13** T4: `wait <instancja|hero> <zdarzenie> [n] timeout <s>` na zdarzeniach z dziennika
       (`series`, `series-hit`, `combo`, `down`, `unconscious`, `dead`). Po upływie limitu
       scenariusz zgłasza błąd. (W1, W7, K6, K8)
@@ -118,7 +121,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
 
 ## Faza 5: Scenariusze i proces
 
-- [ ] **Z19** Scenariusze dla 001 w `gothic25/tests/001/` z oczekiwaniami.
+- [x] **Z19** Scenariusze dla 001 w `gothic25/tests/001/` z oczekiwaniami.
       - Wybór spokojnego waypointu, potwierdzony zrzutem ekranu.
       - Porównanie przyspieszenia 1 i 2 na scenariuszu K1 (ryzyko z planu).
       - Scenariusze:

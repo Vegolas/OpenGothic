@@ -1,0 +1,23 @@
+# criterion: 001 K4
+# timeout: 300
+# Styl normalny (42): pojedynczy cios, seria boczna i frontalna;
+# bez serii potrójnej i bez combo dłuższego niż jeden cios do przodu.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+cheat god
+set time 12 0
+insert BDT_1003_Bandit_M
+call B_Attack BDT_1003_Bandit_M hero 0 0
+ztimer multiplyer 2
+wait 180
+quit
+
+# Progi (przebieg 2026-10-30):
+# W 180 s gry: 51 serii bocznych i frontalnych. Zera to ograniczenia, które nie zależą od losu.
+expect BDT_1003_Bandit_M series.multi >= 1
+expect BDT_1003_Bandit_M series.triple == 0
+expect BDT_1003_Bandit_M series.whirl == 0
+expect BDT_1003_Bandit_M series.master == 0
+expect BDT_1003_Bandit_M series.combo == 0
+expect BDT_1003_Bandit_M combo.max == 1

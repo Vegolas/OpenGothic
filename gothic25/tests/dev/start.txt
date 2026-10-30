@@ -1,0 +1,3 @@
+# Start do ręcznych testów deweloperskich: nowa gra bez powitania Xardasa.
+# Uruchomienie: tools/test.ps1 -Scenario dev/start -Manual
+info told DIA_Xardas_Hello

@@ -1,0 +1,17 @@
+# criterion: 001 K6
+# timeout: 200
+# Bez cheat god: paladyn powala bohatera i nie wyprowadza kolejnych ciosów w leżącego.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+set time 12 0
+insert Pal_230_Ritter
+call B_Attack Pal_230_Ritter hero 0 0
+wait hero down timeout 60
+wait 20
+quit
+
+# Progi (przebieg 2026-10-30):
+# Ograniczenie, które nie zależy od losu: żadnego ciosu w leżący cel.
+expect hero state.unconscious >= 1
+expect Pal_230_Ritter attacks.tgt_down == 0

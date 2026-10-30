@@ -1,0 +1,17 @@
+# criterion: 001 K9
+# timeout: 200
+# Zapis z polecenia w chwili drugiego ciosu serii paladyna. Zapis wczytuje K09b.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+cheat god
+set time 12 0
+insert Pal_230_Ritter
+call B_Attack Pal_230_Ritter hero 0 0
+wait Pal_230_Ritter series-hit 2 timeout 90
+save game 1
+quit
+
+# Progi (przebieg 2026-10-30):
+# Zapis pada w trakcie pierwszej serii, więc seria jest dokładnie jedna.
+expect Pal_230_Ritter series.multi >= 1

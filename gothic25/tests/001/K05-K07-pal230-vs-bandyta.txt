@@ -1,0 +1,31 @@
+# criterion: 001 K5
+# criterion: 001 K7
+# timeout: 300
+# Walka NPC z NPC: paladyn-mistrz i silny bandyta, obaj nieśmiertelni.
+# K5: mistrz broni się w trakcie serii, trafienie przerywa serię bandyty.
+# K7: paladyn ma combo i serie jak w K1.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+cheat god
+set time 12 0
+insert Pal_230_Ritter
+insert BDT_1006_Bandit_H
+immortal Pal_230_Ritter
+immortal BDT_1006_Bandit_H
+call B_Attack Pal_230_Ritter BDT_1006_Bandit_H 0 0
+call B_Attack BDT_1006_Bandit_H Pal_230_Ritter 0 0
+screenshot start.png
+ztimer multiplyer 2
+wait 180
+screenshot end.png
+quit
+
+# Progi (przebieg 2026-10-30):
+# W 180 s gry: 13 obron w serii paladyna, 13 serii bandyty przerwanych trafieniem, combo 4,
+# 24 serie paladyna.
+expect Pal_230_Ritter break.defend >= 1
+expect BDT_1006_Bandit_H break.hit >= 1
+expect BDT_1006_Bandit_H taken.hit >= 1
+expect Pal_230_Ritter combo.max >= 3
+expect Pal_230_Ritter series.multi >= 3

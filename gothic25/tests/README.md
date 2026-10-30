@@ -79,6 +79,7 @@ Nowe polecenia konsoli (działają też ręcznie po `F2`):
 | `save game <slot>` | zapisuje grę do slotu jak z menu; w dialogu albo przerywniku zgłasza błąd |
 | `screenshot <plik>` | zapisuje zrzut sceny 3D do PNG; ścieżka względna trafia do katalogu wyników |
 | `toggle fightlog` | włącza albo wyłącza dziennik walki (w scenariuszu jest włączony od startu) |
+| `immortal <instancja>` | postać nie traci życia (flaga `NPC_FLAG_IMMORTAL`); walka NPC z NPC trwa wtedy do końca scenariusza |
 | `info told <kwestia>` | kwestia dialogowa (instancja `C_INFO`) liczy się jako przegadana z bohaterem; `info told DIA_Xardas_Hello` na początku scenariusza zatrzymuje powitanie Xardasa w nowej grze |
 | `quit` | kończy grę |
 
@@ -143,6 +144,16 @@ expect Pal_230_Ritter series.master >= 1
 ```
 
 (Waypoint jest tylko przykładem. Właściwe miejsca wybiera zadanie Z19 planu 003.)
+
+Miejsce: scenariusze 001 walczą we wnętrzu wieży Xardasa, gdzie zaczyna się nowa gra. Xardas
+atakuje wstawionych bandytów (w próbie zabił strażnika bramy zamiast pozwolić mu walczyć
+z bohaterem), więc scenariusze usuwają go na początku: `call B_RemoveNpc NONE_100_Xardas`.
+To samo z bandytą ze schodów: `call B_RemoveNpc BDT_1013_Bandit_L`.
+
+Przyspieszenie: przy `ztimer multiplyer 2` NPC atakują częściej w przeliczeniu na minutę czasu gry
+(w próbie K1: 58 zamiast 33 ciosów na minutę), ale udział rodzajów serii, długości combo i moment
+łączenia się nie zmieniają. Scenariusze używają przyspieszenia 2. Liczb na minutę nie porównuj
+między przebiegami z różnym przyspieszeniem.
 
 Pora dnia: nowa gra zaczyna się rano. W próbie z 2026-10-30 paladyn wstawiony bez `set time 12 0`
 nie zaatakował bohatera przez 60 s mimo `B_Attack`, a z tą linią zaatakował po pół sekundy.
