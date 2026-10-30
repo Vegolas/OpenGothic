@@ -14,7 +14,9 @@ wait hero down timeout 60
 wait 20
 quit
 
-# Progi (przebieg 2026-10-30):
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
 # Ograniczenie, które nie zależy od losu: żadnego ciosu w leżący cel.
+# Przy przełęczy (kalibracja 2026-10-30): hero state.unconscious 1, Pal_230_Ritter attacks.tgt_down
+# 0.
 expect hero state.unconscious >= 1
 expect Pal_230_Ritter attacks.tgt_down == 0

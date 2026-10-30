@@ -21,8 +21,9 @@ ztimer multiplyer 2
 wait 90
 quit
 
-# Progi (przebieg 2026-10-30):
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
 # Przed poprawką z ADR 0005 ten zapis się nie wczytywał (przesunięte numery symboli).
 # Próba 2026-10-30: paladyn 3 ciosy, bandyta 12 w 20 s gry bez przyspieszenia; tu 90 s przy 2.
+# Przy przełęczy (kalibracja 2026-10-30): attacks 24, combo.max 4.
 expect Pal_230_Ritter attacks >= 5
 expect Pal_230_Ritter combo.max >= 2

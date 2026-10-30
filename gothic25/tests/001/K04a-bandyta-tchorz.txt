@@ -15,8 +15,9 @@ ztimer multiplyer 2
 wait 180
 quit
 
-# Progi (przebieg 2026-10-30):
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
 # W 180 s gry: 101 ciosów, żadnej serii. attacks >= 1 pilnuje, że tchórz w ogóle walczył.
+# Przy przełęczy (kalibracja 2026-10-30): attacks 121, series.multi 0, series.combo 0.
 expect BDT_1013_Bandit_L attacks >= 1
 expect BDT_1013_Bandit_L series.multi == 0
 expect BDT_1013_Bandit_L series.combo == 0

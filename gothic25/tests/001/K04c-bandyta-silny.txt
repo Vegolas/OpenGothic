@@ -17,9 +17,11 @@ ztimer multiplyer 2
 wait 180
 quit
 
-# Progi (przebieg 2026-10-30):
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
 # W 180 s gry: 6 serii potrójnych, 19 ciosów z kontynuacji, najwięcej pominiętych 48 ms
 # (styl silny łączy na końcu okna; próg 100 ms zostawia zapas).
+# Przy przełęczy (kalibracja 2026-10-30): series.triple 11, series.combo 18, series.whirl 0,
+# series.master 0, skip.max_ms 48.
 expect BDT_1006_Bandit_H series.triple >= 1
 expect BDT_1006_Bandit_H series.combo >= 1
 expect BDT_1006_Bandit_H series.whirl == 0

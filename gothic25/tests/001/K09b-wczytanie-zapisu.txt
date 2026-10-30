@@ -6,6 +6,7 @@ cheat god
 wait 60
 quit
 
-# Progi (przebieg 2026-10-30):
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
 # Po wczytaniu paladyn zadał 4 ciosy w 30 s gry, a przy 60 s 57 ciosów.
+# Przy przełęczy (kalibracja 2026-10-30): attacks 60.
 expect Pal_230_Ritter attacks >= 3

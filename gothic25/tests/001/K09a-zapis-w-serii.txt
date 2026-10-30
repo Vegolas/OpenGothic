@@ -15,6 +15,7 @@ wait Pal_230_Ritter series-hit 2 timeout 90
 save game 1
 quit
 
-# Progi (przebieg 2026-10-30):
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
 # Zapis pada w trakcie pierwszej serii, więc seria jest dokładnie jedna.
+# Przy przełęczy (kalibracja 2026-10-30): series.multi 1.
 expect Pal_230_Ritter series.multi >= 1

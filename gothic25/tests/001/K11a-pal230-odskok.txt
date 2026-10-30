@@ -25,6 +25,7 @@ wait 8
 goto waypoint NW_PASS_05
 quit
 
-# Progi (przebieg 2026-10-30):
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
 # Trzy odskoki dały 6 przerwań serii przez utratę celu (dziennik zapisuje przerwanie kontynuacji raz).
+# Przy przełęczy (kalibracja 2026-10-30): break.target_lost 3.
 expect Pal_230_Ritter break.target_lost >= 1

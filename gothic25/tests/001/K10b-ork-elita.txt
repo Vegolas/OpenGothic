@@ -14,9 +14,11 @@ ztimer multiplyer 2
 wait 180
 quit
 
-# Progi (przebieg 2026-10-30):
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
 # Orkowie atakują sami (AI potworów). Z B_Attack elita potrafiła po 35 s przestać walczyć.
 # W 180 s gry na własnym AI: 8 serii wirujących, 7 mistrzowskich, 6 ucięć przez talent.
+# Przy przełęczy (kalibracja 2026-10-30): series.whirl 7, series.master 9, combo.max 2, break.talent
+# 9.
 expect OrcElite_Roam series.whirl >= 1
 expect OrcElite_Roam series.master >= 1
 expect OrcElite_Roam combo.max == 2

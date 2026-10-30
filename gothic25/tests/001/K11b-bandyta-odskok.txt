@@ -25,7 +25,8 @@ wait 8
 goto waypoint NW_PASS_05
 quit
 
-# Progi (przebieg 2026-10-30):
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
 # Trzy odskoki: 0 przerwań (styl silny nie ma break_on_lost), 10 pudeł w powietrze.
+# Przy przełęczy (kalibracja 2026-10-30): break.target_lost 0, res.miss 8.
 expect BDT_1006_Bandit_H break.target_lost == 0
 expect BDT_1006_Bandit_H res.miss >= 1

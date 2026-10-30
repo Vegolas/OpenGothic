@@ -151,7 +151,7 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
 
       (W9, W10, W11, K10)
 
-- [ ] **Z27** (dopisane 2026-10-30, przy Z21): scenariusze 001 walczą przy przełęczy (`NW_PASS_05`)
+- [x] **Z27** (dopisane 2026-10-30, przy Z21): scenariusze 001 walczą przy przełęczy (`NW_PASS_05`)
       zamiast we wnętrzu wieży Xardasa.
       - Powód: w wieży NPC blokowali się na framugach, schodach i meblach, obchodząc bohatera
         albo pchając go przed sobą, i przestawali atakować nawet na 100 s. Zestaw zawodził

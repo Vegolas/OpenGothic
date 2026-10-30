@@ -24,9 +24,11 @@ wait 180
 screenshot end.png
 quit
 
-# Progi (przebieg 2026-10-30):
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
 # W 180 s gry: 13 obron w serii paladyna, 13 serii bandyty przerwanych trafieniem, combo 4,
 # 24 serie paladyna.
+# Przy przełęczy (kalibracja 2026-10-30): Pal_230_Ritter break.defend 7, BDT_1006_Bandit_H break.hit
+# 13, BDT_1006_Bandit_H taken.hit 37, Pal_230_Ritter combo.max 4, Pal_230_Ritter series.multi 14.
 expect Pal_230_Ritter break.defend >= 1
 expect BDT_1006_Bandit_H break.hit >= 1
 expect BDT_1006_Bandit_H taken.hit >= 1

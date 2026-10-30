@@ -16,8 +16,10 @@ ztimer multiplyer 2
 wait 180
 quit
 
-# Progi (przebieg 2026-10-30):
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
 # W 180 s gry: 51 serii bocznych i frontalnych. Zera to ograniczenia, które nie zależą od losu.
+# Przy przełęczy (kalibracja 2026-10-30): series.multi 47, series.triple 0, series.whirl 0,
+# series.master 0, series.combo 0, combo.max 1.
 expect BDT_1003_Bandit_M series.multi >= 1
 expect BDT_1003_Bandit_M series.triple == 0
 expect BDT_1003_Bandit_M series.whirl == 0
