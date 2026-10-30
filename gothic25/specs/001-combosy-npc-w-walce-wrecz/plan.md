@@ -176,9 +176,13 @@ Wszystkie pliki w `content/Scripts/Content`, kodowanie cp1250, zmiany sprawdzane
   | elita orków 13 (nowy `FAI_Orc_Elite.d`) | `ATTACK ×4, SIDEATTACK, FRONTATTACK, TRIPLEATTACK, WHIRLATTACK, MASTERATTACK, WAIT ×2` | `ATTACK ×2, WAIT` | 80–100%, tak, tak |
 
   Pozostałe stany FAI elity orków kopiujemy ze stylu 12.
-- **`AI/AI_Intern/AI_Constants.d`:** `FAI_ORC_ELITE = 13`.
-- **`Story/NPC/Orc/MST_OrcElite.d:45`:** `fight_tactic = FAI_ORC_ELITE` (dotyczy wszystkich
-  instancji elity, w tym pułkowników).
+- **`Story/NPC/Orc/MST_OrcElite.d:45`:** `fight_tactic = 13` (dotyczy wszystkich instancji elity,
+  w tym pułkowników).
+  - **Zmiana z 2026-10-30:** pierwotnie była tu nowa stała `FAI_ORC_ELITE = 13` w `AI_Constants.d`.
+  - Stała przesunęła numery symboli w `GOTHIC.DAT`, a OpenGothic zapisuje NPC numerem symbolu.
+    Zapisy z 0.1.0 przestały się wczytywać (W10, K9).
+  - Teraz jest liczba z komentarzem, bez nowego symbolu
+    ([ADR 0005](../../decisions/0005-stabilne-numery-symboli.md)).
 - **`content/Scripts/README.md`:** sekcja „Symbole dla silnika” z `C_FightAI_Combo`, `FA_COMBO_<N>`
   i nowym znaczeniem `FA_MY_W_COMBO_<N>` (ADR 0003).
 

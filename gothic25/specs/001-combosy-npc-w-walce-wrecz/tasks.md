@@ -61,6 +61,10 @@ w instancjach `FA_COMBO_<N>` wpisujemy `1` i `0` z komentarzem.
 - [x] **Z13** [P] Orkowie i elita orków: `FA_MY_W_COMBO_12` i `FA_COMBO_12` w `FAI_Orc.d`, nowy
       `FAI_Orc_Elite.d` (styl 13, pozostałe stany skopiowane z 12), `FAI_ORC_ELITE = 13`
       w `AI_Constants.d`, `fight_tactic = FAI_ORC_ELITE` w `MST_OrcElite.d`. (W2, W3, W5, W6, W7)
+- [x] **Z16** (dopisane 2026-10-30, wykryte scenariuszem `tests/001/K09c` z 003): zapisy z 0.1.0
+      się nie wczytywały, bo stała `FAI_ORC_ELITE` przesunęła numery symboli w `GOTHIC.DAT`.
+      Stała usunięta, w `MST_OrcElite.d` liczba 13. Tablica symboli jest taka sama jak w 0.1.0
+      (`tools/dat.py prefix`). [ADR 0005](../../decisions/0005-stabilne-numery-symboli.md). (W10, K9)
 - [x] **Z14** Wersja moda 0.2.0 w `mod.json` i wpis w `CHANGELOG.md` (bramka konstytucji, zasada 8).
       Po Z12 i Z13.
 
