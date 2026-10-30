@@ -229,7 +229,7 @@ void ScenarioRunner::tick() {
       return;
     }
   if(state==S_Running)
-    finish(false);
+    finish();
   }
 
 void ScenarioRunner::exec(const Line& l, uint64_t now) {
@@ -256,7 +256,8 @@ void ScenarioRunner::exec(const Line& l, uint64_t now) {
       return;
       }
     case K_Quit:
-      finish(true);
+      // without -scenario-exit (manual mode) the game stays open
+      finish();
       return;
     case K_Console:
       break;
@@ -287,12 +288,12 @@ void ScenarioRunner::exec(const Line& l, uint64_t now) {
     FightLog::marker("screenshot",l.num,"",TextCodec::toUtf8(CommandLine::inst().resultsFile(args[1])));
   }
 
-void ScenarioRunner::finish(bool quit) {
+void ScenarioRunner::finish() {
   state = S_Done;
   Log::i("scenario: done");
   FightLog::marker("scenario_end");
   writeStatus("ok",-1,"");
-  if(quit || exitOnEnd)
+  if(exitOnEnd)
     SystemApi::exit();
   }
 

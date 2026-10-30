@@ -223,7 +223,10 @@ specyfikacji”.
   - `wait <sekundy>`: czas gry z `GameSession::tickCount()`, więc skraca się przy przyspieszeniu,
   - `wait <instancja|hero> <zdarzenie> [n] timeout <sekundy>`: zdarzenia z dziennika walki T6,
     takie jak `series` (początek serii), `series-hit n`, `combo n`, `down`, `unconscious`, `dead`,
-  - `quit`.
+  - `quit` (zmiana z 2026-10-30): kończy scenariusz. W trybie automatycznym gra kończy się razem
+    z nim, a w ręcznym zostaje otwarta (W2, K1). Wcześniej `quit` zamykał grę także w trybie
+    ręcznym, więc scenariusze 001 nie nadawały się do K1. Polecenie konsoli `quit` (T3) nadal
+    zamyka grę.
 - `-scenario-exit` (tryb automatyczny): po ostatniej linii i przy pierwszym błędzie gra się kończy.
   Bez tej opcji (tryb ręczny) błąd trafia do konsoli i logu, a gra działa dalej.
 - Plik statusu `scenario.json` w katalogu wyników: wynik, numer linii, komunikat, czas gry.

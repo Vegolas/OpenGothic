@@ -89,6 +89,10 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
 - [x] **Z24** T3 (dopisane 2026-10-30): `insert` wstawia postać albo przedmiot 2 m przed bohaterem
       (przy ścianie bliżej), a nie w jego miejscu. Duże postacie, np. orkowie, utykały w bohaterze.
       Sprawdzenie w scenariuszach K10 z 001. (W3, K1)
+- [x] **Z25** T4 (dopisane 2026-10-30, przy Z21): linia `quit` w scenariuszu kończy scenariusz, a gra
+      zamyka się tylko w trybie automatycznym (`-scenario-exit`). Wcześniej scenariusze 001 w trybie
+      ręcznym zamykały grę po swoim czasie, wbrew W2 i K1. Sprawdzenie: zestaw 001 w trybie
+      automatycznym kończy się jak dotąd, a K1 w trybie ręcznym zostawia grę otwartą. (W2, K1)
 - [x] **Z13** T4: `wait <instancja|hero> <zdarzenie> [n] timeout <s>` na zdarzeniach z dziennika
       (`series`, `series-hit`, `combo`, `down`, `unconscious`, `dead`). Po upływie limitu
       scenariusz zgłasza błąd. (W1, W7, K6, K8)

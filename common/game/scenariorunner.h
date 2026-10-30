@@ -61,7 +61,7 @@ class ScenarioRunner final {
 
     void load(std::u16string_view file);
     void exec(const Line& l, uint64_t now);
-    void finish(bool quit);
+    void finish();
     void fail(int32_t line, std::string_view msg);
     void writeStatus(std::string_view result, int32_t line, std::string_view msg);
     void onPrint(std::string_view msg);
