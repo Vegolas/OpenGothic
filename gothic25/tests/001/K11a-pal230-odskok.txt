@@ -23,5 +23,5 @@ goto waypoint NW_XARDAS_START
 quit
 
 # Progi (przebieg 2026-10-30):
-# Trzy odskoki dały 24 przerwania serii przez utratę celu.
+# Trzy odskoki dały 6 przerwań serii przez utratę celu (dziennik zapisuje przerwanie kontynuacji raz).
 expect Pal_230_Ritter break.target_lost >= 1
