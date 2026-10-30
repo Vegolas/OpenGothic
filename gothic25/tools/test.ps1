@@ -203,6 +203,8 @@ function Invoke-Scenario([string]$ScenarioPath) {
   Write-Step "Run directory: $runDir"
   Write-Step "$exe $argLine"
   $process  = Start-Process -FilePath $exe -ArgumentList $argLine -WorkingDirectory $profileDir -PassThru
+  # the handle keeps ExitCode readable after the game exits (PowerShell 5.1)
+  $null     = $process.Handle
   $timedOut = $false
   if($Manual) {
     $process.WaitForExit()
@@ -227,7 +229,7 @@ function Invoke-Scenario([string]$ScenarioPath) {
   } else {
     $status = Read-Utf8 $statusFile | ConvertFrom-Json
     if($status.result -eq 'running') {
-      $failures += 'the game ended during the scenario (see log.txt and crash.log)'
+      $failures += ('the game ended during the scenario, exit code 0x{0:X8} (see log.txt and crash.log)' -f $process.ExitCode)
     } elseif($status.result -ne 'ok') {
       $failures += "scenario $($status.result) at line $($status.line): $($status.message)"
     }
