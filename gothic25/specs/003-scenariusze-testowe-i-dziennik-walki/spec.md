@@ -186,7 +186,7 @@ budować ani instalować (W2).
     i trafienie. Zamknij grę i otwórz raport z tego przebiegu.
   - Oczekiwane: liczba serii każdego rodzaju, długości combo, bloki i trafienia z raportu zgadzają się
     z notatkami (dopuszczalna różnica: jedna seria na samym początku albo końcu obserwacji).
-- [ ] **K4** (W2, W8): Ten sam scenariusz działa bez moda.
+- [x] **K4** (W2, W8): Ten sam scenariusz działa bez moda.
   - Kroki: P0, uruchom scenariusz dla 001 K1 w trybie automatycznym bez moda.
   - Oczekiwane: scenariusz przechodzi bez błędów, a raport opisuje walkę paladyna (jego ciosy,
     bloki i trafienia). Wyniki leżą w osobnym katalogu i nie mieszają się z przebiegiem z modem.
@@ -211,7 +211,7 @@ budować ani instalować (W2).
     10 s później, z otwartą wcześniej konsolą.
   - Oczekiwane: w katalogu wyników są dwa pliki PNG w rozdzielczości gry. Widać na nich bohatera
     i paladyna, a nie widać konsoli.
-- [ ] **K8** (W7): Błędy i limit czasu.
+- [x] **K8** (W7): Błędy i limit czasu.
   - Kroki: P0, uruchom w trybie automatycznym scenariusz z literówką w nazwie instancji w trzeciej
     linii. Potem scenariusz, który czeka na serię tchórza `BDT_1013_Bandit_L` (tchórz nie wykonuje
     serii) z limitem 30 s. Na koniec scenariusz, który czeka dłużej niż limit czasu całego przebiegu.
@@ -224,14 +224,14 @@ budować ani instalować (W2).
     powalcz chwilę z dowolnym przeciwnikiem i zamknij grę.
   - Oczekiwane: konsola deweloperska się nie otwiera, nie powstaje dziennik walki ani katalog wyników,
     gra wygląda i działa jak przed zmianą.
-- [ ] **K10** (W9, W10, W11): Scenariusze dla 001, instrukcja i zasady zaliczania.
+- [x] **K10** (W9, W10, W11): Scenariusze dla 001, instrukcja i zasady zaliczania.
   - Kroki: przeczytaj instrukcję i uruchom według niej wszystkie scenariusze dla 001 w trybie
     automatycznym. Przeczytaj ADR do zasady 5, opis weryfikacji w procesie i instrukcję dla Claude.
   - Oczekiwane: każdy scenariusz przechodzi bez błędów i daje raport, z którego da się ocenić
     swoje kryterium. Instrukcja wystarcza, żeby napisać nowy scenariusz bez czytania kodu.
     ADR i proces mówią, które kryteria może zaliczyć raport i co wpisać do tabeli „Weryfikacja”.
     Instrukcja dla Claude pozwala uruchamiać bez pytania tylko tryb automatyczny.
-- [ ] **K11** (W12): Oczekiwania w scenariuszu.
+- [x] **K11** (W12): Oczekiwania w scenariuszu.
   - Kroki: P0, uruchom w trybie automatycznym kopię scenariusza dla 001 K2 z dwoma dopisanymi
     oczekiwaniami: jednym prawdziwym („najdłuższe combo `BDT_1071_Addon_Ramon` ≤ 3”) i jednym
     fałszywym („najdłuższe combo `BDT_1071_Addon_Ramon` ≥ 5”). Potem uruchom jednym poleceniem
@@ -296,3 +296,39 @@ Brak.
 ## Weryfikacja
 
 <!-- Wypełniane po implementacji: kto, kiedy, na jakiej wersji, wynik dla każdego K. -->
+
+**Przebiegi automatyczne (Claude, 2026-10-30).** Katalogi wyników leżą w `gothic25/build/test-runs/`
+poza gitem, więc liczby, które rozstrzygają kryteria, są wpisane w tabeli.
+
+Ustalenia z weryfikacji, poprawione w trakcie Z21:
+
+- `quit` w scenariuszu zamykał grę także w trybie ręcznym, wbrew W2 i K1. Poprawka: Z25 (`794a765c`).
+- We wnętrzu wieży Xardasa NPC blokowali się na framugach i schodach i przestawali atakować nawet
+  na 100 s. Właściciel projektu ruszał wtedy bohaterem, więc pierwsze trzy przebiegi zestawu 001
+  się nie liczą. Scenariusze 001 walczą teraz przy przełęczy (Z27), a młode wilki z okolicy usuwa
+  nowe polecenie `remove npc` (Z26).
+- Cztery scenariusze zawodziły przypadkiem: K02b, K05-K07, K09c, K11a i K11b. Poprawki z uzasadnieniem
+  w scenariuszach: `78b9fb33`, `1afcd184` (ADR 0004).
+- Osobny agent napisał scenariusz K7, czytając tylko `tests/README.md` i przykłady z `tests/001`.
+  Luki, które wskazał w instrukcji, są uzupełnione (`fd2a02ff`).
+- W jednym przebiegu w wieży gra zamknęła się 4,5 s przed końcem scenariusza, bez `crash.log`
+  i bez zdarzenia w dzienniku Windows. Przyczyna nieznana i w kolejnych przebiegach (ok. 120)
+  się nie powtórzyło. Od `1c8cdbb3` `test.ps1` podaje w takim przypadku kod wyjścia gry.
+- Poza 003: odrzut po pierwszym ciosie wypycha bohatera na 210–245 cm przy zasięgu 200 i urywa
+  serie NPC (`target_lost`). To zachowanie walki z 001. Właściciel projektu odłożył je na po 003
+  (pomysł: tolerancja zasięgu 110–125%).
+
+| K | Wynik | Wersja | Kto |
+|---|---|---|---|
+| K1 | nie sprawdzone: wymaga trybu ręcznego (scenariusz `003/K01-reczny-pal230`) | | |
+| K2 | częściowo. `001/K02a` i `001/K02b` po zmianie komentarza w `FAI_Human_Master.d` bez commita: skrypty skompilowane i spakowane od nowa po zmianie, `meta.json` z `dirty: true`. Okno 800×600 (`-window small`), dźwięk słychać, gra kończy się sama po 180 s gry. W katalogach przebiegów są dziennik, raport, log gry, kopia scenariusza i `meta.json`. Raport podaje ciosy, serie według rodzaju i rozkład combo (Torwache: combo z 4 ciosów 9 razy, Ramon: z 3 ciosów 7 razy). Daty plików w `Data\ModVDF`, `System` i `Saves` gry oraz zapisów i `Gothic.ini` w `build/opengothic` są takie same jak przed wszystkimi przebiegami dnia. Brak: rozdzielczość i tryb okna w grze uruchomionej potem przez `tools/run.ps1` | `95566352` ze zmianą komentarza | Claude, automatycznie; dźwięk: Mateusz Tomanek |
+| K3 | nie sprawdzone: porównanie raportu z obserwacją w grze | | |
+| K4 | spełnione. `001/K08-pal230-bez-moda` w trzech przebiegach zestawu bez błędów. Raport opisuje walkę paladyna (108, 101 i 113 ciosów, trafienia i bloki), a wyniki leżą w osobnych katalogach z końcówką `-nomod` | `95566352` | Claude, automatycznie |
+| K5 | nie sprawdzone: konsola ręcznie | | |
+| K6 | częściowo. `001/K09a` w trzech przebiegach: zapis 13 ms po drugim ciosie serii (potrójnej albo wirującej), przed jej trzecim ciosem. `001/K09b` wczytuje ten zapis, a paladyn walczy dalej (54–58 ciosów w 60 s gry). Daty zapisów zwykłej gry (slot 1 i 2) bez zmian. Brak: miniatura w menu i wczytanie zapisu z menu | `95566352` | Claude, automatycznie |
+| K7 | częściowo. `003/K07-zrzuty-ekranu`: dwa pliki PNG 800×600, na obu bohater i paladyn, bez konsoli (obejrzane przez Claude). Brak: zrzut zrobiony przy otwartej konsoli | `1afcd184` | Claude |
+| K8 | spełnione. `003/niezaliczane/K08a` kończy się po 29 s błędem w linii 3 („command failed: insert Pal_230_Rittre”). `K08b` kończy się błędem czekania po 30 s czasu gry (`t` 30001). `K08c` gra zamknięta po limicie 60 s. Każdy przebieg z kodem wyjścia 1 | `1afcd184` | Claude, automatycznie |
+| K9 | nie sprawdzone: gra bez trybu deweloperskiego | | |
+| K10 | spełnione. Wszystkie scenariusze 001 przechodzą według instrukcji w trzech przebiegach i dają raport z oczekiwaniami dla swoich kryteriów. Instrukcja wystarczyła agentowi do napisania scenariusza K7 bez czytania kodu, po uzupełnieniu luk. ADR 0004, `sdd/workflow.md` i `/g25-verify` mówią, co zalicza raport i co wpisać do tabeli. `gothic25/CLAUDE.md` pozwala bez pytania tylko na tryb automatyczny | `95566352` | Claude |
+| K11 | spełnione. Kopia K2 z dwoma oczekiwaniami (`003/niezaliczane/K11-oczekiwania-ramon`): `combo.max <= 3` zaliczone, `combo.max >= 5` niezaliczone z wartością 3, kod wyjścia 1. `tools/test.ps1 -Spec 001` trzy razy z rzędu (14:26–15:55): 17 z 17 scenariuszy w każdym przebiegu, bez niezaliczonych oczekiwań, czyste drzewo | kopia: `1afcd184`; zestaw: `95566352` | Claude, automatycznie |
+| K12 | nie sprawdzone: gra bohaterem z dziennikiem włączanym ręcznie | | |
