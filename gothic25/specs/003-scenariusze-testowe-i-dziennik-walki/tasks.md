@@ -86,6 +86,9 @@ uruchomienie gry, także w trybie automatycznym, wymaga zgody właściciela proj
 - [x] **Z23** T3 (dopisane 2026-10-30): polecenie konsoli `immortal <instancja>` (flaga
       `NPC_FLAG_IMMORTAL`), żeby walki NPC z NPC w scenariuszach 001 K5 i K7 trwały do końca
       obserwacji. Sprawdzenie w scenariuszach Z19. (W3, K10)
+- [x] **Z24** T3 (dopisane 2026-10-30): `insert` wstawia postać albo przedmiot 2 m przed bohaterem
+      (przy ścianie bliżej), a nie w jego miejscu. Duże postacie, np. orkowie, utykały w bohaterze.
+      Sprawdzenie w scenariuszach K10 z 001. (W3, K1)
 - [x] **Z13** T4: `wait <instancja|hero> <zdarzenie> [n] timeout <s>` na zdarzeniach z dziennika
       (`series`, `series-hit`, `combo`, `down`, `unconscious`, `dead`). Po upływie limitu
       scenariusz zgłasza błąd. (W1, W7, K6, K8)

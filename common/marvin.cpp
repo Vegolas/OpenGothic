@@ -3,12 +3,15 @@
 #include <Tempest/SystemApi>
 #include <Tempest/TextCodec>
 
+#include <algorithm>
 #include <charconv>
+#include <cmath>
 #include <cstdint>
 #include <cctype>
 #include <filesystem>
 
 #include "game/fightlog.h"
+#include "physics/dynamicworld.h"
 #include "utils/string_frm.h"
 #include "world/objects/npc.h"
 #include "world/objects/item.h"
@@ -39,6 +42,19 @@ static bool compareNoCase(std::string_view sa, std::string_view sb) {
       return false;
     }
   return true;
+  }
+
+// a bit in front of the player, so that a big npc doesn't get stuck in him; closer, if a wall is in the way
+static Tempest::Vec3 insertPosition(World& world, Npc& player) {
+  const float distance = 200.f;
+  const float rot      = player.rotationRad();
+  const auto  dir      = Tempest::Vec3(std::cos(rot), 0, std::sin(rot));
+  const auto  from     = player.collosionCenter();
+  const auto  hit      = world.physic()->ray(from, from+dir*distance);
+  float       len      = distance;
+  if(hit.hasCol)
+    len = std::max(0.f, distance*hit.hitFraction - 50.f);
+  return player.position() + dir*len;
   }
 
 template<class T>
@@ -458,7 +474,7 @@ bool Marvin::exec(std::string_view v) {
       Npc*   player = Gothic::inst().player();
       if(world==nullptr || player==nullptr)
         return false;
-      return addItemOrNpcBySymbolName(world, ret.argv[0], player->position());
+      return addItemOrNpcBySymbolName(world, ret.argv[0], insertPosition(*world, *player));
       }
     case C_Give: {
       World* world  = Gothic::inst().world();

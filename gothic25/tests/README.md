@@ -67,7 +67,8 @@ scenariusz z numerem linii w `scenario.json` i w `log.txt`. W trybie automatyczn
 
 Każde polecenie konsoli deweloperskiej (`F2`) działa w scenariuszu tak samo, np. `cheat god`,
 `goto waypoint <WP>`, `goto pos <x> <y> <z>`, `insert <instancja>`, `set time <h> <min>`,
-`ztimer multiplyer <mnożnik>`.
+`ztimer multiplyer <mnożnik>`. `insert` stawia postać 2 m przed bohaterem, a przy ścianie tuż
+przed nią.
 
 Nowe polecenia konsoli (działają też ręcznie po `F2`):
 

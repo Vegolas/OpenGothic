@@ -195,6 +195,8 @@ specyfikacji”.
 - `info told <instancja C_INFO>` (dopisane 2026-10-30): kwestia liczy się jako przegadana
   z bohaterem (`GameScript::setNpcInfoKnown`), więc ważny dialog, np. `DIA_Xardas_Hello` na starcie
   nowej gry, nie zaczepia bohatera. Bez tego K1 (tryb ręczny bez wejścia od gracza) nie przejdzie.
+- `insert` (zmiana z 2026-10-30): postać albo przedmiot pojawia się 2 m przed bohaterem, a przy
+  ścianie tuż przed nią (promień fizyki), zamiast w miejscu bohatera. Duże postacie utykały w nim.
 - `immortal <instancja>` (dopisane 2026-10-30): flaga `NPC_FLAG_IMMORTAL` postaci, którą
   `Npc::changeAttribute` już respektuje. Paladyn zabija bandytę w kilku ciosach, więc bez tego walki
   NPC z NPC z 001 K5 i K7 trwałyby za krótko na obserwację serii, obrony i przerwań.
