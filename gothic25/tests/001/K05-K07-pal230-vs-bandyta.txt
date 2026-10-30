@@ -1,6 +1,6 @@
 # criterion: 001 K5
 # criterion: 001 K7
-# timeout: 300
+# timeout: 360
 # Walka NPC z NPC: paladyn-mistrz i silny bandyta, obaj nieśmiertelni.
 # K5: mistrz broni się w trakcie serii, trafienie przerywa serię bandyty.
 # K7: paladyn ma combo i serie jak w K1.
@@ -20,7 +20,7 @@ call B_Attack Pal_230_Ritter BDT_1006_Bandit_H 0 0
 call B_Attack BDT_1006_Bandit_H Pal_230_Ritter 0 0
 screenshot start.png
 ztimer multiplyer 2
-wait 180
+wait 360
 screenshot end.png
 quit
 
@@ -29,6 +29,9 @@ quit
 # 24 serie paladyna.
 # Przy przełęczy (kalibracja 2026-10-30): Pal_230_Ritter break.defend 7, BDT_1006_Bandit_H break.hit
 # 13, BDT_1006_Bandit_H taken.hit 37, Pal_230_Ritter combo.max 4, Pal_230_Ritter series.multi 14.
+# Zmiana z 2026-10-30: obserwacja 360 s zamiast 180 s. Bandyta często przerywa paladynowi serie,
+# więc w 180 s paladyn zadawał 32-59 ciosów, a combo z co najmniej 3 ciosów wypadło 7, 6, 2 i 0 razy
+# w czterech przebiegach. Próg 3 zostaje, bo K7 wymaga combo jak w K1.
 expect Pal_230_Ritter break.defend >= 1
 expect BDT_1006_Bandit_H break.hit >= 1
 expect BDT_1006_Bandit_H taken.hit >= 1
