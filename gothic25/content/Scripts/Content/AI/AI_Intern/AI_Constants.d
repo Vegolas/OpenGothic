@@ -495,7 +495,6 @@ const int FAI_DRAGON					= 39	; 	// Feuerdrache / Eisdrache / Felsdrache / Sumpf
 const int FAI_MOLERAT					= 40	; 	// Molerat
 //-----------------------------------------------
 const int FAI_ORC						= 12	;	// Ork-Krieger / Ork-Shamane / Ork-Elite
-const int FAI_ORC_ELITE					= 13	;	// Gothic 2.5: Ork-Elite has its own tactic (spec 001)
 const int FAI_DRACONIAN					= 41 	; 				
 
 //Alles Addon

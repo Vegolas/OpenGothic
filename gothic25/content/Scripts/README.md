@@ -49,6 +49,17 @@ Składowe `C_FightAI_Combo`:
 - `break_on_lost`: `TRUE`, gdy NPC przerywa serię, kiedy przeciwnik wyjdzie z zasięgu broni albo
   z pola widzenia z przodu. Przy `FALSE` NPC dokańcza serię, także w powietrze.
 
+## Numery symboli a zapisy gry
+
+OpenGothic zapisuje NPC i przedmioty numerem symbolu w `GOTHIC.DAT`. Zmiana w istniejącym pliku nie
+może więc dodać ani usunąć symbolu, bo przesunęłaby numery wszystkich dalszych symboli i zapisy
+poprzedniej wersji przestałyby się wczytywać ([ADR 0005](../../decisions/0005-stabilne-numery-symboli.md)).
+
+- Nowe stałe, instancje i funkcje trafiają do nowych plików dopisanych na końcu `Content/Gothic.src`.
+- W starym pliku nową wartość wpisujemy liczbą z komentarzem, np. `fight_tactic = 13` w `MST_OrcElite.d`.
+- Sprawdzenie: `python tools/dat.py prefix <GOTHIC.DAT poprzedniej wersji> build/scripts/_compiled/GOTHIC.DAT`
+  kończy się kodem 0, gdy żaden symbol się nie przesunął.
+
 ## Kodowanie
 
 Pliki są w Windows-1250. Edytor musi zapisywać je w tym kodowaniu. Przy zapisie w UTF-8

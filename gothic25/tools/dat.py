@@ -8,6 +8,7 @@ Usage:
   dat.py symbols FILE [--filter SUBSTRING]
   dat.py disasm FILE SYMBOL
   dat.py diff EXPECTED ACTUAL [--limit N] [--with-positions]
+  dat.py prefix OLD NEW   (exit code 1 when a symbol of OLD moved in NEW, see decisions/0005)
 """
 
 from __future__ import annotations
@@ -242,6 +243,21 @@ def cmd_diff(args) -> None:
         print(f"\nfirst order difference at index {first}: {names_a[first]} vs {names_b[first]}")
 
 
+def cmd_prefix(args) -> None:
+    # OpenGothic saves npcs and items by symbol index: every symbol of the older script must keep its index
+    old, new = load(args.old), load(args.new)
+    moved = [(i, sym.name, new.symbols[i].name if i < len(new.symbols) else "<none>")
+             for i, sym in enumerate(old.symbols)
+             if i >= len(new.symbols) or new.symbols[i].name != sym.name]
+    print(f"old: {len(old.symbols)} symbols, new: {len(new.symbols)} symbols, "
+          f"appended: {max(len(new.symbols) - len(old.symbols), 0)}")
+    if not moved:
+        print("all symbols of the old script keep their index")
+        return
+    print(f"{len(moved)} symbols moved; first: index {moved[0][0]}: {moved[0][1]} is now {moved[0][2]}")
+    sys.exit(1)
+
+
 def main() -> None:
     sys.stdout.reconfigure(errors="replace")
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -264,6 +280,10 @@ def main() -> None:
     p.add_argument("--limit", type=int, default=15)
     p.add_argument("--with-positions", action="store_true", help="also list source position differences")
     p.set_defaults(func=cmd_diff)
+    p = sub.add_parser("prefix", help="check that every symbol of OLD keeps its index in NEW")
+    p.add_argument("old")
+    p.add_argument("new")
+    p.set_defaults(func=cmd_prefix)
     args = parser.parse_args()
     args.func(args)
 
