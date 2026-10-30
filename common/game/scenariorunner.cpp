@@ -178,10 +178,17 @@ void ScenarioRunner::onWorldLoaded() {
   // NOTE: called again once a save is written - scenario starts only once
   if(state!=S_Idle || CommandLine::inst().scenarioPath().empty())
     return;
+  if(Gothic::inst().world()==nullptr) {
+    // called after a failed load as well
+    fail(-1,"the world did not load, see log.txt");
+    return;
+    }
   state = S_Running;
   FightLog::setEnabled(true);
   FightLog::marker("scenario_start",-1,TextCodec::toUtf8(CommandLine::inst().scenarioPath()));
   Log::i("scenario: start");
+  // first commands run before the world moves: e.g. 'cheat god' before a pending hit of a loaded save
+  tick();
   }
 
 void ScenarioRunner::tick() {

@@ -228,6 +228,8 @@ function Invoke-Scenario([string]$ScenarioPath) {
     $status = Read-Utf8 $statusFile | ConvertFrom-Json
     if($status.result -eq 'running') {
       $failures += 'the game ended during the scenario (see log.txt and crash.log)'
+    } elseif($status.result -ne 'ok') {
+      $failures += "scenario $($status.result) at line $($status.line): $($status.message)"
     }
   }
 
