@@ -1,0 +1,29 @@
+# criterion: 003 K7
+# timeout: 200
+# Zrzut ekranu tuż po wstawieniu paladyna i drugi 10 s gry później, przy otwartej konsoli.
+# Na obu zrzutach widać bohatera i paladyna, a konsoli nie (polecenie zapisuje tylko scenę 3D).
+# Scenariusz nie ma polecenia, które otwiera konsolę, więc część z konsolą wymaga przebiegu
+# z -Manual. W czasie pierwszego czekania naciśnij F2 i zostaw konsolę otwartą do końca przebiegu.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+cheat god
+set time 12 0
+# Czas na otwarcie konsoli (F2) przy -Manual, zanim pojawi się paladyn.
+wait 15
+insert Pal_230_Ritter
+screenshot po-wstawieniu.png
+# Atak trzyma paladyna przy bohaterze, żeby był w kadrze także na drugim zrzucie.
+call B_Attack Pal_230_Ritter hero 0 0
+# Bez przyspieszenia: 10 s z kryterium to 10 s gry i tyle samo czasu rzeczywistego.
+wait 10
+screenshot po-10-s.png
+quit
+
+# Sprawdzenie ręczne (miary dziennika nie obejmują zrzutów), w katalogu przebiegu:
+# - są dwa pliki PNG, po-wstawieniu.png i po-10-s.png,
+# - oba mają rozdzielczość okna gry (800x600 w trybie automatycznym),
+# - na obu widać bohatera i paladyna,
+# - w przebiegu z -Manual i otwartą konsolą konsoli nie widać na żadnym z nich.
+# Bez oczekiwań: kryterium nie dotyczy walki, a oczekiwanie wobec ciosów paladyna mogłoby
+# zawieść z przyczyn niezwiązanych ze zrzutami.

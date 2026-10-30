@@ -1,0 +1,7 @@
+# criterion: 003 K8
+# timeout: 60
+# Scenariusz czeka 600 s czasu gry, dłużej niż limit przebiegu (60 s czasu rzeczywistego),
+# więc test.ps1 zamyka grę i zgłasza niepowodzenie.
+info told DIA_Xardas_Hello
+wait 600
+quit

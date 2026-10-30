@@ -15,6 +15,7 @@ z obserwacją w grze (003 K3).
 | Ścieżka | Co tam jest |
 |---|---|
 | `tests/NNN/Kn-nazwa.txt` | scenariusze dla kryterium `Kn` specyfikacji `NNN` |
+| `tests/NNN/niezaliczane/` | scenariusze, które mają się nie udać (sprawdzenie obsługi błędów i oczekiwań); `-Spec` ich nie uruchamia, uruchamia się je pojedynczo przez `-Scenario` |
 | `build/test/profile/` | katalog roboczy gry przy testach: `Gothic.ini` tworzony od nowa przed każdym przebiegiem, zapisy z testów, `log.txt` ostatniego przebiegu |
 | `build/test-runs/<data>-<czas>-NNN-nazwa[-nomod]/` | wyniki jednego przebiegu (niżej) |
 
@@ -53,8 +54,12 @@ Nagłówek w komentarzach na początku pliku:
   zapis zrobiony przez wcześniejszy scenariusz zestawu).
 - `mod: off`: scenariusz uruchamia się bez moda (np. „bez moda bez zmian”).
 
-`test.ps1 -Spec NNN` uruchamia scenariusze z `tests/NNN/` w kolejności nazw plików. Scenariusz,
-który wczytuje zapis innego scenariusza, musi mieć nazwę dalej w kolejności.
+Inne linie `#`, także w postaci `# słowo: ...`, to zwykłe komentarze. Komentarze w scenariuszach
+piszemy po polsku.
+
+`test.ps1 -Spec NNN` uruchamia scenariusze z `tests/NNN/` w kolejności nazw plików, dlatego numer
+kryterium w nazwie ma dwie cyfry (`K01`, `K10a`). Scenariusz, który wczytuje zapis innego
+scenariusza, musi mieć nazwę dalej w kolejności.
 
 `cheat god`, `ztimer multiplyer` i dziennik walki nie są częścią zapisu gry. Scenariusz, który
 wczytuje zapis, włącza je od nowa.
@@ -78,11 +83,11 @@ Nowe polecenia konsoli (działają też ręcznie po `F2`):
 | `give <przedmiot> [ile]` | dodaje przedmiot do ekwipunku bohatera, domyślnie 1 sztukę |
 | `equip <przedmiot>` | zakłada przedmiot na bohatera; gdy go nie ma, najpierw dodaje |
 | `save game <slot>` | zapisuje grę do slotu jak z menu; w dialogu albo przerywniku zgłasza błąd |
-| `screenshot <plik>` | zapisuje zrzut sceny 3D do PNG; ścieżka względna trafia do katalogu wyników |
+| `screenshot <plik>` | zapisuje zrzut sceny 3D do PNG w rozdzielczości okna gry, bez konsoli i interfejsu; ścieżka względna trafia do katalogu wyników |
 | `toggle fightlog` | włącza albo wyłącza dziennik walki (w scenariuszu jest włączony od startu) |
 | `immortal <instancja>` | postać nie traci życia (flaga `NPC_FLAG_IMMORTAL`); walka NPC z NPC trwa wtedy do końca scenariusza |
 | `info told <kwestia>` | kwestia dialogowa (instancja `C_INFO`) liczy się jako przegadana z bohaterem; `info told DIA_Xardas_Hello` na początku scenariusza zatrzymuje powitanie Xardasa w nowej grze |
-| `quit` | kończy grę |
+| `quit` | kończy grę (w scenariuszu: kończy scenariusz, zob. polecenia sterujące) |
 
 Argumenty `call` dobierane są według typu parametru funkcji:
 
@@ -104,6 +109,7 @@ bohater, a `other` to jego cel (bez celu też bohater). Funkcji zewnętrznych si
 | `wait <sekundy>` | czeka podany czas gry; przy `ztimer multiplyer 2` trwa o połowę krócej |
 | `wait <kto> <zdarzenie> [n] timeout <sekundy>` | czeka na zdarzenie walki postaci; po limicie czasu gry błąd |
 | `expect <kto> <miara> <op> <wartość>` | oczekiwanie dla raportu; silnik je pomija |
+| `quit` | kończy scenariusz; w trybie automatycznym gra zamyka się też sama po ostatniej linii, a w ręcznym zostaje otwarta |
 
 `<kto>` to `hero` albo nazwa instancji. Przy czekaniu na zdarzenie liczy się każda postać tej
 instancji. Zdarzenia pochodzą z dziennika walki, więc czekanie nie działa, gdy scenariusz go wyłączy
@@ -332,6 +338,13 @@ tools/test.ps1 -Scenario 001/K09b-wczytanie-zapisu -Save <plik.sav>
 
 - Tryb automatyczny: okno 800×600, gra kończy się po scenariuszu, limit czasu z `# timeout:`.
   Kod wyjścia 0 oznacza, że scenariusz skończył się wynikiem `ok`, a oczekiwania przeszły.
+  Scenariusz bez oczekiwań przechodzi, gdy kończy się wynikiem `ok`. Limit czasu liczy też start
+  gry i wczytanie świata, więc daj mu co najmniej 60 s zapasu ponad czas scenariusza.
+- Tryb ręczny (`-Manual`): zwykłe okno i ustawienia gry, bez limitu czasu, wyniki w katalogu
+  przebiegu jak w trybie automatycznym. Po scenariuszu, także po `quit`, gra zostaje otwarta.
+  Konsola (`F2`) działa, a gra przy otwartej konsoli biegnie dalej, razem ze scenariuszem.
+- To, czego nie widać w dzienniku (zrzuty ekranu, wygląd), scenariusz opisuje w komentarzu
+  `# Sprawdzenie ręczne`. Takie części kryterium zalicza człowiek (ADR 0004).
 - Każdy przebieg ma katalog w `build/test-runs/`. Najważniejszy jest `report.md` (podsumowanie
   postaci, oczekiwania), a szczegóły są w `fightlog.jsonl`, `log.txt` i zrzutach ekranu.
 - Raport z dziennika włączonego ręcznie w zwykłej grze (`tools/run.ps1 -Dev`, potem w konsoli

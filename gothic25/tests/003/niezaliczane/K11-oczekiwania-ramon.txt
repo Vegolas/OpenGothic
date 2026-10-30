@@ -1,0 +1,18 @@
+# criterion: 003 K11
+# timeout: 300
+# Kopia 001/K02b-ramon-2h-wojownik z dwoma oczekiwaniami: prawdziwym (combo.max <= 3)
+# i fałszywym (combo.max >= 5). Raport ma oznaczyć pierwsze jako zaliczone, drugie jako
+# niezaliczone z wartością faktyczną, a test.ps1 zgłosić niepowodzenie.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+call B_RemoveNpc BDT_1013_Bandit_L
+cheat god
+set time 12 0
+insert BDT_1071_Addon_Ramon
+call B_Attack BDT_1071_Addon_Ramon hero 0 0
+ztimer multiplyer 2
+wait 180
+quit
+
+expect BDT_1071_Addon_Ramon combo.max <= 3
+expect BDT_1071_Addon_Ramon combo.max >= 5

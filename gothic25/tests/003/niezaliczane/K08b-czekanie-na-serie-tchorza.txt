@@ -1,0 +1,12 @@
+# criterion: 003 K8
+# timeout: 180
+# Tchórz (styl 2) walczy, ale nie wykonuje serii, więc czekanie na serię kończy się po 30 s czasu
+# gry błędem czekania na zdarzenie.
+info told DIA_Xardas_Hello
+call B_RemoveNpc NONE_100_Xardas
+cheat god
+set time 12 0
+insert BDT_1013_Bandit_L
+call B_Attack BDT_1013_Bandit_L hero 0 0
+wait BDT_1013_Bandit_L series timeout 30
+quit
