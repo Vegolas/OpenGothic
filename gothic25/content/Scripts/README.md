@@ -58,7 +58,9 @@ poprzedniej wersji przestałyby się wczytywać ([ADR 0005](../../decisions/0005
 - Nowe stałe, instancje i funkcje trafiają do nowych plików dopisanych na końcu `Content/Gothic.src`.
 - W starym pliku nową wartość wpisujemy liczbą z komentarzem, np. `fight_tactic = 13` w `MST_OrcElite.d`.
 - Sprawdzenie: `python tools/dat.py prefix <GOTHIC.DAT poprzedniej wersji> build/scripts/_compiled/GOTHIC.DAT`
-  kończy się kodem 0, gdy żaden symbol się nie przesunął.
+  kończy się kodem 0, gdy żaden nazwany symbol się nie przesunął. Symbole tworzone przez kompilator
+  (`$…`, głównie stałe literałów) przesuwają się przy każdym nowym symbolu, ale zapisy się do nich
+  nie odwołują (ADR 0005, uzupełnienie).
 
 ## Kodowanie
 

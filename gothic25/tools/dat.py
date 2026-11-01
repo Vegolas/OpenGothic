@@ -8,7 +8,7 @@ Usage:
   dat.py symbols FILE [--filter SUBSTRING]
   dat.py disasm FILE SYMBOL
   dat.py diff EXPECTED ACTUAL [--limit N] [--with-positions]
-  dat.py prefix OLD NEW   (exit code 1 when a symbol of OLD moved in NEW, see decisions/0005)
+  dat.py prefix OLD NEW   (exit code 1 when a named symbol of OLD moved in NEW, see decisions/0005)
 """
 
 from __future__ import annotations
@@ -244,17 +244,22 @@ def cmd_diff(args) -> None:
 
 
 def cmd_prefix(args) -> None:
-    # OpenGothic saves npcs and items by symbol index: every symbol of the older script must keep its index
+    # OpenGothic saves npcs, items, dialog infos and functions by symbol index: every named symbol
+    # of the older script must keep its index. gdc puts compiler-generated symbols ("$...", mostly
+    # literals) after all named ones, so any new named symbol shifts them; saves never refer to them
     old, new = load(args.old), load(args.new)
-    moved = [(i, sym.name, new.symbols[i].name if i < len(new.symbols) else "<none>")
-             for i, sym in enumerate(old.symbols)
-             if i >= len(new.symbols) or new.symbols[i].name != sym.name]
+    changed = [(i, sym.name, new.symbols[i].name if i < len(new.symbols) else "<none>")
+               for i, sym in enumerate(old.symbols)
+               if i >= len(new.symbols) or new.symbols[i].name != sym.name]
+    moved   = [c for c in changed if not c[1].startswith("$")]
     print(f"old: {len(old.symbols)} symbols, new: {len(new.symbols)} symbols, "
           f"appended: {max(len(new.symbols) - len(old.symbols), 0)}")
+    if len(changed) > len(moved):
+        print(f"{len(changed) - len(moved)} compiler-generated symbols ($...) shifted, saves do not refer to them")
     if not moved:
-        print("all symbols of the old script keep their index")
+        print("all named symbols of the old script keep their index")
         return
-    print(f"{len(moved)} symbols moved; first: index {moved[0][0]}: {moved[0][1]} is now {moved[0][2]}")
+    print(f"{len(moved)} named symbols moved; first: index {moved[0][0]}: {moved[0][1]} is now {moved[0][2]}")
     sys.exit(1)
 
 

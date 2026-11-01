@@ -138,7 +138,9 @@ Brak nowego stanu.
 - **Tablice.** Są stałymi skryptów, nie stanem gry.
 - **Nowe symbole.** Trafiają do nowych plików na końcu `Gothic.src`, więc numery symboli
   istniejących postaci i przedmiotów się nie zmieniają. Sprawdzenie: `tools/dat.py prefix`
-  na `GOTHIC.DAT` z 0.1.0 (ADR 0005).
+  na `GOTHIC.DAT` z 0.1.0 (ADR 0005). Sprawdza nazwane symbole; symbole tworzone przez kompilator
+  przesuwają się przy każdym nowym symbolu i zapisy się do nich nie odwołują (uzupełnienie ADR 0005
+  z 2026-11-01, wykryte przy Z1).
 - **Zapisy z 0.1.0 i 0.2.0.** Wczytują się (K9).
 
 ### Testy (scenariusze 003)

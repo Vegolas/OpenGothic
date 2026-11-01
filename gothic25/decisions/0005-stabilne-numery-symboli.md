@@ -53,3 +53,19 @@ Opcja 2 zostaje na później, jako osobna specyfikacja, gdy opcja 1 zacznie prze
   Jeśli się to zmieni, zasada rozszerza się na nie.
 - Zapisy zrobione na wersji z przesuniętymi symbolami (lokalne 0.2.0 sprzed poprawki) przestają
   się wczytywać. To dotyczy tylko testów deweloperskich, bo 0.2.0 nie zostało wydane.
+
+## Uzupełnienie (2026-11-01, przy 002 Z1)
+
+`gdc` układa tablicę symboli `GOTHIC.DAT` tak, że wszystkie nazwane symbole stoją przed symbolami
+tworzonymi przez kompilator (nazwa zaczyna się bajtem 0xFF, `dat.py` pokazuje go jako `$`; to głównie
+stałe literałów). Nowy nazwany symbol, także w nowym pliku na końcu `Gothic.src`, trafia więc
+na koniec części nazwanej i przesuwa symbole kompilatora.
+
+Zapis gry odwołuje się tylko do symboli nazwanych: instancji postaci i przedmiotów, kwestii
+dialogowych, funkcji planów dnia i stanów AI. Symboli kompilatora używa wyłącznie kod bajtowy tego
+samego pliku, który kompiluje się razem z nimi. Dlatego `tools/dat.py prefix` sprawdza tylko symbole
+nazwane, a przesunięte symbole kompilatora podaje jako informację.
+
+Pierwszy przypadek: tablice premii z 002 Z1 (6 nowych stałych w `ComboDamage.d`). Nazwane symbole
+z 0.1.0 zachowały numery, przesunęło się 45690 symboli kompilatora, a zapis z 0.1.0 wczytuje się
+(`tests/001/K09c-zapis-z-0.1.0`).
