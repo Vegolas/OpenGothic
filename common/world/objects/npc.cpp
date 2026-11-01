@@ -2218,7 +2218,7 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
   if(isDown()) {
     onNoHealth(dontKill,HS_NoSound);
     if(melee)
-      FightLog::hit(other,*this,other.visual.comboLength(),hitResult.value,hpBefore,false);
+      FightLog::hit(other,*this,other.visual.comboLength(),hitResult.value,hitResult.bonus,hpBefore,false);
     return;
     }
 
@@ -2267,7 +2267,7 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
     }
 
   if(melee) {
-    FightLog::hit(other,*this,other.visual.comboLength(),hitResult.value,hpBefore,stagger);
+    FightLog::hit(other,*this,other.visual.comboLength(),hitResult.value,hitResult.bonus,hpBefore,stagger);
     if(stagger)
       FightLog::state(*this,"stumble",&other);
     if(fly)

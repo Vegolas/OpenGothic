@@ -257,6 +257,7 @@ Zapisywany w chwili, w której cios mógł trafić (ramka trafienia animacji).
 | `why` | string | przy `miss`: `no_target`, `range`, `angle`, `down` (cel już leżał); inaczej `null` |
 | `combo` | int | etap combo do przodu ciosu, od 1 |
 | `dmg` | int | przy `hit`: obrażenia wyliczone przez grę; inaczej `0` |
+| `bonus` | int | przy `hit`: premia za cios combo do przodu w procentach, już wliczona w `dmg` (002); `100` bez premii, inaczej `0` |
 | `hp_before`, `hp_after` | int | przy `hit`: życie celu przed i po (różni się od `dmg` np. przy `cheat god`); inaczej `0` |
 | `stagger` | bool | czy cel się zachwiał |
 

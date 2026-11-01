@@ -34,7 +34,7 @@ class FightLog final {
                        uint16_t comboLen, const FightAlgo& fai);
     static void miss  (Npc& npc, Npc* tgt, std::string_view why, uint16_t comboLen);
     static void defend(Npc& npc, Npc& tgt, bool jumpBack, uint16_t comboLen);
-    static void hit   (Npc& npc, Npc& tgt, uint16_t comboLen, int32_t dmg, int32_t hpBefore, bool stagger);
+    static void hit   (Npc& npc, Npc& tgt, uint16_t comboLen, int32_t dmg, int32_t bonus, int32_t hpBefore, bool stagger);
     static void state (Npc& npc, std::string_view st, Npc* by);
     static void seriesBreak(Npc& npc, const FightAlgo::Series& ser, bool queued, std::string_view why,
                             std::string_view detail = {});

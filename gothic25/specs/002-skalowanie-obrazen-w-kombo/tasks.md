@@ -58,7 +58,7 @@ jako testem regresji (`gothic25/CLAUDE.md`).
       - Sprawdzenie: build, zestaw `tests/001` (regresja).
 
       Po Z3. (W1, W3, W4, W7, W9)
-- [ ] **Z5** Dziennik walki: pole `bonus` (procent premii, 100 bez premii) w zdarzeniu `result`
+- [x] **Z5** Dziennik walki: pole `bonus` (procent premii, 100 bez premii) w zdarzeniu `result`
       przy `hit`. Wartość z tego samego obliczenia co `dmg` (`Npc::takeDamage`). Opis pola
       w `tests/README.md`. Po Z4. (W8)
 
