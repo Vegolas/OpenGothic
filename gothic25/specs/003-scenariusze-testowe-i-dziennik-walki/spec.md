@@ -318,17 +318,21 @@ Ustalenia z weryfikacji, poprawione w trakcie Z21:
   serie NPC (`target_lost`). To zachowanie walki z 001. Właściciel projektu odłożył je na po 003
   (pomysł: tolerancja zasięgu 110–125%).
 
+**Ocena właściciela projektu (Mateusz Tomanek, 2026-11-01):** oglądał na żywo przebiegi automatyczne
+z 2026-10-30 i wszystko wyglądało dobrze. Kroków K1, K3, K5, K9 i K12 ani części K2, K6 i K7 dla
+człowieka nie przechodził: odłożył je do playtestów.
+
 | K | Wynik | Wersja | Kto |
 |---|---|---|---|
-| K1 | nie sprawdzone: wymaga trybu ręcznego (scenariusz `003/K01-reczny-pal230`) | | |
+| K1 | odłożone do playtestów: wymaga trybu ręcznego (scenariusz `003/K01-reczny-pal230`) | | |
 | K2 | częściowo. `001/K02a` i `001/K02b` po zmianie komentarza w `FAI_Human_Master.d` bez commita: skrypty skompilowane i spakowane od nowa po zmianie, `meta.json` z `dirty: true`. Okno 800×600 (`-window small`), dźwięk słychać, gra kończy się sama po 180 s gry. W katalogach przebiegów są dziennik, raport, log gry, kopia scenariusza i `meta.json`. Raport podaje ciosy, serie według rodzaju i rozkład combo (Torwache: combo z 4 ciosów 9 razy, Ramon: z 3 ciosów 7 razy). Daty plików w `Data\ModVDF`, `System` i `Saves` gry oraz zapisów i `Gothic.ini` w `build/opengothic` są takie same jak przed wszystkimi przebiegami dnia. Brak: rozdzielczość i tryb okna w grze uruchomionej potem przez `tools/run.ps1` | `95566352` ze zmianą komentarza | Claude, automatycznie; dźwięk: Mateusz Tomanek |
-| K3 | nie sprawdzone: porównanie raportu z obserwacją w grze | | |
+| K3 | odłożone do playtestów: porównanie raportu z notatkami z gry | | |
 | K4 | spełnione. `001/K08-pal230-bez-moda` w trzech przebiegach zestawu bez błędów. Raport opisuje walkę paladyna (108, 101 i 113 ciosów, trafienia i bloki), a wyniki leżą w osobnych katalogach z końcówką `-nomod` | `95566352` | Claude, automatycznie |
-| K5 | nie sprawdzone: konsola ręcznie | | |
+| K5 | odłożone do playtestów: konsola ręcznie | | |
 | K6 | częściowo. `001/K09a` w trzech przebiegach: zapis 13 ms po drugim ciosie serii (potrójnej albo wirującej), przed jej trzecim ciosem. `001/K09b` wczytuje ten zapis, a paladyn walczy dalej (54–58 ciosów w 60 s gry). Daty zapisów zwykłej gry (slot 1 i 2) bez zmian. Brak: miniatura w menu i wczytanie zapisu z menu | `95566352` | Claude, automatycznie |
 | K7 | częściowo. `003/K07-zrzuty-ekranu`: dwa pliki PNG 800×600, na obu bohater i paladyn, bez konsoli (obejrzane przez Claude). Brak: zrzut zrobiony przy otwartej konsoli | `1afcd184` | Claude |
 | K8 | spełnione. `003/niezaliczane/K08a` kończy się po 29 s błędem w linii 3 („command failed: insert Pal_230_Rittre”). `K08b` kończy się błędem czekania po 30 s czasu gry (`t` 30001). `K08c` gra zamknięta po limicie 60 s. Każdy przebieg z kodem wyjścia 1 | `1afcd184` | Claude, automatycznie |
-| K9 | nie sprawdzone: gra bez trybu deweloperskiego | | |
+| K9 | odłożone do playtestów: gra bez trybu deweloperskiego | | |
 | K10 | spełnione. Wszystkie scenariusze 001 przechodzą według instrukcji w trzech przebiegach i dają raport z oczekiwaniami dla swoich kryteriów. Instrukcja wystarczyła agentowi do napisania scenariusza K7 bez czytania kodu, po uzupełnieniu luk. ADR 0004, `sdd/workflow.md` i `/g25-verify` mówią, co zalicza raport i co wpisać do tabeli. `gothic25/CLAUDE.md` pozwala bez pytania tylko na tryb automatyczny | `95566352` | Claude |
 | K11 | spełnione. Kopia K2 z dwoma oczekiwaniami (`003/niezaliczane/K11-oczekiwania-ramon`): `combo.max <= 3` zaliczone, `combo.max >= 5` niezaliczone z wartością 3, kod wyjścia 1. `tools/test.ps1 -Spec 001` trzy razy z rzędu (14:26–15:55): 17 z 17 scenariuszy w każdym przebiegu, bez niezaliczonych oczekiwań, czyste drzewo | kopia: `1afcd184`; zestaw: `95566352` | Claude, automatycznie |
-| K12 | nie sprawdzone: gra bohaterem z dziennikiem włączanym ręcznie | | |
+| K12 | odłożone do playtestów: gra bohaterem z dziennikiem włączanym ręcznie | | |
