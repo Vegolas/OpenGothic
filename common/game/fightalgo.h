@@ -52,10 +52,13 @@ class FightAlgo final {
     void   onClearTarget();
     void   onTakeHit();
     void   onBreakSeries();
+    void   onHitFrame();
+    void   onHitLanded();
     bool   onEnemyPrehit(Npc &npc, Npc &tg, GameScript& owner);
 
     bool   hasInstructions() const;
     auto   series() const -> const Series& { return ser; }
+    bool   isHitLanded() const { return hitLanded; }
     bool   isInSeries() const { return ser.len>0 && hasInstructions(); }
     bool   fetchInstructions(Npc &npc, Npc &tg, GameScript& owner);
     float  qDistTo(const Npc& npc, const Npc& tg) const;
@@ -79,6 +82,7 @@ class FightAlgo final {
     bool   isInFocusAngle         (const Npc &npc, const Npc &tg) const;
     bool   isInFocusAngle         (const Npc &npc, const Npc &tg, float ang) const;
     bool   isInJumpBackAngle      (const Npc &npc, const Npc &tg) const;
+    bool   isTargetLost           (const Npc &npc, const Npc &tg, GameScript &owner) const;
 
   private:
     void   fillQueue(Npc &npc, Npc &tg, GameScript& owner);
@@ -99,4 +103,6 @@ class FightAlgo final {
     uint64_t            contWindow = 0;
     bool                contAttack = false;
     Series              ser;
+    // last attack hit the target and knocked it back; not serialized
+    bool                hitLanded  = false;
   };

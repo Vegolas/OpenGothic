@@ -274,6 +274,14 @@ void FightAlgo::onBreakSeries() {
   queueId = zenkit::FightAiMove::NOP;
   }
 
+void FightAlgo::onHitFrame() {
+  hitLanded = false;
+  }
+
+void FightAlgo::onHitLanded() {
+  hitLanded = true;
+  }
+
 bool FightAlgo::onEnemyPrehit(Npc& npc, Npc& tg, GameScript& owner) {
   // same reaction as in fillQueue, but in the middle of own series
   auto& ai = Gothic::fai()[size_t(npc.handle().fight_tactic)];
@@ -410,6 +418,13 @@ bool FightAlgo::isInFocusAngle(const Npc &npc, const Npc &tg) const {
 bool FightAlgo::isInFocusAngle(const Npc& npc, const Npc& tg, float ang) const {
   const float maxAngle = std::cos(float(ang*M_PI/180.0));
   return angleTest(npc, tg, maxAngle);
+  }
+
+bool FightAlgo::isTargetLost(const Npc& npc, const Npc& tg, GameScript& owner) const {
+  // own hit knocks the target back up to ~1.5 of weapon range, that is not running away;
+  // after a block, a jump back or a miss weapon range applies
+  const bool inRange = hitLanded ? isInGRange(npc,tg,owner) : isInWRange(npc,tg,owner);
+  return !(inRange && isInFocusAngle(npc,tg));
   }
 
 bool FightAlgo::isInJumpBackAngle(const Npc& npc, const Npc& tg) const {

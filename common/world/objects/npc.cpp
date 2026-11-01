@@ -1946,16 +1946,18 @@ bool Npc::implComboLink() {
     return false;
 
   // without 'break_on_lost' series is finished even into the air
-  if(fghAlgo.comboAi(*this).break_on_lost &&
-     !(fghAlgo.isInWRange(*this,*currentTarget,owner.script()) && fghAlgo.isInFocusAngle(*this,*currentTarget))) {
+  if(fghAlgo.comboAi(*this).break_on_lost && fghAlgo.isTargetLost(*this,*currentTarget,owner.script())) {
     if(FightLog::isEnabled()) {
-      // which check failed: distance against the attack range, angle to the target
-      const auto  dpos  = currentTarget->collosionCenter() - collosionCenter();
-      const float da    = rotation() - std::atan2(dpos.z,dpos.x)*180.f/float(M_PI);
-      const int   angle = int(std::abs(std::remainder(da,360.f)));
-      const int   dist  = int(std::sqrt(fghAlgo.qDistTo(*this,*currentTarget)));
-      const int   range = int(fghAlgo.prefferedAttackDistance(*this,*currentTarget,owner.script()));
-      FightLog::seriesBreak(*this,fghAlgo.series(),queued,"target_lost",string_frm("dist ",dist," range ",range," angle ",angle));
+      // which check failed: distance against the attack range (G range after a hit that landed), angle
+      const auto  dpos   = currentTarget->collosionCenter() - collosionCenter();
+      const float da     = rotation() - std::atan2(dpos.z,dpos.x)*180.f/float(M_PI);
+      const int   angle  = int(std::abs(std::remainder(da,360.f)));
+      const int   dist   = int(std::sqrt(fghAlgo.qDistTo(*this,*currentTarget)));
+      const int   range  = int(fghAlgo.prefferedAttackDistance(*this,*currentTarget,owner.script()));
+      const int   grange = int(fghAlgo.prefferedGDistance(*this,*currentTarget,owner.script()));
+      const int   hit    = fghAlgo.isHitLanded() ? 1 : 0;
+      FightLog::seriesBreak(*this,fghAlgo.series(),queued,"target_lost",
+                            string_frm("dist ",dist," range ",range," angle ",angle," g ",grange," hit ",hit));
       }
     fghAlgo.onBreakSeries();
     return false;
@@ -2100,6 +2102,7 @@ bool Npc::setGoToLadder() {
   }
 
 void Npc::commitDamage() {
+  fghAlgo.onHitFrame();
   if(currentTarget==nullptr) {
     FightLog::miss(*this,nullptr,"no_target",visual.comboLength());
     return;
@@ -2194,6 +2197,8 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
   hitResult = DamageCalculator::damageValue(other,*this,b,isSpell,dmg,bMask);
   if(!isSpell && !isDown() && hitResult.hasHit)
     owner.addWeaponHitEffect(other,b,*this).play();
+  if(!isSpell && b==nullptr && hitResult.hasHit)
+    other.fghAlgo.onHitLanded();
 
   if(isDown()) {
     onNoHealth(dontKill,HS_NoSound);

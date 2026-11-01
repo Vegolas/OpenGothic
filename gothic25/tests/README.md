@@ -270,7 +270,7 @@ Gdy cios powala cel, zdarzenie `state` z `unconscious` albo `dead` trafia do dzi
 | `what` | string | `series` albo `combo` |
 | `why` | string | przyczyna (niżej) |
 | `series`, `series_id`, `series_pos` | | przy `series`: rodzaj i numer serii oraz ile jej ciosów padło (`combo` i `null` dla kontynuacji combo); przy `combo`: `null`, `null` i etap combo, na którym się urwało |
-| `detail` | string | tylko przy `target_lost`: `dist <cm> range <cm> angle <stopnie>`, czyli odległość do celu, zasięg ataku i kąt do celu (próg 30°) |
+| `detail` | string | tylko przy `target_lost`: `dist <cm> range <cm> angle <stopnie> g <cm> hit <0\|1>`, czyli odległość do celu, zasięg ataku, kąt do celu (próg 30°), zasięg G i czy poprzedni cios trafił (wtedy progiem jest zasięg G, 001 Z17) |
 
 Przyczyny:
 
@@ -278,7 +278,7 @@ Przyczyny:
 |---|---|
 | `hit` | postać dostała trafienie (kolejka czyszczona przy każdym niezablokowanym ciosie) |
 | `target_down` | cel leży |
-| `target_lost` | cel poza zasięgiem albo kątem przy `break_on_lost` (001 W6) |
+| `target_lost` | cel poza zasięgiem albo kątem przy `break_on_lost` (001 W6); po ciosie, który trafił, poza zasięgiem G |
 | `defend` | mistrz przerywa serię, żeby się bronić (001 W5) |
 | `block` | postać zaczyna blok w trakcie combo |
 | `talent` | ostatni etap combo do przodu, dalsze ciosy do przodu usunięte (001 W4) |

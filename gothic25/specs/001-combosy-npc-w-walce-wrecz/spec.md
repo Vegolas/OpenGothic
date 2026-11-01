@@ -107,6 +107,12 @@ walki NPC, więc mistrza da się rozpoznać po samym sposobie walki.
     albo się obracają,
   - pozostałe style dokańczają serię do końca, także w powietrze. Odskok gracza daje wtedy okno
     na kontrę.
+
+  Odrzut po trafieniu NPC to nie wyjście z zasięgu (doprecyzowane 2026-11-01). Trafienie przesuwa
+  przeciwnika zwykle do 1,5 zasięgu broni, więc po ciosie, który trafił, seria trwa, dopóki
+  przeciwnik jest w zasięgu podejścia z gry (zasięg broni plus `FIGHT_RANGE_G` gildii, dla ludzi
+  i orków 1 m więcej). Kolejny cios może wtedy chybić. Po bloku, odskoku albo pudle obowiązuje
+  zasięg broni, więc odskok nadal przerywa serię mistrza (K11).
 - **W7:** Kolejny cios serii NPC wypada w czasie, w którym gracz też mógłby go połączyć z poprzednim.
   NPC nie łączy ciosów szybciej, niż pozwala na to gra graczowi, i nigdy tak późno, żeby combo się
   urwało. Animacja ciosu gra prawie w całości, bo wcześniejsze połączenie pomija jej część i wygląda
