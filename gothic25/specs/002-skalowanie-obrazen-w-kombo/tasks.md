@@ -48,10 +48,10 @@ jako testem regresji (`gothic25/CLAUDE.md`).
       - Bez użycia w obliczeniu obrażeń. Sprawdzenie: build, log gry z modem bez ostrzeżeń.
 
       (W2, W9)
-- [ ] **Z4** Premia w obliczeniu obrażeń.
+- [x] **Z4** Premia w obliczeniu obrażeń.
       - `Npc::comboDamage()`: przy `Pose::comboInfo().forward` procent dla ciosu `comboLength()+1`,
         broni z `activeWeapon` (pięści, gdy brak) i `talentSkill`, tablica bohatera albo NPC
-        według `isPlayer()`. W każdym innym wypadku 100%.
+        według `isPlayer()`. W każdym innym wypadku 100%, także dla potworów bez broni.
       - `DamageCalculator::swordDamage`: `value * premia / 100` po filtrze odporności, przed
         `MinDamage` w `damageValue`.
       - Strzały i czary bez zmian (inna ścieżka).

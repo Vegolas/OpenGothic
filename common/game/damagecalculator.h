@@ -21,6 +21,7 @@ class DamageCalculator {
       int32_t value      = 0;
       bool    hasHit     = false;
       bool    invincible = false;
+      int32_t bonus      = 100; // forward combo hit, percent of the damage
       };
 
     struct Damage final {

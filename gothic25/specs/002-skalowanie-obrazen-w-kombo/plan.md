@@ -84,6 +84,8 @@ stałych przy starcie, więc łatwo ją utrzymać przy aktualizacjach z upstream
      (pięści, gdy jej nie ma) i `talentSkill`. Wybór tablicy bohatera albo NPC: `isPlayer()`.
    - W każdym innym wypadku 100%: ataki boczne, atak z biegu, dobijanie (animacje z jednym ciosem),
      brak animacji ataku.
+   - Potwory bez broni: 100% (doprecyzowane przy Z4). Nie walczą pięściami, a silnik już traktuje
+     je osobno w `swordDamage` (zawsze mocny cios), więc tablica pięści ich nie dotyczy.
 
 3. **`DamageCalculator::swordDamage`.** Na końcu obliczenia, po filtrze odporności, a przed
    `MinDamage` w `damageValue`: `value = value * premia / 100` (W4). Odporny cel ma `value = 0`

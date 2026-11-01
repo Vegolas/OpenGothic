@@ -1218,6 +1218,21 @@ int32_t Npc::hitChance(Talent t) const {
   return 0;
   }
 
+int32_t Npc::comboDamage() const {
+  // damage of the current hit in percent: only forward combos, side attacks, run attacks and
+  // finishing moves are single hits; monsters without a weapon don't fight with fists
+  Pose::ComboInfo cmb;
+  if(!visual.pose().comboInfo(cmb) || !cmb.forward)
+    return 100;
+  Talent tal = TALENT_UNKNOWN;
+  if(auto w = invent.activeWeapon())
+    tal = w->is2H() ? TALENT_2H : TALENT_1H;
+  if(tal==TALENT_UNKNOWN && isMonster())
+    return 100;
+  const int32_t level = (tal==TALENT_UNKNOWN ? 0 : talentSkill(tal));
+  return owner.script().comboDamage(isPlayer(),tal,level,uint16_t(visual.comboLength()+1));
+  }
+
 bool Npc::isRefuseTalk() const {
   return refuseTalkMilis>=owner.tickCount();
   }
