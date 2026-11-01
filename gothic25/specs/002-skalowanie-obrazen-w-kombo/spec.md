@@ -1,6 +1,6 @@
 # 002: Skalowanie obrażeń w kombo
 
-- **Status:** Zatwierdzona
+- **Status:** W realizacji
 - **Utworzono:** 2026-10-28
 - **Warstwa (wstępnie):** silnik i skrypty <!-- zasoby / skrypty / silnik -->
 
