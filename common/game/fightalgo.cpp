@@ -251,7 +251,7 @@ void FightAlgo::onBreakSeries() {
   queueId = zenkit::FightAiMove::NOP;
   }
 
-void FightAlgo::onAttack() {
+void FightAlgo::onHitFrame() {
   hitLanded = false;
   }
 

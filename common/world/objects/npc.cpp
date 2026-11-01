@@ -2080,6 +2080,7 @@ bool Npc::setGoToLadder() {
   }
 
 void Npc::commitDamage() {
+  fghAlgo.onHitFrame();
   if(currentTarget==nullptr)
     return;
   if(!fghAlgo.isInAttackRange(*this,*currentTarget,owner.script()))
@@ -3891,7 +3892,6 @@ bool Npc::doAttack(Anim anim, BodyState bs) {
   if(auto sq = visual.continueCombo(*this,anim,bs,weaponSt,wlk)) {
     (void)sq;
     // implAniWait(uint64_t(sq->atkTotalTime(visual.comboLength())+1));
-    fghAlgo.onAttack();
     return true;
     }
   return false;

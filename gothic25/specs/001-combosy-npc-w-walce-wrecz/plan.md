@@ -151,8 +151,10 @@ a bieżący cios jest już w oknie combo:
    (`FightAlgo::isInGRange`: zasięg broni plus `FIGHT_RANGE_G`). Trafienie odrzuca przeciwnika
    o 10–45 cm za zasięg broni, a przy samym zasięgu broni mistrz urywał serie po pierwszym ciosie:
    w trzech przebiegach zestawu `tests/001` z 003 było 411 takich przerwań, wszystkie z bohaterem
-   jako celem w 1,5 zasięgu broni. Znacznik trafienia ustawia `Npc::takeDamage` atakującemu przy
-   trafieniu wręcz, a kasuje każdy nowy cios (`Npc::doAttack`). Bez zapisu w grze.
+   jako celem w 1,5 zasięgu broni. Znacznik trafienia kasuje klatka trafienia każdego ciosu
+   (`Npc::commitDamage`, także przy pudle), a ustawia `Npc::takeDamage` atakującemu, gdy cios
+   wręcz wejdzie. `doAttack` się nie nadaje, bo zwraca `true` także bez nowego ciosu. Bez zapisu
+   w grze.
 4. **Obrona w serii (W5):** gdy `defend_in_series` i przeciwnik zaczyna cios (te same warunki co
    `fightalgo.cpp:45`), silnik czyści serię i od razu wykonuje reakcję z `FA_ENEMY_PREHIT_<N>`
    (blok przerywa animację ataku tak jak u gracza, odskok jak dziś).

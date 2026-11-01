@@ -44,7 +44,7 @@ class FightAlgo final {
     void   onClearTarget();
     void   onTakeHit();
     void   onBreakSeries();
-    void   onAttack();
+    void   onHitFrame();
     void   onHitLanded();
     bool   onEnemyPrehit(Npc &npc, Npc &tg, GameScript& owner);
 
