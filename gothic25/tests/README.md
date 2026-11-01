@@ -328,10 +328,13 @@ Miary liczą się z całego dziennika przebiegu:
 | `skip.max_ms`, `skip.avg_ms` | pominięte ms animacji przy połączeniach do przodu |
 | `link.min_pct`, `link.avg_pct` | chwila połączenia w oknie combo, w % |
 | `damage.stage.<N>.avg`, `damage.stage.<N>.count` | średnie obrażenia i liczba trafień na etapie combo `N` |
+| `bonus.stage.<N>.min`, `bonus.stage.<N>.max` | najmniejsza i największa premia trafień na etapie combo `N`, w % (pole `bonus`, 002) |
+| `bonus.dir.<dir>.max` | największa premia trafień ciosów danego rodzaju (`fwd`, `left`, `right`, `run`, `finish`, pole `dir` ataku), w % |
 | `state.<stan>` | liczba zdarzeń `state` postaci |
 
-Gdy miara nie ma danych (np. `skip.avg_ms` bez połączeń), oczekiwanie jest niezaliczone
-z wartością „brak danych”. Liczniki (np. `series.triple`, `break.hit`) mają wtedy wartość 0.
+Gdy miara nie ma danych (np. `skip.avg_ms` bez połączeń albo `bonus.*` w dzienniku bez pola `bonus`),
+oczekiwanie jest niezaliczone z wartością „brak danych”. Liczniki (np. `series.triple`, `break.hit`)
+mają wtedy wartość 0.
 Oczekiwanie wobec postaci, której nie ma w dzienniku, jest niezaliczone, tak samo jak nieznana
 miara albo operator. Wychwytuje to literówki w scenariuszu.
 

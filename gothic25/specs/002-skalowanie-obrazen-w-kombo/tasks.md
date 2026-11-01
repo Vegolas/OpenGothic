@@ -64,7 +64,7 @@ jako testem regresji (`gothic25/CLAUDE.md`).
 
 ## Faza 3: Narzędzia
 
-- [ ] **Z6** `tools/fightlog.py`: premia w raporcie i oczekiwaniach.
+- [x] **Z6** `tools/fightlog.py`: premia w raporcie i oczekiwaniach.
       - Kolumna premii w tabeli „Etap combo”.
       - Miary `bonus.stage.<N>.min`, `bonus.stage.<N>.max` i `bonus.dir.<dir>.max` (atak `n`
         łączony z jego `result`).

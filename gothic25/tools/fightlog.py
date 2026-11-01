@@ -35,8 +35,9 @@ DOWN_STATES = ["stumble", "fly", "lie", "unconscious", "dead"]
 KNOWN_METRIC = re.compile(
     r"^(attacks|attacks\.tgt_down|res\.(hit|block|jumpback|miss)|res\.miss\.\w+|taken\.(hit|block|jumpback)"
     r"|combo\.max|combo\.count\.\d+|series\.(attack|side|front|triple|whirl|master|combo|multi)|break\.\w+"
-    r"|skip\.(max_ms|avg_ms)|link\.(min_pct|avg_pct)|damage\.stage\.\d+\.(avg|count)|state\.\w+)$")
-STATISTIC = re.compile(r"^(combo\.max|skip\.\w+|link\.\w+|damage\.stage\.\d+\.avg)$")
+    r"|skip\.(max_ms|avg_ms)|link\.(min_pct|avg_pct)|damage\.stage\.\d+\.(avg|count)|state\.\w+"
+    r"|bonus\.stage\.\d+\.(min|max)|bonus\.dir\.\w+\.max)$")
+STATISTIC = re.compile(r"^(combo\.max|skip\.\w+|link\.\w+|damage\.stage\.\d+\.avg|bonus\.\S+)$")
 OPS = {"==": operator.eq, "!=": operator.ne, "<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge}
 
 
@@ -136,12 +137,17 @@ def metrics(events: list[dict], ids: set[int]) -> dict[str, float]:
     series_seen: dict[tuple[int, int], str] = {}
     skips, links = [], []
     damage: dict[int, list[int]] = defaultdict(list)
+    # combo damage bonus of hits (002) by combo stage and by attack direction
+    bonus_stage: dict[int, list[int]] = defaultdict(list)
+    bonus_dir: dict[str, list[int]] = defaultdict(list)
+    attack_dir: dict[tuple[int, int], str] = {}
 
     for ev in events:
         kind = ev["ev"]
         mine = ev.get("who_id") in ids
         if kind == "attack" and mine:
             attacks_by_char[ev["who_id"]].append(ev)
+            attack_dir[(ev["who_id"], ev["n"])] = ev["dir"]
             m["attacks"] += 1
             if ev["tgt_down"]:
                 m["attacks.tgt_down"] += 1
@@ -165,6 +171,11 @@ def metrics(events: list[dict], ids: set[int]) -> dict[str, float]:
                     m[f"res.miss.{ev['why']}"] += 1
                 if ev["res"] == "hit":
                     damage[ev["combo"]].append(ev["dmg"])
+                    if ev.get("bonus") is not None:
+                        bonus_stage[ev["combo"]].append(ev["bonus"])
+                        direction = attack_dir.get((ev["who_id"], ev["n"]))
+                        if direction is not None:
+                            bonus_dir[direction].append(ev["bonus"])
             if ev.get("tgt_id") in ids and ev["res"] != "miss":
                 m[f"taken.{ev['res']}"] += 1
         elif kind == "break" and mine:
@@ -186,6 +197,11 @@ def metrics(events: list[dict], ids: set[int]) -> dict[str, float]:
     for stage, values in damage.items():
         m[f"damage.stage.{stage}.avg"] = statistics.mean(values)
         m[f"damage.stage.{stage}.count"] = len(values)
+    for stage, values in bonus_stage.items():
+        m[f"bonus.stage.{stage}.min"] = min(values)
+        m[f"bonus.stage.{stage}.max"] = max(values)
+    for direction, values in bonus_dir.items():
+        m[f"bonus.dir.{direction}.max"] = max(values)
     return dict(m)
 
 
@@ -279,6 +295,14 @@ def fmt(v: float | None) -> str:
     return f"{v:.1f}"
 
 
+def bonus_range(m: dict[str, float], stage: int) -> str:
+    """Combo damage bonus of a combo stage: one value or the range, '–' for logs without it."""
+    lo, hi = m.get(f"bonus.stage.{stage}.min"), m.get(f"bonus.stage.{stage}.max")
+    if lo is None:
+        return "–"
+    return f"{fmt(lo)}%" if lo == hi else f"{fmt(lo)}–{fmt(hi)}%"
+
+
 def tactic_name(ids: set[int], tactics: dict[int, str]) -> str:
     return ", ".join(f"{tactics.get(t, '?')} ({t})" for t in sorted(ids)) or "–"
 
@@ -360,10 +384,11 @@ def report(events: list[dict], tactics: dict[int, str], source: Path, status: di
         stages = sorted(int(k.split(".")[2]) for k in m if k.startswith("damage.stage.") and k.endswith(".count"))
         if stages:
             out.append("")
-            out.append("| Etap combo | Trafienia | Średnie obrażenia |")
-            out.append("|---|---|---|")
+            out.append("| Etap combo | Trafienia | Średnie obrażenia | Premia |")
+            out.append("|---|---|---|---|")
             for s in stages:
-                out.append(f"| {s} | {fmt(m[f'damage.stage.{s}.count'])} | {fmt(m[f'damage.stage.{s}.avg'])} |")
+                out.append(f"| {s} | {fmt(m[f'damage.stage.{s}.count'])} | {fmt(m[f'damage.stage.{s}.avg'])} "
+                           f"| {bonus_range(m, s)} |")
         out.append("")
 
     markers = [e for e in events if e["ev"] == "marker" and e["what"] not in ("line", "scenario_start")]
