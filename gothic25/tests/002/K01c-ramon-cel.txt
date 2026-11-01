@@ -1,0 +1,31 @@
+# criterion: 002 K1
+# criterion: 002 K7
+# timeout: 240
+# Ramon, styl mistrza, ale talent broni dwuręcznej 55% (wojownik), bije cel testowy. Premia zależy
+# od talentu, nie od stylu walki: tablica NPC dla wojownika z bronią dwuręczną
+# (COMBO_DAMAGE_2H_NPC: 100, 125, 155), combo najwyżej z 3 ciosów.
+info told DIA_Xardas_Hello
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+cheat god
+set time 12 0
+insert TST_ComboDummy
+immortal TST_ComboDummy
+insert BDT_1071_Addon_Ramon
+call B_Attack BDT_1071_Addon_Ramon TST_ComboDummy 0 0
+ztimer multiplyer 2
+wait 120
+quit
+
+# Progi (kalibracja 2026-11-01, dwa przebiegi po 90 s gry):
+# Trafienia na etapach 1-3: 29, 12, 10 i 29, 6, 4. Obserwacja wydłużona do 120 s, żeby etap 3
+# występował z zapasem; premie to wartości z tablic, a combo.max == 3 to limit talentu (001 W4).
+expect BDT_1071_Addon_Ramon bonus.stage.1.max == 100
+expect BDT_1071_Addon_Ramon bonus.stage.2.min == 125
+expect BDT_1071_Addon_Ramon bonus.stage.2.max == 125
+expect BDT_1071_Addon_Ramon bonus.stage.3.min == 155
+expect BDT_1071_Addon_Ramon bonus.stage.3.max == 155
+expect BDT_1071_Addon_Ramon combo.max == 3

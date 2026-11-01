@@ -84,7 +84,7 @@ jako testem regresji (`gothic25/CLAUDE.md`).
 
 ## Faza 4: Scenariusze
 
-- [ ] **Z8** [P] Scenariusze `tests/002/` dla ciosów NPC, z progami uzasadnionymi w komentarzach:
+- [x] **Z8** [P] Scenariusze `tests/002/` dla ciosów NPC, z progami uzasadnionymi w komentarzach:
       - K1/K7: paladyn-mistrz i Torwache atakują `TST_ComboDummy` (`immortal`). Premie według etapu
         równe tablicy NPC, etap 1 = 100.
       - K3: bandyta ze stylem normalnym i paladyn: `bonus.dir.left.max` i `bonus.dir.right.max` = 100;
