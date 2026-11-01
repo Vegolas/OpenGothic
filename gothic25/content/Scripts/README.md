@@ -37,6 +37,7 @@ Gdy ich nie ma, silnik działa jak upstream. Starszy silnik i oryginalna gra ign
 | `MAX_MOVE` | `Content/_intern/Fight.d` | Długość listy `move` w `C_FightAI`. Oryginał: 6. Fork czyta do 16 ruchów na stan FAI, starszy silnik tylko 6 pierwszych. | [001](../../specs/001-combosy-npc-w-walce-wrecz/spec.md) |
 | `C_FightAI_Combo`, `FA_COMBO_<N>` | klasa w `Content/_intern/Fight.d`, instancje w `Content/FAI/*.d` | Włącza łączenie ciosów NPC w oknie combo dla stylu walki `<N>` i ustawia jego parametry (niżej). Styl bez tej instancji walczy jak w oryginale. | [001](../../specs/001-combosy-npc-w-walce-wrecz/spec.md) |
 | `FA_MY_W_COMBO_<N>` | `Content/FAI/*.d` | Instancja z oryginału, dotąd pusta i nieużywana. Dla stylów z `FA_COMBO_<N>` silnik losuje z niej ruch raz na okno combo po ciosie do przodu, gdy NPC nie ma już zaplanowanej serii. `MOVE_ATTACK` przedłuża combo, każdy inny ruch je kończy. | [001](../../specs/001-combosy-npc-w-walce-wrecz/spec.md) |
+| `COMBO_DAMAGE_{1H,2H,FIST}_{PLAYER,NPC}` | `Content/AI/AI_Intern/ComboDamage.d` | Premia za kolejne ciosy combo do przodu w procentach obrażeń, osobno dla bohatera i NPC. Tablice 1H i 2H: wiersz 4 ciosów na poziom talentu (nowicjusz, wojownik, mistrz), FIST: jeden wiersz. Bez tych stałych każdy cios zadaje zwykłe obrażenia. | [002](../../specs/002-skalowanie-obrazen-w-kombo/spec.md) |
 
 Składowe `C_FightAI_Combo`:
 

@@ -13,14 +13,15 @@ jako testem regresji (`gothic25/CLAUDE.md`).
 
 ## Faza 1: Skrypty
 
-- [ ] **Z1** Tablice premii w nowym pliku `Content/AI/AI_Intern/ComboDamage.d`, dopisanym na końcu
+- [x] **Z1** Tablice premii w nowym pliku `Content/AI/AI_Intern/ComboDamage.d`, dopisanym na końcu
       `Gothic.src` za `STORY\Startup.d`.
       - Tablice: `COMBO_DAMAGE_1H_PLAYER`, `COMBO_DAMAGE_2H_PLAYER` (3 × 4), `COMBO_DAMAGE_FIST_PLAYER`
         (4) i to samo z `_NPC`. Wartości startowe z planu.
       - Komentarz w pliku: układ tablic i zasada dla NPC (połowa nadwyżki ponad 100%).
       - Wiersz w tabeli „Symbole dla silnika” w `content/Scripts/README.md`.
       - Sprawdzenie: `tools/build-scripts.ps1`, `tools/dat.py prefix` na `GOTHIC.DAT` z 0.1.0
-        (tablica symboli z 0.1.0 jest początkiem nowej). Bez silnika z Z3 i Z4 nic się w grze nie zmienia.
+        (nazwane symbole z 0.1.0 mają te same numery, ADR 0005 z uzupełnieniem) i scenariusz
+        `tests/001/K09c` z zapisem z 0.1.0. Bez silnika z Z3 i Z4 nic się w grze nie zmienia.
 
       (W1, W2, W5, W6, W7, W10)
 - [ ] **Z2** Cel testowy w nowym pliku `Content/AI/AI_Intern/ComboDamageTest.d`, na końcu
