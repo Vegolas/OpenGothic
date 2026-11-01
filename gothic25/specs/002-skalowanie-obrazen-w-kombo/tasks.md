@@ -71,7 +71,7 @@ jako testem regresji (`gothic25/CLAUDE.md`).
       - Opis miar w `tests/README.md`.
 
       Po Z5. (W8, K1, K3, K7)
-- [ ] **Z7** `tools/fightlog.py`: sekcja „Techniki” dla bohatera i opcja `--bonus`.
+- [x] **Z7** `tools/fightlog.py`: sekcja „Techniki” dla bohatera i opcja `--bonus`.
       - Odcinki ciosów bohatera według `dir` i `link`: pełne combo (łączenia do przodu), lewo-prawo
         (naprzemienne `left`/`right`), powtarzanie pierwszego ciosu (`fwd`, `link: new`, `combo: 1`).
       - Dla odcinka: mediana i rozrzut czasu na cios, obrażenia na cios, obrażenia na sekundę,

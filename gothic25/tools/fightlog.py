@@ -313,7 +313,112 @@ def describe(ev: dict) -> str:
     return line + " ".join(p for p in parts if p)
 
 
-def report(events: list[dict], tactics: dict[int, str], source: Path, status: dict | None) -> str:
+# hero techniques of spec 002 K4/K6: a pause longer than this ends a run of attacks
+SEGMENT_GAP_MS = 2000
+SEGMENT_MIN_ATTACKS = 3
+TECHNIQUES = {"combo": "pełne combo", "side": "lewo-prawo", "first": "pierwszy cios"}
+TALENT_LEVELS = {0: "nowicjusz", 1: "wojownik", 2: "mistrz"}
+MIN_DAMAGE = 5
+
+
+@dataclass
+class Segment:
+    technique: str
+    weapon: str
+    talent: int
+    talent_pct: int
+    attacks: list[dict] = field(default_factory=list)
+
+
+def hero_segments(events: list[dict]) -> list[Segment]:
+    """Runs of hero attacks of one technique: full forward combos, left-right, repeated first hit."""
+    hero = [e for e in events if e["ev"] == "attack" and e["player"]]
+    segments: list[Segment] = []
+    for i, a in enumerate(hero):
+        nxt = hero[i + 1] if i + 1 < len(hero) else None
+        if a["dir"] in ("left", "right"):
+            technique = "side"
+        elif a["dir"] == "fwd" and (a["link"] == "fwd" or (nxt is not None and nxt["link"] == "fwd")):
+            technique = "combo"
+        elif a["dir"] == "fwd":
+            technique = "first"
+        else:
+            continue  # run attacks and finishing moves are no technique of K4
+        cur = segments[-1] if segments else None
+        if (cur is None or cur.technique != technique or cur.weapon != a["weapon"] or cur.talent != a["talent"]
+                or a["t"] - cur.attacks[-1]["t"] > SEGMENT_GAP_MS):
+            cur = Segment(technique, a["weapon"], a["talent"], a["talent_pct"])
+            segments.append(cur)
+        cur.attacks.append(a)
+    return [s for s in segments if len(s.attacks) >= SEGMENT_MIN_ATTACKS]
+
+
+def hit_damage(result: dict | None, attack: dict, bonus: list[int] | None) -> int:
+    """Damage of a hit; with `bonus` the forward combo bonus is replaced by that table (percent per hit)."""
+    if result is None or result["res"] != "hit":
+        return 0
+    dmg = result["dmg"]
+    if bonus is None or attack["dir"] != "fwd" or not result.get("bonus"):
+        return dmg
+    base = dmg * 100 / result["bonus"]
+    stage = min(result["combo"], len(bonus)) - 1
+    return max(round(base * bonus[stage] / 100), MIN_DAMAGE)
+
+
+def techniques_section(events: list[dict], bonus: list[int] | None) -> list[str]:
+    """K4/K6 of spec 002: damage per second of each hero technique, per weapon and talent level."""
+    segments = hero_segments(events)
+    if not segments:
+        return []
+    results = {(e["who_id"], e["n"]): e for e in events if e["ev"] == "result" and e["player"]}
+
+    groups: dict[tuple, dict] = {}
+    for s in segments:
+        gaps = [b["t"] - a["t"] for a, b in zip(s.attacks, s.attacks[1:])]
+        g = groups.setdefault((s.weapon, s.talent, s.technique),
+                              {"pct": s.talent_pct, "runs": 0, "attacks": 0, "ms": 0.0, "dmg": 0, "gaps": []})
+        g["runs"] += 1
+        g["attacks"] += len(s.attacks)
+        g["ms"] += s.attacks[-1]["t"] - s.attacks[0]["t"] + statistics.median(gaps)  # the last attack takes a step too
+        g["gaps"] += gaps
+        g["dmg"] += sum(hit_damage(results.get((a["who_id"], a["n"])), a, bonus) for a in s.attacks)
+
+    out = ["## Techniki bohatera", ""]
+    out.append(f"Odcinki co najmniej {SEGMENT_MIN_ATTACKS} ciosów bohatera jednej techniki; przerwa dłuższa niż "
+               f"{SEGMENT_GAP_MS / 1000:g} s kończy odcinek. Obrażenia na sekundę: suma obrażeń przez czas odcinków.")
+    if bonus is not None:
+        out.append(f"Premie ciosów do przodu przeliczone dla `--bonus {','.join(str(b) for b in bonus)}`.")
+    out.append("")
+    out.append("| Broń | Talent | Technika | Odcinki | Ciosy | Czas na cios (s) | Odstępy (s): mediana, min–max "
+               "| Obrażenia na cios | Obrażenia na sekundę |")
+    out.append("|---|---|---|---|---|---|---|---|---|")
+    order = list(TECHNIQUES)
+    dps: dict[tuple, float] = {}
+    for key in sorted(groups, key=lambda k: (k[0], k[1], order.index(k[2]))):
+        weapon, talent, technique = key
+        g = groups[key]
+        rate = g["dmg"] / (g["ms"] / 1000)
+        dps[key] = rate
+        level = "pięści" if weapon == "fist" else f"{TALENT_LEVELS.get(talent, talent)} ({g['pct']}%)"
+        out.append(f"| {weapon} | {level} | {TECHNIQUES[technique]} | {g['runs']} | {g['attacks']} "
+                   f"| {g['ms'] / 1000 / g['attacks']:.2f} | {statistics.median(g['gaps']) / 1000:.2f}, "
+                   f"{min(g['gaps']) / 1000:.2f}–{max(g['gaps']) / 1000:.2f} | {g['dmg'] / g['attacks']:.1f} "
+                   f"| {rate:.1f} |")
+    out.append("")
+    for weapon, talent in sorted({(w, t) for w, t, _ in dps}):
+        combo = dps.get((weapon, talent, "combo"))
+        others = [dps[(weapon, talent, t)] for t in ("side", "first") if (weapon, talent, t) in dps]
+        if combo is not None and others:
+            gain = (combo / max(others) - 1) * 100
+            level = "pięści" if weapon == "fist" else TALENT_LEVELS.get(talent, talent)
+            out.append(f"- {weapon}, {level}: przewaga pełnego combo nad lepszą z pozostałych technik "
+                       f"{gain:+.0f}% (W5: co najmniej +20% u mistrza)")
+    out.append("")
+    return out
+
+
+def report(events: list[dict], tactics: dict[int, str], source: Path, status: dict | None,
+           bonus: list[int] | None = None) -> str:
     out: list[str] = []
     meta = next((e for e in events if e["ev"] == "meta"), {})
     start = next((e for e in events if e["ev"] == "marker" and e["what"] == "scenario_start"), None)
@@ -391,6 +496,8 @@ def report(events: list[dict], tactics: dict[int, str], source: Path, status: di
                            f"| {bonus_range(m, s)} |")
         out.append("")
 
+    out += techniques_section(events, bonus)
+
     markers = [e for e in events if e["ev"] == "marker" and e["what"] not in ("line", "scenario_start")]
     if markers:
         out.append("## Znaczniki")
@@ -434,7 +541,8 @@ def find_scenario(args, log: Path, events: list[dict]) -> Path:
 
 def cmd_report(args) -> None:
     log, events, status = load_run(args)
-    text = report(events, load_tactics(Path(args.constants)), log, status)
+    bonus = [int(v) for v in args.bonus.split(",")] if args.bonus else None
+    text = report(events, load_tactics(Path(args.constants)), log, status, bonus)
     out = Path(args.out) if args.out else log.with_name("report.md")
     out.write_text(text + "\n", encoding="utf-8")
     print(f"report: {out}")
@@ -474,6 +582,8 @@ def main() -> None:
     p.add_argument("--out", help="report file (default: report.md next to the log)")
     p.add_argument("--codepage", default="cp1250", help="codepage of script strings (default: cp1250)")
     p.add_argument("--constants", default=str(AI_CONSTANTS), help="AI_Constants.d with the FAI_* tactic names")
+    p.add_argument("--bonus", help="combo damage bonus per forward hit in percent, e.g. 100,175,275,400: "
+                                  "hero techniques are recomputed with it (spec 002)")
     p.set_defaults(func=cmd_report)
 
     p = sub.add_parser("check", help="report plus the expectations of the scenario; exit code 1 on failure")

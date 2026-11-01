@@ -368,6 +368,10 @@ tools/test.ps1 -Scenario 001/K09b-wczytanie-zapisu -Save <plik.sav>
   postaci, oczekiwania), a szczegóły są w `fightlog.jsonl`, `log.txt` i zrzutach ekranu.
 - Raport z dziennika włączonego ręcznie w zwykłej grze (`tools/run.ps1 -Dev`, potem w konsoli
   `toggle fightlog`): `python tools/fightlog.py report <katalog z build/test-runs>`.
+- Gdy bohater walczy, raport ma sekcję „Techniki bohatera”: pełne combo, lewo-prawo i powtarzanie
+  pierwszego ciosu, osobno dla broni i poziomu talentu, z czasem na cios, obrażeniami na sekundę
+  i przewagą pełnego combo (002 K4, K6). `report <katalog> --bonus 100,175,275,400` przelicza ją
+  dla innych premii ciosów do przodu bez ponownej gry.
 - Raport i oczekiwania bez uruchamiania gry, np. po poprawce progu:
   `python tools/fightlog.py check <katalog przebiegu> --scenario tests/NNN/<plik>.txt`.
 
