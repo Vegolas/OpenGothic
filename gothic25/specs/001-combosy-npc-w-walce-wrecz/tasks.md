@@ -68,6 +68,11 @@ w instancjach `FA_COMBO_<N>` wpisujemy `1` i `0` z komentarzem.
 - [x] **Z14** Wersja moda 0.2.0 w `mod.json` i wpis w `CHANGELOG.md` (bramka konstytucji, zasada 8).
       Po Z12 i Z13.
 
+- [x] **Z17** (dopisane 2026-11-01, wykryte scenariuszami 003): po ciosie, który trafił, `break_on_lost`
+      sprawdza zasięg G zamiast zasięgu broni (`FightAlgo::isTargetLost`), bo odrzut po trafieniu
+      urywał serie mistrzów po pierwszym ciosie. Po bloku, odskoku i pudle bez zmian. Sprawdzenie:
+      zestaw `tests/001` (K11a i K11b nadal przechodzą), mniej przerwań `target_lost`. (W6, K11)
+
 ## Faza 4: Weryfikacja
 
 - [ ] **Z15** Przejść kroki kryteriów akceptacji K1–K12 (K8 na silniku bez moda, K9 z zapisem z Z1)

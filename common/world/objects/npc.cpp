@@ -1936,8 +1936,7 @@ bool Npc::implComboLink() {
     return false;
 
   // without 'break_on_lost' series is finished even into the air
-  if(fghAlgo.comboAi(*this).break_on_lost &&
-     !(fghAlgo.isInWRange(*this,*currentTarget,owner.script()) && fghAlgo.isInFocusAngle(*this,*currentTarget))) {
+  if(fghAlgo.comboAi(*this).break_on_lost && fghAlgo.isTargetLost(*this,*currentTarget,owner.script())) {
     fghAlgo.onBreakSeries();
     return false;
     }
@@ -2160,6 +2159,8 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
   hitResult = DamageCalculator::damageValue(other,*this,b,isSpell,dmg,bMask);
   if(!isSpell && !isDown() && hitResult.hasHit)
     owner.addWeaponHitEffect(other,b,*this).play();
+  if(!isSpell && b==nullptr && hitResult.hasHit)
+    other.fghAlgo.onHitLanded();
 
   if(isDown()) {
     onNoHealth(dontKill,HS_NoSound);
@@ -3890,6 +3891,7 @@ bool Npc::doAttack(Anim anim, BodyState bs) {
   if(auto sq = visual.continueCombo(*this,anim,bs,weaponSt,wlk)) {
     (void)sq;
     // implAniWait(uint64_t(sq->atkTotalTime(visual.comboLength())+1));
+    fghAlgo.onAttack();
     return true;
     }
   return false;

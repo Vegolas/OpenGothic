@@ -42,6 +42,6 @@ CLASS C_FightAI_Combo
 	VAR INT link_min;			// earliest moment to link the next attack, percent of the usable combo window
 	VAR INT link_max;			// latest moment to link the next attack, percent of the usable combo window
 	VAR INT defend_in_series;	// TRUE: may break an own series to react to an enemy attack (FA_ENEMY_PREHIT_<N>)
-	VAR INT break_on_lost;		// TRUE: breaks a series when the enemy leaves weapon range or focus
+	VAR INT break_on_lost;		// TRUE: breaks a series when the enemy leaves weapon range (G range after a hit that landed) or focus
 };
 

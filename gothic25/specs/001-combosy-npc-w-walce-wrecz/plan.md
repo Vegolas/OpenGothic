@@ -120,7 +120,7 @@ Zmiany w dwóch grupach, które da się zgłosić upstreamowi osobno.
   |---|---|
   | `link_min`, `link_max` | moment połączenia ciosu: losowo między tymi procentami użytecznej części okna combo |
   | `defend_in_series` | `TRUE`: w trakcie serii NPC reaguje na nadchodzący cios przeciwnika (`FA_ENEMY_PREHIT_<N>`) i przerywa serię |
-  | `break_on_lost` | `TRUE`: NPC przerywa serię, gdy przeciwnik wyjdzie z zasięgu broni albo z pola widzenia z przodu |
+  | `break_on_lost` | `TRUE`: NPC przerywa serię, gdy przeciwnik wyjdzie z zasięgu broni (po ciosie, który trafił: z zasięgu G) albo z pola widzenia z przodu |
 
 - `FightAi::FA` dostaje pole z tymi parametrami i znacznik, czy instancja istnieje.
 
@@ -147,6 +147,12 @@ a bieżący cios jest już w oknie combo:
    widzenia, silnik czyści serię i nie łączy (NPC kończy bieżący cios, potem zwykła ocena FAI).
    Bez `break_on_lost` cios jest łączony bez względu na zasięg (cios w powietrze). Dzisiejsze
    pomijanie ataków bocznych poza zasięgiem (`npc.cpp:1654`) w tej ścieżce nie jest stosowane.
+   Zmiana z 2026-11-01 (Z17): gdy poprzedni cios NPC trafił, zasięgiem jest zasięg G
+   (`FightAlgo::isInGRange`: zasięg broni plus `FIGHT_RANGE_G`). Trafienie odrzuca przeciwnika
+   o 10–45 cm za zasięg broni, a przy samym zasięgu broni mistrz urywał serie po pierwszym ciosie:
+   w trzech przebiegach zestawu `tests/001` z 003 było 411 takich przerwań, wszystkie z bohaterem
+   jako celem w 1,5 zasięgu broni. Znacznik trafienia ustawia `Npc::takeDamage` atakującemu przy
+   trafieniu wręcz, a kasuje każdy nowy cios (`Npc::doAttack`). Bez zapisu w grze.
 4. **Obrona w serii (W5):** gdy `defend_in_series` i przeciwnik zaczyna cios (te same warunki co
    `fightalgo.cpp:45`), silnik czyści serię i od razu wykonuje reakcję z `FA_ENEMY_PREHIT_<N>`
    (blok przerywa animację ataku tak jak u gracza, odskok jak dziś).
