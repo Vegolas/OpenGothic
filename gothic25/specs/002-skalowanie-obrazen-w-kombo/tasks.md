@@ -39,7 +39,7 @@ jako testem regresji (`gothic25/CLAUDE.md`).
 
 ## Faza 2: Silnik
 
-- [ ] **Z3** `GameScript` czyta tablice `COMBO_DAMAGE_*` przy starcie (`initCommon`, obok
+- [x] **Z3** `GameScript` czyta tablice `COMBO_DAMAGE_*` przy starcie (`initCommon`, obok
       `DAM_CRITICAL_MULTIPLIER`).
       - Metoda `comboDamage(player, talent, poziom, cios)` zwraca procent; ciosy dalsze niż długość
         wiersza biorą ostatnią kolumnę.

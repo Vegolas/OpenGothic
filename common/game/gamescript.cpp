@@ -379,6 +379,7 @@ void GameScript::initCommon() {
   if(auto v = vm.find_symbol_by_name("DAM_CRITICAL_MULTIPLIER")) {
     damCriticalMultiplier = v->get_int();
     }
+  initComboDamage();
 
   auto* gilMax = vm.find_symbol_by_name("GIL_MAX");
   gilCount = gilMax!=nullptr ? size_t(gilMax->get_int()) : 0;
@@ -1615,6 +1616,41 @@ int GameScript::npcDamDiveTime() {
 
 int32_t GameScript::criticalDamageMultiplyer() const {
   return damCriticalMultiplier;
+  }
+
+void GameScript::initComboDamage() {
+  // optional mod tables; without them every hit does the usual damage
+  static const char* names[2][3] = {
+    {"COMBO_DAMAGE_1H_PLAYER", "COMBO_DAMAGE_2H_PLAYER", "COMBO_DAMAGE_FIST_PLAYER"},
+    {"COMBO_DAMAGE_1H_NPC",    "COMBO_DAMAGE_2H_NPC",    "COMBO_DAMAGE_FIST_NPC"   },
+    };
+  for(size_t p=0; p<2; ++p)
+    for(size_t w=0; w<3; ++w) {
+      auto& tbl = comboDmg[p][w];
+      tbl = ComboDamage();
+      auto* sym = vm.find_symbol_by_name(names[p][w]);
+      if(sym==nullptr)
+        continue;
+      const size_t rows = (w==2 ? 1 : 3);
+      if(sym->type()!=zenkit::DaedalusDataType::INT || sym->count()==0 || sym->count()%rows!=0) {
+        Log::e(names[p][w],": expected an int array of ",int(rows)," rows, the table is ignored");
+        continue;
+        }
+      tbl.row = sym->count()/rows;
+      for(uint32_t i=0; i<sym->count(); ++i)
+        tbl.val.push_back(sym->get_int(uint16_t(i)));
+      }
+  }
+
+int32_t GameScript::comboDamage(bool player, Talent tal, int32_t level, uint16_t hit) const {
+  const size_t w   = (tal==TALENT_1H ? 0 : (tal==TALENT_2H ? 1 : 2));
+  auto&        tbl = comboDmg[player ? 0 : 1][w];
+  if(tbl.val.empty() || hit==0)
+    return 100;
+  // hits beyond the row use its last value
+  const size_t row = (w==2 ? 0 : size_t(std::clamp(level,0,2)));
+  const size_t col = std::min<size_t>(hit,tbl.row)-1;
+  return tbl.val[row*tbl.row + col];
   }
 
 uint32_t GameScript::lockPickId() const {
