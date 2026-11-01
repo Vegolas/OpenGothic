@@ -327,6 +327,7 @@ AI\Test_Skripts\*.d
 STORY\B_Story\B_ENTER_DRAGONISLAND.d
 STORY\Startup.d
 AI\AI_INTERN\ComboDamage.d
+AI\AI_INTERN\ComboDamageTest.d
 
 
 

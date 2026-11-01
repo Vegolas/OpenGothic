@@ -24,13 +24,16 @@ jako testem regresji (`gothic25/CLAUDE.md`).
         `tests/001/K09c` z zapisem z 0.1.0. Bez silnika z Z3 i Z4 nic się w grze nie zmienia.
 
       (W1, W2, W5, W6, W7, W10)
-- [ ] **Z2** Cel testowy w nowym pliku `Content/AI/AI_Intern/ComboDamageTest.d`, na końcu
+- [x] **Z2** Cel testowy w nowym pliku `Content/AI/AI_Intern/ComboDamageTest.d`, na końcu
       `Gothic.src` za `ComboDamage.d`.
       - Postać `TST_ComboDummy`: człowiek bez broni, ochrona 0, dużo punktów życia.
       - Stan startowy `ZS_ComboDummy`: wyłączone percepcje, postać stoi.
       - Sprawdzenie: `tools/dat.py prefix` jak w Z1. Scenariusz próbny: `insert TST_ComboDummy`,
         bandyta atakuje cel przez 60 s, a cel nie blokuje, nie oddaje i nie ucieka (dziennik: brak
         ciosów i obron celu). Po Z1, ten sam plik `Gothic.src`.
+      - Wynik próby (2026-11-01): paladyn 58 ciosów w 60 s, cel bez ciosów, bloków i odskoków.
+        Każde trafienie zachwiewa cel i odpycha go o kawałek, więc para przesuwa się o kilkanaście
+        metrów na minutę. Scenariusze z Z8 i Z9: krótkie obserwacje albo zapas miejsca.
 
       (P0 dla K1–K7, W10)
 
