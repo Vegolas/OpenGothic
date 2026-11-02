@@ -1,6 +1,6 @@
 # 002: Skalowanie obrażeń w kombo
 
-- **Status:** W realizacji
+- **Status:** Zrobiona
 - **Utworzono:** 2026-10-28
 - **Warstwa (wstępnie):** silnik i skrypty <!-- zasoby / skrypty / silnik -->
 
@@ -97,47 +97,47 @@ siła potrzebna do broni, „Umiejętności bojowe” → broń jednoręczna i d
 `insert ItMw_1h_Pal_Sword`, `insert ItMw_2h_Pal_Sword`. Cel testowy: NPC, który nie blokuje i nie
 oddaje, z dużą liczbą punktów życia (przygotowany w planie i wstawiany przez `insert`).
 
-- [ ] **K1** (W1, W8): Kolejne ciosy combo zadają rosnące obrażenia.
+- [x] **K1** (W1, W8): Kolejne ciosy combo zadają rosnące obrażenia.
   - Kroki: P0, miecz jednoręczny, trzy pełne combo do przodu w cel testowy, odczyt z W8.
   - Oczekiwane: obrażenia każdego ciosu odpowiadają premii z danych moda dla jego numeru,
     a pierwszy cios zadaje tyle samo, co przed zmianą (porównanie z K8).
-- [ ] **K2** (W2): Premię zmienia się bez przebudowy silnika.
+- [x] **K2** (W2): Premię zmienia się bez przebudowy silnika.
   - Kroki: zmień w danych moda premię za trzeci cios broni jednoręcznej, przebuduj i zainstaluj
     tylko moda, powtórz K1.
   - Oczekiwane: zmienia się tylko obrażenie trzeciego ciosu, zgodnie z nową wartością.
-- [ ] **K3** (W3): Ataki spoza combo nie dostają premii.
+- [x] **K3** (W3): Ataki spoza combo nie dostają premii.
   - Kroki: P0, w cel testowy: seria ataków bocznych, atak z biegu, strzał z łuku, zaklęcie,
     a na końcu dobicie powalonego człowieka (`insert BDT_1013_Bandit_L`, powal go i dobij).
   - Oczekiwane: odczyt z W8 nie pokazuje premii ani kary dla żadnego z tych ataków, także dla
     kolejnych ataków bocznych w długiej serii lewo-prawo.
-- [ ] **K4** (W5): Pełne combo mistrza daje najwięcej obrażeń na sekundę.
+- [x] **K4** (W5): Pełne combo mistrza daje najwięcej obrażeń na sekundę.
   - Kroki: P0, dla każdej broni (jednoręczna, dwuręczna) po 20 sekund nieprzerwanego ataku w cel testowy
     każdą techniką: pełne combo, powtarzanie pierwszego ciosu, lewo-prawo.
     Z odczytu W8 policz obrażenia na sekundę.
   - Oczekiwane: pełne combo ma wynik co najmniej o 20% wyższy od lepszej z dwóch pozostałych technik.
     Jeśli tak nie jest, wartości premii poprawiamy w danych moda i powtarzamy pomiar.
-- [ ] **K5** (W4): Odporność i ochrona działają jak dotąd.
+- [x] **K5** (W4): Odporność i ochrona działają jak dotąd.
   - Kroki: P0, pełne combo w `insert MagicGolem` (odporny na ostrze i obuch), potem w cel z wysoką
     ochroną przed ostrzem `insert StoneGolem`.
   - Oczekiwane: MagicGolem nie traci punktów życia żadnym ciosem. Na StoneGolemie każdy kolejny cios
     zadaje obrażenia, jakie zadałby bez premii, pomnożone przez premię (W4). Jeśli wynik jest mniejszy
     niż minimum obrażeń, cios zadaje minimum, tak jak dziś.
-- [ ] **K6** (W6): Zysk z combo rośnie z talentem.
+- [x] **K6** (W6): Zysk z combo rośnie z talentem.
   - Kroki: P0, ale w rozmowie z `ch` „Całkowity reset postaci” i broń jednoręczna do 10%.
     Zmierz obrażenia na sekundę jak w K4 dla pełnego combo, lewo-prawo i powtarzania pierwszego ciosu.
     Potem podnieś broń jednoręczną do 40% i powtórz pomiar.
   - Oczekiwane: względny zysk z pełnego combo nad lepszą z dwóch pozostałych technik jest u nowicjusza
     (10%) mniejszy niż u wojownika (40%), a u wojownika mniejszy niż u mistrza w K4.
-- [ ] **K7** (W7): Premia dotyczy właściwych postaci.
+- [x] **K7** (W7): Premia dotyczy właściwych postaci.
   - Kroki: P0, `insert Pal_230_Ritter`, pozwól mu wyprowadzić combo w bohatera (`cheat god` chroni
     przed śmiercią) i sprawdź odczyt W8 dla jego ciosów.
   - Oczekiwane: kolejne ciosy combo paladyna dostają premię z tabeli dla NPC, mniejszą niż premia
     bohatera za ten sam cios w K1.
-- [ ] **K8** (W9): Bez moda bez zmian.
+- [x] **K8** (W9): Bez moda bez zmian.
   - Kroki: uruchom silnik z tej samej kompilacji bez moda (zwykły Gothic II: Noc Kruka), powtórz K1
     na dowolnym przeciwniku.
   - Oczekiwane: wszystkie ciosy combo zadają takie same obrażenia jak przed zmianą.
-- [ ] **K9** (W10): Zapisy.
+- [x] **K9** (W10): Zapisy.
   - Kroki: wczytaj zapis z wersji 0.1.0. Potem zapisz grę z menu w środku combo (w trybie
     deweloperskim `F5` zamraża kamerę zamiast szybkiego zapisu), wczytaj ją i od razu uderz.
   - Oczekiwane: oba zapisy się wczytują. Odczyt W8 dla pierwszego ciosu po wczytaniu pokazuje numer
@@ -175,3 +175,40 @@ Brak. Zmieniają się tylko zasady obrażeń i wartości w skryptach moda.
 ## Weryfikacja
 
 <!-- Wypełniane po implementacji: kto, kiedy, na jakiej wersji, wynik dla każdego K. -->
+
+**Przebiegi automatyczne (Claude, 2026-11-02, commit `75742e4c`, czyste drzewo).**
+- **Zestawy:** `tools/test.ps1 -Spec 002` przeszło 12 z 12 scenariuszy, a zestaw `tests/001` jako regresja
+  17 z 17.
+- **Katalogi wyników:** leżą w `gothic25/build/test-runs/` poza gitem, więc liczby, które rozstrzygają
+  kryteria, są wpisane w tabeli.
+- **Cele testowe:** stoją, nie blokują i nie oddają: `TST_ComboDummy` (ochrona 0), `TST_ComboDummyArmored`
+  (ochrona 200) i `TST_ComboDummyImmune` (odporny).
+- **Siła ciosu paladyna:** bez premii mocny cios zadaje 235, słaby 23.
+
+**Sesje ręczne (Mateusz Tomanek, 2026-11-02, commit `75742e4c`, drzewo zmienione tylko w tym pliku).**
+- **Scenariusze:** `002/reczne/K04-mistrz` i `002/reczne/K06-nowicjusz-wojownik` z dziennikiem walki.
+  Do tego dobicie, atak z biegu, combo bohatera bez moda i animacja po wczytaniu zapisu, ocenione w grze.
+- **Broń dwuręczna:** grana postacią `PC_Rockefeller` (talent 100%), bo bohater ze scenariusza miał
+  10 siły, a dwuręczny miecz paladyna wymaga 80. Scenariusz `K04-mistrz` podnosi teraz siłę bohatera.
+- **Losowanie słabego ciosu:** bohater z mieczem paladyna zadaje mocnym ciosem 70, a słabym 7, i mocny
+  cios wypada z szansą równą talentowi. Przy kilkunastu combo to losowanie przeważa nad różnicą między
+  technikami: sekcja „Techniki bohatera” dała wojownikowi +77% i +255% w dwóch sesjach.
+- **Przeliczenie bez losowania (Claude, poza raportem):** każdy zamach odcinka techniki, także chybiony,
+  dostaje średnią siłę ciosu bohatera dla tej broni i talentu razy premię swojego etapu combo. Sumę
+  dzielimy przez czas odcinków z raportu. Pudła liczą się jak trafienia, bo czas zamachu jest prawdziwy,
+  a chybienie zależy od ustawienia. Przykład: w lewo-prawo nowicjusza cel po 3 trafieniach odsunął się
+  po zatoczeniu i 15 z 18 zamachów chybiło z powodu zasięgu, a prawdziwy przeciwnik podchodzi z powrotem.
+- **Decyzja właściciela (2026-11-02):** wyniki wystarczają, premii ani pomiaru dalej nie stroimy.
+  Balans sprawdzą playtesty.
+
+| K | Wynik | Wersja | Kto |
+|---|---|---|---|
+| K1 | spełnione. NPC: premie według etapu dokładnie z tablic NPC: paladyn (1H, mistrz) 100/140/190/250 (`002/K01a`), strażnik bramy (2H, mistrz) 100/140/190/250 (`K01b`), Ramon (2H, talent 55%, wojownik) 100/125/155 (`K01c`). Obrażenia paladyna 235/329/446/587. Bohater (`002/reczne`): mistrz 1H i 2H 100/175/275/400, wojownik 1H 100/150/200/260, nowicjusz 1H 100/130 (combo nowicjusza ma 2 ciosy). Rockefeller zadaje 1200/2100/3300/4800, czyli 1200 × premia. Pierwszy cios ma premię 100 jak bez moda (K8) | `75742e4c` | Claude, automatycznie; bohater: Mateusz Tomanek (gra), Claude (raport) |
+| K2 | spełnione. W `ComboDamage.d` bez commita premia NPC-mistrza za trzeci cios broni jednoręcznej zmieniona ze 190 na 210, a `002/K01a` powtórzony. Mod skompilował i spakował `test.ps1`, silnika nie przebudowano (`Gothic2Notr.exe` z datą sprzed zmiany). Zmieniła się tylko premia trzeciego ciosu: 210, obrażenia 493 i 48 zamiast 446 i 43. Pozostałe etapy bez zmian: 100/140/250, 235/329/587. Zmiana cofnięta. Sprawdzone na tablicy NPC, bo ciosy bohatera wymagają gry; mechanizm odczytu jest wspólny | `75742e4c` ze zmianą w `ComboDamage.d` | Claude, automatycznie |
+| K3 | spełnione. Ataki boczne bez premii i bez kary: bandyta ze stylem normalnym (`002/K03`, ciosy z lewej i prawej z premią 100) oraz ataki boczne paladyna łączone po ciosach combo (`002/K01a`, `bonus.dir.left` i `right` = 100). Ciosy boczne bohatera na każdym talencie z premią 100 (`002/reczne`). Dobicie: bohater dobił powalonego człowieka, dziennik nie ma dla dobicia wyniku z premią. Atak z biegu: ocena w grze. Strzał i zaklęcie sprawdzone w kodzie: premia działa tylko w gałęzi walki wręcz `DamageCalculator::damageValue`, a `Npc::comboDamage` daje 100 każdemu ciosowi poza combo do przodu | `75742e4c` | Claude, automatycznie; dobicie i atak z biegu: Mateusz Tomanek |
+| K4 | spełnione. Przewaga pełnego combo mistrza nad lepszą z pozostałych technik (lewo-prawo) w przeliczeniu bez losowania: 1H +50%, 2H +72%. Raport bez przeliczenia: 1H +19,8% (2 z 5 czwartych ciosów wypadły słabe, 28 zamiast 280), 2H +56% (Rockefeller nie losuje, różnicę robią 3 pudła). Czas na cios 1H i 2H: combo 0,76 i 0,87 s, lewo-prawo 0,51 i 0,65 s, pierwszy cios 1,29 i 1,61 s. Premie bez zmian: 100/175/275/400 | `75742e4c` | Mateusz Tomanek (gra), Claude (przeliczenie) |
+| K5 | spełnione. `MagicGolem`: 0 obrażeń przy każdym trafieniu (`002/K05a`). `StoneGolem`: mocny cios 135, słaby 13 (`K05b`); golemy oddają i przerywają combo, więc trafia je tylko pierwszy cios. Cel z ochroną 200 (`K05c`): mocny cios 35/49/66/87 na etapach 1–4 (35 × premia), słaby 3 z premią to 3/4/5/7, więc minimum podnosi pierwsze dwa do 5. Cel odporny (`K05d`): 0 obrażeń na każdym etapie przy premii do 250% | `75742e4c` | Claude, automatycznie |
+| K6 | spełnione. Przewaga pełnego combo w przeliczeniu bez losowania (1H): nowicjusz +7%, wojownik +29% i +31% w dwóch sesjach, mistrz +50% (K4). U nowicjusza lepszą techniką jest lewo-prawo, liczone ze wszystkimi zamachami (opis wyżej). Raport bez przeliczenia: nowicjusz +27%, wojownik +77% i +255% | `75742e4c` | Mateusz Tomanek (gra), Claude (przeliczenie) |
+| K7 | spełnione: premie NPC z tablicy NPC (K1) mniejsze niż premie bohatera za ten sam cios: 140/190/250 wobec 175/275/400 | `75742e4c` | Claude, automatycznie; bohater: Mateusz Tomanek (gra) |
+| K8 | spełnione: bez moda (`002/K08`, `# mod: off`) każdy cios paladyna ma premię 100. Bez moda NPC nie łączą ciosów (001 W9), więc to sprawdza tylko pierwszy cios. Combo bohatera bez moda: ocena w grze | `75742e4c` | Claude, automatycznie; bohater: Mateusz Tomanek |
+| K9 | spełnione. Zapis w chwili drugiego ciosu combo paladyna (`002/K09a`). Po wczytaniu (`K09b`) pierwsze trafienie to ten cios: etap 2, premia 140, 329 obrażeń, a potem łączenie dalej na etap 3 (190) i 4 (250). Zapis z 0.1.0 wczytuje się, a premie zgadzają się z tablicą (`K09c`). Animacja po wczytaniu: ocena w grze; zrzut `po-wczytaniu.png` jej nie rozstrzyga, bo paladyna zasłania bohater | `75742e4c` | Claude, automatycznie; animacja: Mateusz Tomanek |

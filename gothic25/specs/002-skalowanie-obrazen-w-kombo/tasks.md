@@ -121,12 +121,15 @@ jako testem regresji (`gothic25/CLAUDE.md`).
 
 ## Faza 6: Weryfikacja
 
-- [ ] **Z12** Przejść kroki K1–K9 i uzupełnić sekcję „Weryfikacja” w spec.md.
+- [x] **Z12** Przejść kroki K1–K9 i uzupełnić sekcję „Weryfikacja” w spec.md.
       - Automatycznie (ADR 0004): `tools/test.ps1 -Spec 002`, K2 przez zmianę premii trzeciego ciosu
         w `ComboDamage.d` bez commita i powtórkę K1, zestaw `tests/001` jako regresja.
       - Ręcznie: gra bohaterem w scenariuszach z Z10 z dziennikiem. Liczby dla K1 (bohater), K4 i K6
         wylicza sekcja „Techniki”.
       - Strojenie: gdy K4 albo K6 nie przechodzi, nowe wartości z `--bonus`, osobny commit z tabelą
         przed i po w komentarzu `ComboDamage.d`, potem ponowny pomiar.
+      - Wynik (2026-11-02): wszystkie K spełnione bez strojenia. K4 i K6 rozstrzyga przeliczenie bez
+        losowania słabego ciosu, bo sama sekcja „Techniki” daje przy kilkunastu combo duży rozrzut
+        (opis w sekcji „Weryfikacja” w spec.md).
 
       (K1–K9)
