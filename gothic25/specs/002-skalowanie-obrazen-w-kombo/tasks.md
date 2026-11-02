@@ -116,7 +116,7 @@ jako testem regresji (`gothic25/CLAUDE.md`).
 
 ## Faza 5: Proces
 
-- [ ] **Z11** Wpis w `CHANGELOG.md` w `[Unreleased]`: premia za kolejne ciosy combo dla bohatera
+- [x] **Z11** Wpis w `CHANGELOG.md` w `[Unreleased]`: premia za kolejne ciosy combo dla bohatera
       i NPC, wymaga silnika z tego wydania. Numer wersji ustalamy przy wydaniu (MINOR). (W1, W7)
 
 ## Faza 6: Weryfikacja

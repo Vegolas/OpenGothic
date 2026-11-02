@@ -19,6 +19,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), wersje według
 - Silnik: listy ruchów stylów walki dłuższe niż 6, opcjonalne ustawienia combo stylu (`FA_COMBO_<N>`)
   i łączenie ciosów NPC w oknie combo. Bez skryptów moda silnik działa jak upstream
   ([ADR 0003](decisions/0003-przelaczniki-silnika-w-skryptach.md)).
+- Premia za kolejne ciosy combo ([specyfikacja 002](specs/002-skalowanie-obrazen-w-kombo/spec.md)):
+  każdy kolejny cios combo do przodu zadaje więcej obrażeń, więc pełne combo opłaca się bardziej
+  niż ataki lewo-prawo i powtarzanie pierwszego ciosu.
+  - Premia zależy od broni i talentu. Bohater-mistrz zadaje na kolejnych ciosach 100, 175, 275
+    i 400% obrażeń, NPC połowę tej nadwyżki (mistrz: 100, 140, 190, 250%).
+  - Ataki boczne, atak z biegu, dobijanie, łuki i magia bez zmian.
+  - Premia liczy się po ochronie pancerza i przed minimum obrażeń, więc odporny przeciwnik zostaje
+    odporny.
+  - Wartości są w skryptach moda (`COMBO_DAMAGE_*`). Wymaga silnika z tego wydania. Bez tych
+    wartości silnik liczy obrażenia jak upstream.
 - Narzędzia deweloperskie ([specyfikacja 003](specs/003-scenariusze-testowe-i-dziennik-walki/spec.md)):
   - scenariusze testowe (`tools/test.ps1`, `tests/`), dziennik walki wręcz i raport z oczekiwaniami
     (`tools/fightlog.py`),
