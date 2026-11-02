@@ -1,8 +1,9 @@
 # criterion: 002 K1
 # criterion: 002 K4
 # Do trybu ręcznego: tools/test.ps1 -Scenario 002/reczne/K04-mistrz -Manual
-# Bohater-mistrz broni jednoręcznej i dwuręcznej (talent 80%, miecze paladyna) przed celem testowym,
-# który stoi, nie blokuje i nie oddaje. Dziennik walki jest włączony, liczby wylicza raport.
+# Bohater-mistrz broni jednoręcznej i dwuręcznej (talent 80%, siła 80 potrzebna do miecza dwuręcznego,
+# miecze paladyna) przed celem testowym, który stoi, nie blokuje i nie oddaje. Dziennik walki jest
+# włączony, liczby wylicza raport.
 #
 # Co grać:
 # 1. Dobądź miecz jednoręczny. Po około 20 s każdej techniki, z przerwą co najmniej 3 s między nimi:
@@ -26,6 +27,7 @@ cheat god
 set time 12 0
 call B_RaiseFightTalent hero NPC_TALENT_1H 70
 call B_RaiseFightTalent hero NPC_TALENT_2H 70
+call B_RaiseAttribute hero ATR_STRENGTH 70
 equip ItMw_1h_Pal_Sword
 give ItMw_2h_Pal_Sword
 insert TST_ComboDummy
