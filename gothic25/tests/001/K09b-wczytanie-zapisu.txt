@@ -1,0 +1,12 @@
+# criterion: 001 K9
+# timeout: 200
+# save: build/test/profile/save_slot_1.sav
+# Wczytanie zapisu z K09a: paladyn walczy dalej. cheat god nie jest częścią zapisu.
+cheat god
+wait 60
+quit
+
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
+# Po wczytaniu paladyn zadał 4 ciosy w 30 s gry, a przy 60 s 57 ciosów.
+# Przy przełęczy (kalibracja 2026-10-30): attacks 60.
+expect Pal_230_Ritter attacks >= 3

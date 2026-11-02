@@ -1,0 +1,29 @@
+# criterion: 003 K1
+# criterion: 003 K3
+# timeout: 420
+# Do trybu ręcznego: tools/test.ps1 -Scenario 003/K01-reczny-pal230 -Manual
+# Scenariusz 001/K01 z bohaterem gotowym do walki: talent jednoręczny 80% (10 + 70) i miecz
+# paladyna, żeby dało się porównać jego combo z combo paladyna (001 K3). Po scenariuszu gra zostaje
+# otwarta.
+info told DIA_Xardas_Hello
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+cheat god
+set time 12 0
+call B_RaiseFightTalent hero NPC_TALENT_1H 70
+equip ItMw_1h_Pal_Sword
+insert Pal_230_Ritter
+call B_Attack Pal_230_Ritter hero 0 0
+screenshot start.png
+ztimer multiplyer 2
+wait 300
+screenshot end.png
+quit
+
+# Sprawdzenie ręczne (003 K1): ekran postaci (talent 80%), ekwipunek (miecz paladyna założony),
+# paladyn atakuje bez wejścia od gracza, a po końcu scenariusza gra zostaje otwarta.
+# Tylko pilnowanie, że paladyn walczył; reszta to 001/K01, a w trybie ręcznym walkę zmienia gracz.
+expect Pal_230_Ritter attacks >= 1

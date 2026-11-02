@@ -42,7 +42,7 @@ void FightAlgo::fillQueue(Npc &npc, Npc &tg, GameScript& owner) {
 
   const bool focus = isInFocusAngle(npc,tg);
 
-  if(tg.isPrehit() && isInWRange(tg,npc,owner) && isInFocusAngle(tg,npc) && focus){
+  if(isEnemyPrehit(npc,tg,owner)){
     if(tg.bodyStateMasked()==BS_RUN)
       if(fillQueue(owner,ai.enemy_stormprehit))
         return;
@@ -89,17 +89,24 @@ void FightAlgo::fillQueue(Npc &npc, Npc &tg, GameScript& owner) {
   fillQueue(owner,ai.my_w_nofocus);
   }
 
-bool FightAlgo::fillQueue(GameScript& owner, const zenkit::IFightAi& src) {
+bool FightAlgo::fillQueue(GameScript& owner, const FightAi::Moves& src) {
+  const auto mv = randomMove(owner,src);
+  if(mv==zenkit::FightAiMove::NOP)
+    return false;
+  queueId = mv;
+  return true;
+  }
+
+zenkit::FightAiMove FightAlgo::randomMove(GameScript& owner, const FightAi::Moves& src) {
   uint32_t sz=0;
-  for(size_t i=0; i<zenkit::IFightAi::move_count; ++i){
+  for(size_t i=0; i<FightAi::MaxMoves; ++i){
     if(src.move[i]==zenkit::FightAiMove::NOP)
       break;
     sz++;
     }
   if(sz==0)
-    return false;
-  queueId = zenkit::FightAiMove(src.move[owner.rand(sz)]);
-  return queueId!=zenkit::FightAiMove::NOP;
+    return zenkit::FightAiMove::NOP;
+  return zenkit::FightAiMove(src.move[owner.rand(sz)]);
   }
 
 FightAlgo::Action FightAlgo::nextFromQueue(Npc& npc, Npc& tg, GameScript& owner) {
@@ -197,6 +204,7 @@ FightAlgo::Action FightAlgo::nextFromQueue(Npc& npc, Npc& tg, GameScript& owner)
           }
         }
       }
+    startSeries(queueId);
     queueId = FightAiMove::NOP;
     }
   return tr[0];
@@ -214,10 +222,38 @@ bool FightAlgo::fetchInstructions(Npc &npc, Npc &tg, GameScript& owner) {
   return true;
   }
 
+void FightAlgo::startSeries(zenkit::FightAiMove mv) {
+  using zenkit::FightAiMove;
+  uint8_t len = 0;
+  switch(mv) {
+    case FightAiMove::ATTACK:        len = 1; break;
+    case FightAiMove::ATTACK_SIDE:   len = 2; break;
+    case FightAiMove::ATTACK_FRONT:  len = 2; break;
+    case FightAiMove::ATTACK_TRIPLE: len = 3; break;
+    case FightAiMove::ATTACK_WHIRL:  len = 4; break;
+    case FightAiMove::ATTACK_MASTER: len = 6; break;
+    default:
+      break;
+    }
+  if(len==0) {
+    ser = Series{FightAiMove::NOP, ser.id, 0, 0};
+    return;
+    }
+  ser = Series{mv, ser.id+1, len, 0};
+  }
+
 void FightAlgo::consumeAction() {
+  if(tr[0]==MV_ATTACK || tr[0]==MV_ATTACKL || tr[0]==MV_ATTACKR)
+    ser.done++;
   for(size_t i=1;i<MV_MAX;++i)
     tr[i-1]=tr[i];
   tr[MV_MAX-1]=MV_NULL;
+  }
+
+void FightAlgo::dropForwardAttacks(bool fist) {
+  // NOTE: fist has no side attacks - every attack is a forward one
+  while(tr[0]==MV_ATTACK || (fist && (tr[0]==MV_ATTACKL || tr[0]==MV_ATTACKR)))
+    consumeAction();
   }
 
 void FightAlgo::onClearTarget() {
@@ -232,8 +268,74 @@ void FightAlgo::onTakeHit() {
   queueId = zenkit::FightAiMove::NOP;
   }
 
+void FightAlgo::onBreakSeries() {
+  for(auto& i:tr)
+    i = MV_NULL;
+  queueId = zenkit::FightAiMove::NOP;
+  }
+
+void FightAlgo::onHitFrame() {
+  hitLanded = false;
+  }
+
+void FightAlgo::onHitLanded() {
+  hitLanded = true;
+  }
+
+bool FightAlgo::onEnemyPrehit(Npc& npc, Npc& tg, GameScript& owner) {
+  // same reaction as in fillQueue, but in the middle of own series
+  auto& ai = Gothic::fai()[size_t(npc.handle().fight_tactic)];
+  auto  mv = zenkit::FightAiMove::NOP;
+  if(tg.bodyStateMasked()==BS_RUN)
+    mv = randomMove(owner,ai.enemy_stormprehit);
+  if(mv==zenkit::FightAiMove::NOP)
+    mv = randomMove(owner,ai.enemy_prehit);
+  if(mv==zenkit::FightAiMove::NOP)
+    return false;
+
+  onBreakSeries();
+  queueId = mv;
+  nextFromQueue(npc,tg,owner);
+  return true;
+  }
+
 float FightAlgo::qDistTo(const Npc& npc, const Npc& tg) const {
   return npc.fightDistanceTo(tg).quadLength();
+  }
+
+bool FightAlgo::hasCombo(Npc& npc) const {
+  return comboAi(npc).enabled;
+  }
+
+const FightAi::Combo& FightAlgo::comboAi(Npc& npc) const {
+  return Gothic::fai()[size_t(npc.handle().fight_tactic)].combo;
+  }
+
+uint64_t FightAlgo::comboLinkTime(Npc& npc, uint64_t winBegin, uint64_t winEnd, GameScript& owner) {
+  // attack layer is removed right after DEF_HIT_END - keep some margin to not miss the window
+  static const uint64_t margin = 50;
+  if(linkWindow==winBegin)
+    return linkTime;
+
+  auto&    cmb = comboAi(npc);
+  uint64_t len = (winEnd>winBegin+margin) ? (winEnd-winBegin-margin) : 0;
+  uint64_t pc  = uint64_t(cmb.link_min) + owner.rand(uint32_t(cmb.link_max-cmb.link_min+1));
+
+  // NOTE: combo window begin is exclusive
+  linkWindow = winBegin;
+  linkTime   = winBegin + 1 + len*pc/100;
+  return linkTime;
+  }
+
+bool FightAlgo::comboContinue(Npc& npc, uint64_t winBegin, GameScript& owner) {
+  // 'MOVE_ATTACK in ComboZone = Combo', according to G2 scripts
+  if(contWindow==winBegin)
+    return contAttack;
+
+  auto& ai = Gothic::fai()[size_t(npc.handle().fight_tactic)];
+  contWindow = winBegin;
+  contAttack = (randomMove(owner,ai.my_w_combo)==zenkit::FightAiMove::ATTACK);
+  return contAttack;
   }
 
 float FightAlgo::baseDistance(const Npc& npc, const Npc& tg,  GameScript &owner) const {
@@ -267,6 +369,10 @@ float FightAlgo::attackFinishDistance(GameScript &owner) const {
       NPC_ATTACK_FINISH_DISTANCE = var->get_float();
     }
   return NPC_ATTACK_FINISH_DISTANCE;
+  }
+
+bool FightAlgo::isEnemyPrehit(const Npc& npc, const Npc& tg, GameScript& owner) const {
+  return tg.isPrehit() && isInWRange(tg,npc,owner) && isInFocusAngle(tg,npc) && isInFocusAngle(npc,tg);
   }
 
 bool FightAlgo::isInAttackRange(const Npc &npc, const Npc &tg, GameScript &owner) const {
@@ -312,6 +418,13 @@ bool FightAlgo::isInFocusAngle(const Npc &npc, const Npc &tg) const {
 bool FightAlgo::isInFocusAngle(const Npc& npc, const Npc& tg, float ang) const {
   const float maxAngle = std::cos(float(ang*M_PI/180.0));
   return angleTest(npc, tg, maxAngle);
+  }
+
+bool FightAlgo::isTargetLost(const Npc& npc, const Npc& tg, GameScript& owner) const {
+  // own hit knocks the target back up to ~1.5 of weapon range, that is not running away;
+  // after a block, a jump back or a miss weapon range applies
+  const bool inRange = hitLanded ? isInGRange(npc,tg,owner) : isInWRange(npc,tg,owner);
+  return !(inRange && isInFocusAngle(npc,tg));
   }
 
 bool FightAlgo::isInJumpBackAngle(const Npc& npc, const Npc& tg) const {

@@ -30,11 +30,15 @@ class CommandLine {
     std::u16string      cutscenePath() const;
     std::u16string      cutscenePath(ScriptLang lang) const;
     std::u16string_view modPath() const { return gmod; }
+    std::u16string      resultsFile(std::string_view name) const;
+    std::u16string_view scenarioPath() const { return gscenario; }
+    bool                isScenarioExit() const { return scenarioExit; }
     std::u16string      nestedPath(const std::initializer_list<const char16_t*> &name, Tempest::Dir::FileType type) const;
 
     bool                isDevMode()        const { return devmode;      }
     bool                isValidationMode() const { return isDebug;      }
     bool                isWindowMode()     const { return isWindow;     }
+    bool                isSmallWindow()    const { return isSmallWnd;   }
     bool                isRayQuery()       const { return isRQuery;     }
     GiMethod            isRtGi()           const { return isGi;         }
     bool                isMeshShading()    const { return isMeshSh;     }
@@ -56,6 +60,9 @@ class CommandLine {
 
     GraphicBackend      graphics = GraphicBackend::Vulkan;
     std::u16string      gpath, gmod;
+    std::u16string      gresults;
+    std::u16string      gscenario;
+    bool                scenarioExit = false;
     std::u16string      gscript;
     std::u16string      gcutscene;
     std::string         saveDef;
@@ -63,6 +70,7 @@ class CommandLine {
     bool                noMenu       = false;
     Benchmark           isBenchmark  = Benchmark::None;
     bool                isWindow     = false;
+    bool                isSmallWnd   = false;
     bool                isDebug      = false;
 #if defined(__OSX__) || defined(__ANDROID__)
     bool                isRQuery     = false;

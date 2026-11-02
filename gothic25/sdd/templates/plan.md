@@ -10,7 +10,8 @@
 
 ## Warstwa
 
-<!-- Zasoby / skrypty / silnik. Dla każdej wyższej warstwy: dlaczego niższa nie wystarczy. -->
+<!-- Zasoby / skrypty / silnik. Dlaczego ta warstwa jest najtańsza w utrzymaniu, testach
+     i aktualizacji z upstreamu (zasada 1). -->
 
 ## Obecny stan
 
@@ -43,7 +44,7 @@
 
 ## Bramka konstytucji
 
-- [ ] 1. Najniższa wystarczająca warstwa
+- [ ] 1. Tylko OpenGothic, warstwa najtańsza w utrzymaniu
 - [ ] 2. Silnik daje mechanizmy, skrypty decydują o treści
 - [ ] 3. Fork łatwy do aktualizacji z upstreamu (flagi, styl, brak treści moda w silniku)
 - [ ] 4. Zapisy gry wersjonowane
@@ -52,6 +53,7 @@
 - [ ] 7. Język dokumentów i kodu
 - [ ] 8. Wpływ na wersję (MAJOR / MINOR / PATCH)
 - [ ] 9. Licencja GothicMOD (bez opłat, copyleft dla opracowań, uznanie autorstwa)
+- [ ] 10. Automatyzacja (build, zasoby i weryfikacja bez ręcznych kroków)
 
 ## Odstępstwa od konstytucji
 

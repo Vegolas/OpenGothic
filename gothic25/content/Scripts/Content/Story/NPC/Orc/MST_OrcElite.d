@@ -42,7 +42,7 @@ PROTOTYPE Mst_Default_OrcElite(C_Npc)
 //	damage		[DAM_INDEX_FLY]		=	0;
 //	damage		[DAM_INDEX_MAGIC]	=	0;
 
-	fight_tactic	= 	FAI_ORC;
+	fight_tactic	= 	13;	// Gothic 2.5: own tactic FAI_Orc_Elite.d, was FAI_ORC (spec 001); a literal, since a new constant would shift the symbol numbers that saves refer to (ADR 0005)
 
 	//----- Senses & Ranges ----
 	senses			= 	SENSE_HEAR | SENSE_SEE;

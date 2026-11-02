@@ -38,3 +38,18 @@ Każda funkcja przechodzi przez te same etapy. Każdy etap kończy się dokument
 - Decyzje, które dotyczą więcej niż jednej funkcji (narzędzia, formaty, konwencje), trafiają
   do `decisions/` jako ADR, a specyfikacje i plany się do nich odwołują.
 - Pomysły, które nie są jeszcze gotowe na specyfikację, zapisujemy w `roadmap.md`.
+
+## Weryfikacja scenariuszami testowymi
+
+Kryteria, które da się przygotować bez gracza i ocenić z liczb (serie, combo, obrażenia, przerwania),
+dostają scenariusze w `tests/NNN/` z oczekiwaniami (format: `tests/README.md`). Zasady zaliczania
+opisuje [ADR 0004](../decisions/0004-zaliczanie-kryteriow-przez-scenariusze.md):
+
+- Zestaw specyfikacji uruchamia `tools/test.ps1 -Spec NNN`. Kryterium zalicza przebieg na
+  zacommitowanym kodzie (w `meta.json` `dirty: false`) z wynikiem „zaliczony”.
+- Wpis w „Weryfikacji” podaje scenariusz, commit, kto uruchomił i liczby z raportu, które rozstrzygają
+  kryterium, bo katalog wyników (`build/test-runs/`) nie trafia do gita.
+- Część wizualną kryterium (płynność, wygląd) zalicza człowiek.
+- Niezaliczonego przebiegu nie powtarzamy do skutku: wyjaśniamy go (błąd w kodzie albo źle dobrany
+  próg) i poprawiamy osobnym commitem.
+- Po zmianie w walce uruchamiamy zestawy wcześniejszych specyfikacji jako testy regresji.

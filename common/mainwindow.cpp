@@ -30,7 +30,7 @@
 using namespace Tempest;
 
 MainWindow::MainWindow(Device& device)
-  : Window(Maximized),device(device),swapchain(device,hwnd()),
+  : Window(CommandLine::inst().isSmallWindow() ? Normal : Maximized),device(device),swapchain(device,hwnd()),
     atlas(device),rootMenu(keycodec),inventory(keycodec),
     dialogs(inventory),document(keycodec),
     console(*this),
@@ -65,6 +65,7 @@ MainWindow::MainWindow(Device& device)
   Gothic::inst().onStartGame   .bind(this,&MainWindow::startGame);
   Gothic::inst().onLoadGame    .bind(this,&MainWindow::loadGame);
   Gothic::inst().onSaveGame    .bind(this,&MainWindow::saveGame);
+  Gothic::inst().onScreenshot  .bind(this,&MainWindow::screenshot);
 
   Gothic::inst().onStartLoading.bind(this,&MainWindow::onStartLoading);
   Gothic::inst().onWorldLoaded .bind(this,&MainWindow::onWorldLoaded);
@@ -474,9 +475,7 @@ void MainWindow::keyDownEvent(KeyEvent &event) {
   player.onKeyPressed(act,event.key,mapping);
 
   if(event.key==Event::K_F11) {
-    auto tex = renderer.screenshoot(cmdId, Size(int(swapchain.w()),int(swapchain.h())));
-    auto pm  = device.readPixels(textureCast<const Texture2d&>(tex));
-    pm.save("dbg.png");
+    screenshot("dbg.png");
     }
   event.accept();
   }
@@ -938,6 +937,7 @@ uint64_t MainWindow::tick() {
   dialogs.tick(dt);
   inventory.tick(dt);
   Gothic::inst().tick(dt);
+  scenario.tick();
   player.tickFocus();
 
   if(dialogs.isActive())
@@ -1086,6 +1086,14 @@ void MainWindow::loadGame(std::string_view slot) {
   update();
   }
 
+void MainWindow::screenshot(std::string_view file) {
+  auto tex = renderer.screenshoot(cmdId, Size(int(swapchain.w()),int(swapchain.h())));
+  if(tex.isEmpty())
+    return;
+  auto pm  = device.readPixels(textureCast<const Texture2d&>(tex));
+  pm.save(std::string(file).c_str());
+  }
+
 void MainWindow::saveGame(std::string_view slot, std::string_view name) {
   if(dialogs.isActive())
     return;
@@ -1181,6 +1189,7 @@ void MainWindow::onWorldLoaded() {
     pl->multSpeed(1.f);
   lastTick = Application::tickCount();
   player.clearFocus();
+  scenario.onWorldLoaded();
   }
 
 void MainWindow::onSessionExit() {

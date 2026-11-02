@@ -1,0 +1,21 @@
+# criterion: 001 K12
+# timeout: 300
+# Kopacz walczący pięściami (styl silny) łączy dwa ciosy w combo.
+info told DIA_Xardas_Hello
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+cheat god
+set time 12 0
+insert BDT_10027_Addon_Buddler
+call B_Attack BDT_10027_Addon_Buddler hero 0 0
+ztimer multiplyer 2
+wait 180
+quit
+
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
+# W 180 s gry combo z 2 ciosów pięścią wypadało za każdym razem.
+# Przy przełęczy (kalibracja 2026-10-30): combo.max 2.
+expect BDT_10027_Addon_Buddler combo.max == 2

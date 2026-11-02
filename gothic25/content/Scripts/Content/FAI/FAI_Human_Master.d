@@ -52,7 +52,21 @@ INSTANCE FA_ENEMY_STORMPREHIT_4 (C_FightAI)
 // ------ Ich bin im Combo-Fenster ------
 INSTANCE FA_MY_W_COMBO_4 (C_FightAI)
 {
-	// --- Wird nie erreicht (Neue FAI-Bewertung erst wenn Ani zuende gespielt) ---
+	// --- Gothic 2.5: reached in the combo window, MOVE_ATTACK continues the forward combo ---
+	move[0] = MOVE_ATTACK;
+	move[1] = MOVE_ATTACK;
+	move[2] = MOVE_ATTACK;
+	move[3] = MOVE_WAIT;
+};
+
+// ------ Gothic 2.5: combo settings of this tactic (see Scripts/README.md) ------
+// TRUE/FALSE are not defined in Fight.dat, so 1 and 0 are used.
+INSTANCE FA_COMBO_4 (C_FightAI_Combo)
+{
+	link_min			= 80;
+	link_max			= 100;
+	defend_in_series	= 1;
+	break_on_lost		= 1;
 };
 
 // ------ Ich renne auf den Gegner zu ------
@@ -71,9 +85,17 @@ INSTANCE FA_MY_W_STRAFE_4 (C_FightAI)
 // ------- Ich habe Gegner im Fokus (kann treffen) -------
 INSTANCE FA_MY_W_FOCUS_4 (C_FightAI)
 {
-	move[0] = MOVE_FRONTATTACK;
+	move[0] = MOVE_ATTACK;
 	move[1] = MOVE_ATTACK;
-	move[2] = MOVE_WAIT;		// --- Wait sorgt für besseres Parade-Fenster ---
+	move[2] = MOVE_ATTACK;
+	move[3] = MOVE_ATTACK;
+	move[4] = MOVE_ATTACK;
+	move[5] = MOVE_SIDEATTACK;
+	move[6] = MOVE_FRONTATTACK;
+	move[7] = MOVE_TRIPLEATTACK;
+	move[8] = MOVE_WHIRLATTACK;
+	move[9] = MOVE_MASTERATTACK;
+	move[10] = MOVE_WAIT;		// --- Wait sorgt für besseres Parade-Fenster ---
 };
 
 // ------- Ich habe Gegner NICHT im Fokus -------

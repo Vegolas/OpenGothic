@@ -4,15 +4,13 @@
 #include <Tempest/TextCodec>
 #include <cstring>
 #include <cassert>
-
-#if defined(__APPLE__)
 #include <filesystem>
-#endif
 
 #include <algorithm>
 
 #include "utils/installdetect.h"
 #include "utils/fileutil.h"
+#include "utils/fileext.h"
 #include "utils/string_frm.h"
 
 using namespace Tempest;
@@ -73,7 +71,12 @@ CommandLine::CommandLine(int argc, const char** argv) {
       if(i<argc){
         if(std::strcmp(argv[i],"q")==0) {
           saveDef = "save_slot_0.sav";
-          } else {
+          }
+        else if(std::strpbrk(argv[i],"/\\")!=nullptr || FileExt::hasExt(argv[i],"sav")) {
+          // path to a save file
+          saveDef = argv[i];
+          }
+        else {
           saveDef = string_frm("save_slot_",argv[i],".sav");
           }
         }
@@ -83,8 +86,25 @@ CommandLine::CommandLine(int argc, const char** argv) {
       if(i<argc)
         wrldDef = argv[i];
       }
+    else if(arg=="-results") {
+      ++i;
+      if(i<argc)
+        gresults = TextCodec::toUtf16(argv[i]);
+      }
+    else if(arg=="-scenario") {
+      ++i;
+      if(i<argc)
+        gscenario = TextCodec::toUtf16(argv[i]);
+      }
+    else if(arg=="-scenario-exit") {
+      scenarioExit = true;
+      }
     else if(arg=="-window") {
       isWindow = true;
+      if(i+1<argc && std::string_view(argv[i+1])=="small") {
+        ++i;
+        isSmallWnd = true;
+        }
       }
     else if(arg=="-nomenu") {
       noMenu = true;
@@ -184,7 +204,7 @@ CommandLine::CommandLine(int argc, const char** argv) {
   gcutscene = nestedPath({u"_work",u"Data",u"Scripts",   u"content",u"CUTSCENE"},Dir::FT_Dir);
 
   gmod    = TextCodec::toUtf16(mod);
-  if(!gmod.empty())
+  if(!gmod.empty() && !std::filesystem::path(gmod).is_absolute())
     gmod = nestedPath({u"system",gmod.c_str()},Dir::FT_File);
 
   if(!validateGothicPath()) {
@@ -226,6 +246,17 @@ std::u16string CommandLine::cutscenePath() const {
 std::u16string CommandLine::cutscenePath(ScriptLang lang) const {
   const char16_t* scripts = toString(lang);
   return nestedPath({u"_work",u"Data",scripts},Dir::FT_Dir);
+  }
+
+std::u16string CommandLine::resultsFile(std::string_view name) const {
+  // relative names go to the -results directory, which is created on first use
+  auto path = std::filesystem::path(TextCodec::toUtf16(name));
+  if(path.is_relative() && !gresults.empty())
+    path = std::filesystem::path(gresults) / path;
+  std::error_code ec;
+  if(path.has_parent_path())
+    std::filesystem::create_directories(path.parent_path(), ec);
+  return path.u16string();
   }
 
 std::u16string CommandLine::nestedPath(const std::initializer_list<const char16_t*>& name, Tempest::Dir::FileType type) const {

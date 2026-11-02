@@ -23,6 +23,9 @@ DamageCalculator::Val DamageCalculator::damageValue(Npc& src, Npc& other, const 
     }
   else {
     ret = swordDamage(src,other);
+    // combo bonus applies to the damage after protection, before the minimal damage
+    ret.bonus = src.comboDamage();
+    ret.value = ret.value*ret.bonus/100;
     }
 
 #if 0

@@ -25,6 +25,7 @@
 #include "world/world.h"
 #include "world/focus.h"
 #include "game/playercontrol.h"
+#include "game/scenariorunner.h"
 #include "graphics/renderer.h"
 #include "ui/dialogmenu.h"
 #include "ui/inventorymenu.h"
@@ -79,6 +80,7 @@ class MainWindow : public Tempest::Window {
     void startGame(std::string_view slot);
     void loadGame (std::string_view slot);
     void saveGame (std::string_view slot, std::string_view name);
+    void screenshot(std::string_view file);
 
     void onVideo(std::string_view fname);
     void onStartLoading();
@@ -151,6 +153,7 @@ class MainWindow : public Tempest::Window {
     DocumentMenu              document;
     ChapterScreen             chapter;
     ConsoleWidget             console;
+    ScenarioRunner            scenario;
 #if defined(__MOBILE_PLATFORM__)
     TouchInput                mobileUi;
 #endif

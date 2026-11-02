@@ -1,0 +1,23 @@
+# criterion: 001 K4
+# timeout: 300
+# Tchórz (styl 2) nie wykonuje żadnej serii.
+info told DIA_Xardas_Hello
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+cheat god
+set time 12 0
+insert BDT_1013_Bandit_L
+call B_Attack BDT_1013_Bandit_L hero 0 0
+ztimer multiplyer 2
+wait 180
+quit
+
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
+# W 180 s gry: 101 ciosów, żadnej serii. attacks >= 1 pilnuje, że tchórz w ogóle walczył.
+# Przy przełęczy (kalibracja 2026-10-30): attacks 121, series.multi 0, series.combo 0.
+expect BDT_1013_Bandit_L attacks >= 1
+expect BDT_1013_Bandit_L series.multi == 0
+expect BDT_1013_Bandit_L series.combo == 0

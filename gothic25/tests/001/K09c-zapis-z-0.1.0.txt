@@ -1,0 +1,30 @@
+# criterion: 001 K9
+# timeout: 200
+# save: build/testsaves/001-K9-v0.1.0-pal230.sav
+# Zapis z wersji 0.1.0 (Z1 w 001) się wczytuje, a walka i combo działają na wczytanej grze.
+# W tym zapisie bohater ma flagę rozmowy (AIV_INVINCIBLE) i nikt go nie atakuje.
+# B_EndProductionDialog zdejmuje ją z self, czyli przy call z bohatera, a poza dialogiem nic więcej
+# nie zmienia. Potem paladyn walczy z bohaterem jak w K1.
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+call B_EndProductionDialog
+cheat god
+set time 12 0
+insert Pal_230_Ritter
+call B_Attack Pal_230_Ritter hero 0 0
+ztimer multiplyer 2
+wait 90
+quit
+
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
+# Przed poprawką z ADR 0005 ten zapis się nie wczytywał (przesunięte numery symboli).
+# Próba 2026-10-30: paladyn 3 ciosy, bandyta 12 w 20 s gry bez przyspieszenia; tu 90 s przy 2.
+# Przy przełęczy (kalibracja 2026-10-30): attacks 24, combo.max 4.
+# Zmiana z 2026-10-30: walka paladyna z bohaterem zamiast z bandytą. Bandyta ciągle przerywał
+# paladynowi serie i w 90 s paladyn zadawał 9-24 ciosów, a combo.max wyszło 4, 2, 1, 1 w czterech
+# przebiegach. Z bohaterem w próbie: 77 ciosów, combo.max 4.
+expect Pal_230_Ritter attacks >= 5
+expect Pal_230_Ritter combo.max >= 2

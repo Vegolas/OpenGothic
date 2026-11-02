@@ -66,7 +66,26 @@ GameModDescriptor::GameModDescriptor(std::u16string_view mod, std::u16string_vie
     wrldDef = CommandLine::inst().wrldDef;
     }
 
-  detectVdf(vdf, std::u16string(root), [&modvdfs, modFilter](std::u16string_view file) {
+  // mod archives next to the mod .ini (<ini>/../Data), e.g. a mod built outside of the game folder
+  std::vector<std::u16string> modLocal;
+  if(modFile!=nullptr) {
+    std::error_code ec;
+    auto modRoot = std::filesystem::path(mod).parent_path().parent_path() / u"Data";
+    if(std::filesystem::is_directory(modRoot,ec) && !std::filesystem::equivalent(modRoot,root,ec)) {
+      detectVdf(vdf, modRoot.u16string() + u"/", [&modvdfs, &modLocal](std::u16string_view file) {
+        if(std::find(modvdfs.begin(), modvdfs.end(), file)==modvdfs.end())
+          return false;
+        modLocal.emplace_back(file);
+        return true;
+        });
+      }
+    }
+
+  detectVdf(vdf, std::u16string(root), [&modvdfs, &modLocal, modFilter](std::u16string_view file) {
+      if(std::find(modLocal.begin(), modLocal.end(), file)!=modLocal.end()) {
+        // overridden by the archive next to the mod .ini
+        return false;
+        }
       if(FileExt::hasExt(file, u"vdf")) {
         return true;
         }
@@ -995,6 +1014,8 @@ void Gothic::setupVmCommonApi(zenkit::DaedalusVm& vm) {
   if(auto sym = vm.find_symbol_by_name("C_SVM"))
     vm.register_as_opaque(sym);
   if(auto sym = vm.find_symbol_by_name("C_FIGHTAI"))
+    vm.register_as_opaque(sym);
+  if(auto sym = vm.find_symbol_by_name("C_FIGHTAI_COMBO"))
     vm.register_as_opaque(sym);
 
   vm.register_external("concatstrings", [](std::string_view a, std::string_view b) { return Gothic::concatstrings(a, b);});

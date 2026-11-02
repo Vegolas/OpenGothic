@@ -1,0 +1,20 @@
+# criterion: 002 K9
+# timeout: 200
+# save: build/test/profile/save_slot_1.sav
+# Wczytanie zapisu z K09a, zrobionego w chwili drugiego ciosu combo paladyna. Pierwsze trafienie po
+# wczytaniu to ten drugi cios: etap 2 i premia 140, zgodnie z animacją, a nie premia ostatniego ciosu
+# ani pierwszego. cheat god i przyspieszenie nie są częścią zapisu.
+screenshot po-wczytaniu.png
+cheat god
+ztimer multiplyer 2
+wait 60
+quit
+
+# Sprawdzenie ręczne: na zrzucie po-wczytaniu.png paladyn jest w trakcie ciosu combo.
+# Progi (próba 2026-11-02): pierwsze zdarzenie po wczytaniu to trafienie drugiego ciosu combo
+# zaczętego przed zapisem (n = 0, etap 2, premia 140, 329 obrażeń), potem etap 3 (190) i 4 (250).
+expect Pal_230_Ritter bonus.stage.1.max == 100
+expect Pal_230_Ritter bonus.stage.2.min == 140
+expect Pal_230_Ritter bonus.stage.2.max == 140
+expect Pal_230_Ritter bonus.stage.3.min == 190
+expect Pal_230_Ritter bonus.stage.3.max == 190

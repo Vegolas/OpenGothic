@@ -1,0 +1,34 @@
+# criterion: 001 K11
+# timeout: 300
+# Po pierwszym ciosie serii bohater znika z zasięgu (teleport); mistrz przerywa serię.
+info told DIA_Xardas_Hello
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+cheat god
+set time 12 0
+insert Pal_230_Ritter
+call B_Attack Pal_230_Ritter hero 0 0
+wait Pal_230_Ritter series timeout 90
+goto waypoint NW_PASS_06
+wait 8
+goto waypoint NW_PASS_05
+wait Pal_230_Ritter series timeout 90
+goto waypoint NW_PASS_06
+wait 8
+goto waypoint NW_PASS_05
+wait Pal_230_Ritter series timeout 90
+goto waypoint NW_PASS_06
+wait 8
+goto waypoint NW_PASS_05
+quit
+
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
+# Trzy odskoki dały 6 przerwań serii przez utratę celu (dziennik zapisuje przerwanie kontynuacji raz).
+# Przy przełęczy (kalibracja 2026-10-30): break.target_lost 3.
+# Zmiana z 2026-10-30: ucieczka na NW_PASS_06 (13-18 m od walki) zamiast NW_PASS_01 (32-36 m).
+# NPC kończy pościg za celem dalej niż FIGHT_DIST_CANCEL = 35 m, więc w jednym z trzech przebiegów
+# zestawu paladyn przestał walczyć i trzecie czekanie na serię skończyło się błędem.
+expect Pal_230_Ritter break.target_lost >= 1

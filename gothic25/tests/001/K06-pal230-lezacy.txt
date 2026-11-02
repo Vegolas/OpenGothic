@@ -1,0 +1,22 @@
+# criterion: 001 K6
+# timeout: 200
+# Bez cheat god: paladyn powala bohatera i nie wyprowadza kolejnych ciosów w leżącego.
+info told DIA_Xardas_Hello
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+set time 12 0
+insert Pal_230_Ritter
+call B_Attack Pal_230_Ritter hero 0 0
+wait hero down timeout 60
+wait 20
+quit
+
+# Progi (przebiegi z 2026-10-30 w wieży Xardasa):
+# Ograniczenie, które nie zależy od losu: żadnego ciosu w leżący cel.
+# Przy przełęczy (kalibracja 2026-10-30): hero state.unconscious 1, Pal_230_Ritter attacks.tgt_down
+# 0.
+expect hero state.unconscious >= 1
+expect Pal_230_Ritter attacks.tgt_down == 0

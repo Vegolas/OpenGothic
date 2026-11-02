@@ -207,6 +207,7 @@ class Npc final {
     void       setTalentValue(Talent t,int32_t lvl);
     int32_t    talentValue(Talent t) const;
     int32_t    hitChance(Talent t) const;
+    int32_t    comboDamage() const;
 
     void       setRefuseTalk(uint64_t milis);
     bool       isRefuseTalk() const;
@@ -497,6 +498,7 @@ class Npc final {
     bool      implGoTo   (uint64_t dt);
     bool      implGoTo   (uint64_t dt, float destDist);
     bool      implAttack (uint64_t dt);
+    bool      implComboLink();
     bool      implAiTick (uint64_t dt);
     void      implAiWait (uint64_t dt);
     void      implAniWait(uint64_t dt);

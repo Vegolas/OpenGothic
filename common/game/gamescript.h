@@ -97,6 +97,7 @@ class GameScript final {
     std::string_view currencyName() const { return goldTxt; }
     int              npcDamDiveTime();
     int32_t          criticalDamageMultiplyer() const;
+    int32_t          comboDamage(bool player, Talent tal, int32_t level, uint16_t hit) const;
     auto*            lockPickSymbol() const { return ItKE_lockpick; }
     uint32_t         lockPickId() const;
 
@@ -112,6 +113,7 @@ class GameScript final {
     zenkit::DaedalusSymbol*     findSymbol(const size_t s);
     size_t                      findSymbolIndex(std::string_view s);
     size_t                      symbolsCount() const;
+    bool                        markInfoKnown(Npc& npc, size_t infoSymbol);
 
     const AiState&              aiState  (ScriptFn id);
     const zenkit::ISpell&       spellDesc(int32_t splId);
@@ -198,6 +200,12 @@ class GameScript final {
       GameScript& owner;
       };
 
+    // damage of a forward combo hit in percent: a row of hits per talent level, fists have one row
+    struct ComboDamage final {
+      std::vector<int32_t> val;
+      size_t               row = 0;
+      };
+
     template <class F>
     void bindExternal(const std::string& name, F function) {
       vm.register_external(name, std::function<typename DetermineSignature<F>::signature> (
@@ -206,6 +214,7 @@ class GameScript final {
 
     void  initCommon();
     void  initSettings();
+    void  initComboDamage();
     void  loadDialogOU();
 
     Item* findItem(zenkit::IItem* handle);
@@ -481,6 +490,7 @@ class GameScript final {
     std::string                                                 goldTxt;
     float                                                       viewTimePerChar = 0.5;
     int32_t                                                     damCriticalMultiplier = 2;
+    ComboDamage                                                 comboDmg[2][3]; // player, npc x 1h, 2h, fist
     mutable std::unordered_map<std::string,uint32_t>            msgTimings;
     size_t                                                      gilTblSize=0;
     size_t                                                      gilCount=0;

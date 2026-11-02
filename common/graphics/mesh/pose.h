@@ -27,6 +27,30 @@ class Pose final {
       Force      = 0x1,
       };
 
+    struct ComboInfo final {
+      uint64_t winBegin = 0;     // combo window of the current hit, absolute time
+      uint64_t winEnd   = 0;     // window end, clamped to hitEnd: the layer is gone afterwards
+      uint64_t hitEnd   = 0;     // DEF_HIT_END of the current hit, absolute time
+      bool     window   = false; // current hit has a combo window
+      bool     forward  = false; // multi-hit forward combo, not a single side attack
+      bool     last     = false; // current hit is the last one of the animation
+      };
+
+    enum ComboLink : uint8_t {
+      CL_None,    // no new hit: the request was rejected, or the same hit still plays
+      CL_New,     // new hit from the stance
+      CL_Forward, // next forward hit, linked inside the combo window
+      CL_Side,    // another attack, linked inside the combo window
+      CL_Block,   // attack turned into a block
+      };
+
+    struct ComboStart final {
+      ComboLink link   = CL_None;
+      uint64_t  skip   = 0;  // ms of the previous hit, skipped by a forward link
+      int32_t   window = -1; // link moment inside the combo window, 0..100
+      uint16_t  broken = 0;  // forward combo stage, at which the request broke the combo; 0 - not broken
+      };
+
     static uint8_t     calcAniComb(const Tempest::Vec3& dpos, float rotation);
     static uint8_t     calcAniCombVert(const Tempest::Vec3& dpos);
 
@@ -74,6 +98,10 @@ class Pose final {
 
     auto               continueCombo(const AnimationSolver &solver, const Animation::Sequence *sq, BodyState bs, uint64_t tickCount) -> const Animation::Sequence*;
     uint16_t           comboLength() const;
+    bool               comboInfo(ComboInfo& ret) const;
+    const ComboStart&  lastComboStart() const { return comboStart; }
+    uint32_t           startCount() const { return startCnt; }
+    void               setComboStart(bool newHit);
 
     float              translateY() const { return trY; }
     auto               rootNode() const -> const Tempest::Matrix4x4;
@@ -140,6 +168,8 @@ class Pose final {
     Flags                           flag=NoFlags;
     uint64_t                        lastUpdate=0;
     ComboState                      combo;
+    ComboStart                      comboStart;
+    uint32_t                        startCnt = 0;
     bool                            needToUpdate = true;
     uint8_t                         hasEvents = 0;
     uint8_t                         isFlyCombined = 0;

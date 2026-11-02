@@ -1,0 +1,7 @@
+# criterion: 003 K8
+# timeout: 120
+insert Pal_230_Rittre
+quit
+
+# Celowa literówka w nazwie instancji w linii 3 (Pal_230_Rittre). Przebieg ma się skończyć zaraz
+# po błędzie, a scenario.json i test.ps1 mają wskazać linię 3 i nieznaną nazwę.

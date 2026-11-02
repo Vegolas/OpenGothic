@@ -205,9 +205,11 @@ bool Pose::startAnim(const AnimationSolver& solver, const Animation::Sequence *s
       i.comb     = comb;
       i.bs       = bs;
       onAddLayer(i);
+      ++startCnt;
       return true;
       }
   addLayer(sq,bs,comb,tickCount);
+  ++startCnt;
   return true;
   }
 
@@ -727,6 +729,7 @@ uint64_t Pose::atkTotalTime() const {
 
 const Animation::Sequence* Pose::continueCombo(const AnimationSolver &solver, const Animation::Sequence *sq,
                                                BodyState bs, uint64_t tickCount) {
+  comboStart = ComboStart();
   if(sq==nullptr)
     return nullptr;
 
@@ -747,47 +750,100 @@ const Animation::Sequence* Pose::continueCombo(const AnimationSolver &solver, co
   size_t   id    = combo.len()*2;
 
   if(0==d.defWindow.size() || 0==d.defHitEnd.size()) {
+    const uint32_t cnt = startCnt;
     if(!startAnim(solver,sq,prev->comb,bs,Pose::NoHint,tickCount))
       return nullptr;
     combo = ComboState();
+    comboStart.link = (cnt!=startCnt) ? CL_New : CL_None;
     return sq;
     }
 
   if(sq->data->defHitEnd.size()==0) {
     // hit -> block
     startAnim(solver,sq,prev->comb,bs,Pose::Force,tickCount);
+    comboStart.link   = CL_Block;
+    comboStart.broken = uint16_t(combo.len()+1);
     combo = ComboState();
     return sq;
     }
 
   if(id+1>=d.defWindow.size()) {
+    if(!combo.isBreak())
+      comboStart.broken = uint16_t(combo.len()+1);
     combo.setBreak();
     return nullptr;
     }
 
   if(!(d.defWindow[id+0]<t && t<=d.defWindow[id+1])) {
-    if(prev->seq->name==sq->name && sq->data->defHitEnd.size()>0)
+    if(prev->seq->name==sq->name && sq->data->defHitEnd.size()>0) {
+      if(!combo.isBreak())
+        comboStart.broken = uint16_t(combo.len()+1);
       combo.setBreak();
+      }
     return nullptr;
     }
 
   if(combo.isBreak())
     return nullptr;
 
+  // link moment inside the window, the window end is clamped to the hit end as in comboInfo
+  uint64_t winBegin = d.defWindow[id+0];
+  uint64_t winEnd   = d.defWindow[id+1];
+  if(combo.len()<d.defHitEnd.size())
+    winEnd = std::min<uint64_t>(winEnd, d.defHitEnd[combo.len()]);
+  comboStart.window = winEnd>winBegin ? int32_t(std::min<uint64_t>((t-winBegin)*100/(winEnd-winBegin), 100)) : 100;
+
   if(prev->seq->name!=sq->name) {
     startAnim(solver,sq,prev->comb,bs,Pose::Force,tickCount);
     combo = ComboState();
+    comboStart.link = CL_Side;
     return sq;
     }
 
-  if(combo.len()<d.defHitEnd.size())
+  if(combo.len()<d.defHitEnd.size()) {
+    if(d.defHitEnd[combo.len()]>t)
+      comboStart.skip = d.defHitEnd[combo.len()] - t;
     prev->sAnim = tickCount - d.defHitEnd[combo.len()];
+    }
   combo.incLen();
+  comboStart.link = CL_Forward;
   return prev->seq;
+  }
+
+void Pose::setComboStart(bool newHit) {
+  // keep the break from continueCombo, which ran before
+  const uint16_t broken = comboStart.broken;
+  comboStart        = ComboStart();
+  comboStart.link   = newHit ? CL_New : CL_None;
+  comboStart.broken = broken;
   }
 
 uint16_t Pose::comboLength() const {
   return combo.len();
+  }
+
+bool Pose::comboInfo(ComboInfo& ret) const {
+  for(auto& i:lay) {
+    auto& d = *i.seq->data;
+    if(d.defWindow.empty() || d.defHitEnd.empty())
+      continue;
+
+    const size_t id = combo.len();
+    if(id>=d.defHitEnd.size())
+      return false;
+
+    ret         = ComboInfo();
+    ret.hitEnd  = i.sAnim + d.defHitEnd[id];
+    ret.forward = d.defHitEnd.size()>1;
+    ret.last    = (id+1>=d.defHitEnd.size());
+    if(id*2+1<d.defWindow.size() && !combo.isBreak()) {
+      ret.window   = true;
+      ret.winBegin = i.sAnim + d.defWindow[id*2+0];
+      ret.winEnd   = i.sAnim + std::min(d.defWindow[id*2+1], d.defHitEnd[id]);
+      }
+    return true;
+    }
+  return false;
   }
 
 const Tempest::Matrix4x4 Pose::rootNode() const {

@@ -6,6 +6,7 @@
 #include "graphics/mesh/skeleton.h"
 #include "graphics/visualfx.h"
 #include "game/damagecalculator.h"
+#include "game/fightlog.h"
 #include "game/serialize.h"
 #include "game/gamescript.h"
 #include "utils/string_frm.h"
@@ -603,6 +604,7 @@ void Npc::onNoHealth(bool death, HitSound sndMask) {
   setOther(lastHit);
   clearAiQueue();
   attachToPoint(nullptr);
+  FightLog::state(*this,death ? "dead" : "unconscious",lastHit);
 
   const char* svm   = death ? "SVM_%d_DEAD" : "SVM_%d_AARGH";
   const char* state = death ? "ZS_Dead"     : "ZS_Unconscious";
@@ -1216,6 +1218,21 @@ int32_t Npc::hitChance(Talent t) const {
   return 0;
   }
 
+int32_t Npc::comboDamage() const {
+  // damage of the current hit in percent: only forward combos, side attacks, run attacks and
+  // finishing moves are single hits; monsters without a weapon don't fight with fists
+  Pose::ComboInfo cmb;
+  if(!visual.pose().comboInfo(cmb) || !cmb.forward)
+    return 100;
+  Talent tal = TALENT_UNKNOWN;
+  if(auto w = invent.activeWeapon())
+    tal = w->is2H() ? TALENT_2H : TALENT_1H;
+  if(tal==TALENT_UNKNOWN && isMonster())
+    return 100;
+  const int32_t level = (tal==TALENT_UNKNOWN ? 0 : talentSkill(tal));
+  return owner.script().comboDamage(isPlayer(),tal,level,uint16_t(visual.comboLength()+1));
+  }
+
 bool Npc::isRefuseTalk() const {
   return refuseTalkMilis>=owner.tickCount();
   }
@@ -1561,6 +1578,8 @@ bool Npc::implAttack(uint64_t dt) {
   if(currentTarget->isDown()){
     // NOTE: don't clear internal target, to make scripts happy
     // currentTarget=nullptr;
+    if(fghAlgo.isInSeries())
+      FightLog::seriesBreak(*this,fghAlgo.series(),true,"target_down");
     fghAlgo.onClearTarget();
     return false;
     }
@@ -1576,6 +1595,8 @@ bool Npc::implAttack(uint64_t dt) {
   if(bs==BS_HIT && (ws==WeaponState::Fist || ws==WeaponState::W1H || ws==WeaponState::W2H)) {
     //NOTE: 'storm' attack has BS_RUN state and not meant to be auto-rotated
     implTurnToFai(*currentTarget,dt);
+    if(fghAlgo.hasCombo(*this))
+      implComboLink();
     mvAlgo.tick(dt,MoveAlgo::FaiMove);
     return true;
     }
@@ -1879,6 +1900,97 @@ bool Npc::implAttack(uint64_t dt) {
   return true;
   }
 
+bool Npc::implComboLink() {
+  // link next attack of the series inside of combo window, same as player does
+  Pose::ComboInfo cmb;
+  if(!visual.pose().comboInfo(cmb))
+    return false;
+
+  const bool fist = (weaponState()==WeaponState::Fist);
+  if(cmb.forward && cmb.last) {
+    // talent limits length of forward combo: drop the rest of forward attacks in series
+    const auto ser = fghAlgo.series();
+    fghAlgo.dropForwardAttacks(fist);
+    if(fghAlgo.series().done!=ser.done)
+      FightLog::seriesBreak(*this,ser,true,"talent");
+    }
+  // NOTE: empty queue is not an instruction, don't ask nextFromQueue about it
+  auto act = fghAlgo.hasInstructions() ? fghAlgo.nextFromQueue(*this,*currentTarget,owner.script()) : FightAlgo::MV_NULL;
+
+  const uint64_t now = owner.tickCount();
+  if(!cmb.window || now<=cmb.winBegin || now>cmb.winEnd)
+    return false;
+
+  const bool queued = (act==FightAlgo::MV_ATTACK || act==FightAlgo::MV_ATTACKL || act==FightAlgo::MV_ATTACKR);
+  bool       series = queued;
+  if(!queued && act==FightAlgo::MV_NULL && cmb.forward && !cmb.last) {
+    // no series in queue: fight tactic may continue the forward combo
+    series = fghAlgo.comboContinue(*this,cmb.winBegin,owner.script());
+    }
+
+  if(fghAlgo.comboAi(*this).defend_in_series) {
+    // break own series to react on enemy attack; block interrupts the attack, same as for player
+    if(series && fghAlgo.isEnemyPrehit(*this,*currentTarget,owner.script())) {
+      const auto ser = fghAlgo.series();
+      if(fghAlgo.onEnemyPrehit(*this,*currentTarget,owner.script())) {
+        FightLog::seriesBreak(*this,ser,queued,"defend");
+        act    = fghAlgo.nextFromQueue(*this,*currentTarget,owner.script());
+        series = false;
+        }
+      }
+    if(act==FightAlgo::MV_BLOCK) {
+      if(!(fist ? blockFist() : blockSword()))
+        return false;
+      fghAlgo.consumeAction();
+      return true;
+      }
+    if(act==FightAlgo::MV_JUMPBACK) {
+      if(!setAnim(Npc::Anim::MoveBack))
+        return false;
+      implFaiWait(visual.pose().animationTotalTime());
+      fghAlgo.consumeAction();
+      return true;
+      }
+    }
+
+  if(!series)
+    return false;
+  if(!queued)
+    act = FightAlgo::MV_ATTACK;
+  if(now<fghAlgo.comboLinkTime(*this,cmb.winBegin,cmb.winEnd,owner.script()))
+    return false;
+
+  // without 'break_on_lost' series is finished even into the air
+  if(fghAlgo.comboAi(*this).break_on_lost && fghAlgo.isTargetLost(*this,*currentTarget,owner.script())) {
+    if(FightLog::isEnabled()) {
+      // which check failed: distance against the attack range (G range after a hit that landed), angle
+      const auto  dpos   = currentTarget->collosionCenter() - collosionCenter();
+      const float da     = rotation() - std::atan2(dpos.z,dpos.x)*180.f/float(M_PI);
+      const int   angle  = int(std::abs(std::remainder(da,360.f)));
+      const int   dist   = int(std::sqrt(fghAlgo.qDistTo(*this,*currentTarget)));
+      const int   range  = int(fghAlgo.prefferedAttackDistance(*this,*currentTarget,owner.script()));
+      const int   grange = int(fghAlgo.prefferedGDistance(*this,*currentTarget,owner.script()));
+      const int   hit    = fghAlgo.isHitLanded() ? 1 : 0;
+      FightLog::seriesBreak(*this,fghAlgo.series(),queued,"target_lost",
+                            string_frm("dist ",dist," range ",range," angle ",angle," g ",grange," hit ",hit));
+      }
+    fghAlgo.onBreakSeries();
+    return false;
+    }
+
+  static const Anim ani[3] = {Anim::Attack, Anim::AttackL, Anim::AttackR};
+  const auto atkType = fist ? Anim::Attack : ani[act-FightAlgo::MV_ATTACK];
+  if(!doAttack(atkType,BS_HIT))
+    return false;
+
+  // NOTE: combo shifts start of the animation, so atkTotalTime is not relative to 'now'
+  if(visual.pose().comboInfo(cmb))
+    implFaiWait(cmb.hitEnd>now ? cmb.hitEnd-now+1 : 1);
+  if(queued)
+    fghAlgo.consumeAction();
+  return true;
+  }
+
 bool Npc::implAiTick(uint64_t dt) {
   // Note AI-action queue takes priority, test case: Vatras pray at night
   if(aiQueue.size()==0) {
@@ -2005,18 +2117,28 @@ bool Npc::setGoToLadder() {
   }
 
 void Npc::commitDamage() {
-  if(currentTarget==nullptr)
+  fghAlgo.onHitFrame();
+  if(currentTarget==nullptr) {
+    FightLog::miss(*this,nullptr,"no_target",visual.comboLength());
     return;
-  if(!fghAlgo.isInAttackRange(*this,*currentTarget,owner.script()))
+    }
+  if(!fghAlgo.isInAttackRange(*this,*currentTarget,owner.script())) {
+    FightLog::miss(*this,currentTarget,"range",visual.comboLength());
     return;
-  if(!fghAlgo.isInFocusAngle(*this,*currentTarget))
+    }
+  if(!fghAlgo.isInFocusAngle(*this,*currentTarget)) {
+    FightLog::miss(*this,currentTarget,"angle",visual.comboLength());
     return;
+    }
   currentTarget->takeDamage(*this,nullptr);
   }
 
 void Npc::takeDamage(Npc &other, const Bullet* b) {
-  if(isDown())
+  if(isDown()) {
+    if(b==nullptr)
+      FightLog::miss(other,this,"down",other.visual.comboLength());
     return;
+    }
 
   assert(b==nullptr || !b->isSpell());
   const auto& pose    = visual.pose();
@@ -2033,6 +2155,7 @@ void Npc::takeDamage(Npc &other, const Bullet* b) {
   if(!(isBlock || isJumpb) || b!=nullptr) {
     takeDamage(other,b,COLL_DOEVERYTHING,0,false);
     } else {
+    FightLog::defend(other,*this,isJumpb,other.visual.comboLength());
     if(invent.activeWeapon()!=nullptr)
       visual.emitBlockEffect(*this,other);
     }
@@ -2065,6 +2188,9 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
   SpellCategory            splCat     = SpellCategory::SPELL_BAD;
   const bool               dontKill   = ((b==nullptr && splId==0) || (bMask & COLL_DONTKILL)) && (!isSwim());
   int32_t                  damageType = DamageCalculator::damageTypeMask(other);
+  const bool               melee      = (b==nullptr && !isSpell);
+  const int32_t            hpBefore   = attribute(ATR_HITPOINTS);
+  bool                     stagger    = false;
 
   if(isSpell) {
     auto& spl  = owner.script().spellDesc(splId);
@@ -2077,6 +2203,8 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
 
   if(!isSpell || splCat==SpellCategory::SPELL_BAD) {
     perceptionProcess(other,this,0,PERC_ASSESSDAMAGE);
+    if(fghAlgo.isInSeries())
+      FightLog::seriesBreak(*this,fghAlgo.series(),true,"hit");
     fghAlgo.onTakeHit();
     implFaiWait(0);
     }
@@ -2084,9 +2212,13 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
   hitResult = DamageCalculator::damageValue(other,*this,b,isSpell,dmg,bMask);
   if(!isSpell && !isDown() && hitResult.hasHit)
     owner.addWeaponHitEffect(other,b,*this).play();
+  if(!isSpell && b==nullptr && hitResult.hasHit)
+    other.fghAlgo.onHitLanded();
 
   if(isDown()) {
     onNoHealth(dontKill,HS_NoSound);
+    if(melee)
+      FightLog::hit(other,*this,other.visual.comboLength(),hitResult.value,hitResult.bonus,hpBefore,false);
     return;
     }
 
@@ -2101,13 +2233,16 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
         visual.interrupt(); // TODO: put down in pipeline, at Pose and merge with setAnimAngGet
         }
 
-      if((damageType & (1<<zenkit::DamageType::FLY))==0)
+      if((damageType & (1<<zenkit::DamageType::FLY))==0) {
         setAnimAngGet(lastHitType=='A' ? Anim::StumbleA  : Anim::StumbleB);
+        stagger = true;
+        }
       }
     }
 
   // throw enemy
-  if(hitResult.hasHit && (damageType & (1<<zenkit::DamageType::FLY))) {
+  const bool fly = (hitResult.hasHit && (damageType & (1<<zenkit::DamageType::FLY)));
+  if(fly) {
     mvAlgo.accessDamFly(x-other.x, z-other.z, lastHitType);
     }
 
@@ -2130,6 +2265,14 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
         }
       }
     }
+
+  if(melee) {
+    FightLog::hit(other,*this,other.visual.comboLength(),hitResult.value,hitResult.bonus,hpBefore,stagger);
+    if(stagger)
+      FightLog::state(*this,"stumble",&other);
+    if(fly)
+      FightLog::state(*this,"fly",&other);
+    }
   }
 
 void Npc::takeFallDamage(const Vec3& fallSpeed) {
@@ -2144,6 +2287,7 @@ void Npc::takeFallDamage(const Vec3& fallSpeed) {
         lastHitType='A'; else
         lastHitType='B';
       setAnim(lastHitType=='A' ? Anim::FallenA : Anim::FallenB);
+      FightLog::state(*this,"lie",nullptr);
       }
     }
   auto dmg = DamageCalculator::damageFall(*this,fallSpeed.length());
@@ -3814,6 +3958,8 @@ bool Npc::doAttack(Anim anim, BodyState bs) {
   if(auto sq = visual.continueCombo(*this,anim,bs,weaponSt,wlk)) {
     (void)sq;
     // implAniWait(uint64_t(sq->atkTotalTime(visual.comboLength())+1));
+    if(FightLog::isEnabled())
+      FightLog::attack(*this,anim,bs,visual.pose().lastComboStart(),visual.comboLength(),fghAlgo);
     return true;
     }
   return false;

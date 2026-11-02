@@ -177,6 +177,7 @@ class Gothic final {
     Tempest::Signal<void(std::string_view)>                             onStartGame;
     Tempest::Signal<void(std::string_view)>                             onLoadGame;
     Tempest::Signal<void(std::string_view,std::string_view)>            onSaveGame;
+    Tempest::Signal<void(std::string_view)>                             onScreenshot;
 
     Tempest::Signal<void(Npc&,Npc&,AiOuputPipe*&)>                      onDialogPipe;
     std::function<bool(const Npc*)>                                     isNpcInDialogFn;

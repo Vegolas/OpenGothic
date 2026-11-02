@@ -53,7 +53,19 @@ INSTANCE FA_ENEMY_STORMPREHIT_3 (C_FightAI)
 // ------ Ich bin im Combo-Fenster ------
 INSTANCE FA_MY_W_COMBO_3 (C_FightAI)
 {
-	// --- Wird nie erreicht (Neue FAI-Bewertung erst wenn Ani zuende gespielt) ---
+	// --- Gothic 2.5: reached in the combo window, MOVE_ATTACK continues the forward combo ---
+	move[0] = MOVE_ATTACK;
+	move[1] = MOVE_WAIT;
+};
+
+// ------ Gothic 2.5: combo settings of this tactic (see Scripts/README.md) ------
+// TRUE/FALSE are not defined in Fight.dat, so 1 and 0 are used.
+INSTANCE FA_COMBO_3 (C_FightAI_Combo)
+{
+	link_min			= 100;
+	link_max			= 100;
+	defend_in_series	= 0;
+	break_on_lost		= 0;
 };
 
 // ------ Ich renne auf den Gegner zu ------
@@ -71,9 +83,12 @@ INSTANCE FA_MY_W_STRAFE_3 (C_FightAI)
 // ------- Ich habe Gegner im Fokus (kann treffen) -------
 INSTANCE FA_MY_W_FOCUS_3 (C_FightAI)
 {
-	move[0] = MOVE_FRONTATTACK;
+	move[0] = MOVE_ATTACK;
 	move[1] = MOVE_ATTACK;
-	move[2] = MOVE_JUMPBACK;
+	move[2] = MOVE_SIDEATTACK;
+	move[3] = MOVE_FRONTATTACK;
+	move[4] = MOVE_TRIPLEATTACK;
+	move[5] = MOVE_JUMPBACK;
 };
 
 // ------- Ich habe Gegner NICHT im Fokus -------
