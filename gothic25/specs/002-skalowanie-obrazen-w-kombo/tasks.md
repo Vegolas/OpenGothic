@@ -104,12 +104,14 @@ jako testem regresji (`gothic25/CLAUDE.md`).
       miary `damage.stage.<N>.max`, `damage.min` i `damage.max`.
 
       (W4, W10, K5, K9)
-- [ ] **Z10** [P] Scenariusze do trybu ręcznego dla ciosów bohatera:
+- [x] **Z10** [P] Scenariusze do trybu ręcznego dla ciosów bohatera:
       - mistrz z bronią jednoręczną i dwuręczną (K1, K4);
       - nowicjusz 10% i wojownik 40% z bronią jednoręczną (K6).
 
       Każdy ustawia talent (`call B_RaiseFightTalent`), broń (`equip`) i cel testowy, a w komentarzu
       opisuje, co grać: po 20 s pełnego combo, lewo-prawo i powtarzania pierwszego ciosu.
+      Zrealizowane jako dwie sesje w `tests/002/reczne/` (poza `-Spec`): `K04-mistrz` (obie bronie,
+      zmiana w ekwipunku) i `K06-nowicjusz-wojownik` (talent 10%, potem 40% poleceniem `call`).
       (W5, W6, K1, K4, K6)
 
 ## Faza 5: Proces

@@ -15,6 +15,7 @@ z obserwacją w grze (003 K3).
 | Ścieżka | Co tam jest |
 |---|---|
 | `tests/NNN/Kn-nazwa.txt` | scenariusze dla kryterium `Kn` specyfikacji `NNN` |
+| `tests/NNN/reczne/` | scenariusze do trybu ręcznego (`-Manual`), w których gra człowiek, np. bohaterem; komentarz mówi, co grać, a liczby wylicza raport; `-Spec` ich nie uruchamia |
 | `tests/NNN/niezaliczane/` | scenariusze, które mają się nie udać (sprawdzenie obsługi błędów i oczekiwań); `-Spec` ich nie uruchamia, uruchamia się je pojedynczo przez `-Scenario` |
 | `build/test/profile/` | katalog roboczy gry przy testach: `Gothic.ini` tworzony od nowa przed każdym przebiegiem, zapisy z testów, `log.txt` ostatniego przebiegu |
 | `build/test-runs/<data>-<czas>-NNN-nazwa[-nomod]/` | wyniki jednego przebiegu (niżej) |
