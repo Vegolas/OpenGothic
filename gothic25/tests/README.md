@@ -328,6 +328,8 @@ Miary liczą się z całego dziennika przebiegu:
 | `skip.max_ms`, `skip.avg_ms` | pominięte ms animacji przy połączeniach do przodu |
 | `link.min_pct`, `link.avg_pct` | chwila połączenia w oknie combo, w % |
 | `damage.stage.<N>.avg`, `damage.stage.<N>.count` | średnie obrażenia i liczba trafień na etapie combo `N` |
+| `damage.stage.<N>.max` | największe obrażenia trafienia na etapie combo `N` (mocny cios, bez osłabienia z talentu) |
+| `damage.min`, `damage.max` | najmniejsze i największe obrażenia trafienia postaci, ze wszystkich etapów |
 | `bonus.stage.<N>.min`, `bonus.stage.<N>.max` | najmniejsza i największa premia trafień na etapie combo `N`, w % (pole `bonus`, 002) |
 | `bonus.dir.<dir>.max` | największa premia trafień ciosów danego rodzaju (`fwd`, `left`, `right`, `run`, `finish`, pole `dir` ataku), w % |
 | `state.<stan>` | liczba zdarzeń `state` postaci |

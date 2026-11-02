@@ -166,7 +166,9 @@ Zasada 10: wszystko, co da się zmierzyć, sprawdza scenariusz.
   - K3: bandyta ze stylem normalnym (tylko serie boczne i frontalne) i paladyn: `bonus.dir.left.max`
     i `bonus.dir.right.max` = 100, atak z biegu i dobijanie bez premii.
   - K5: paladyn kontra `MagicGolem` (bez utraty życia) i `StoneGolem` (obrażenia = bez premii ×
-    premia, nie mniej niż 5).
+    premia, nie mniej niż 5). Golemy oddają i przerywają combo, więc dalsze etapy sprawdzają cele
+    testowe `TST_ComboDummyArmored` (ochrona 200) i `TST_ComboDummyImmune` (odporny), dopisane
+    przy Z9 na końcu `ComboDamageTest.d` (zmiana z 2026-11-02).
   - K8: K1 bez moda (`# mod: off`), premia zawsze 100.
   - K9: zapis w środku combo paladyna, wczytanie i zgodność etapu oraz premii pierwszego ciosu
     po wczytaniu z animacją. Do tego wczytanie zapisu z 0.1.0 (jak 001 K09c).

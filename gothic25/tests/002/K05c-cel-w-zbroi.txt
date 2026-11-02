@@ -1,0 +1,29 @@
+# criterion: 002 K5
+# timeout: 240
+# Paladyn-mistrz bije cel testowy z ochroną 200 przed ostrzem i obuchem. Golemy oddają i przerywają
+# combo, więc premię na dalszych etapach przy wysokiej ochronie sprawdzamy na celu, który stoi.
+# Premia mnoży obrażenia, które zostają po ochronie (W4), a słaby cios nie spada poniżej 5.
+info told DIA_Xardas_Hello
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+cheat god
+set time 12 0
+insert TST_ComboDummyArmored
+immortal TST_ComboDummyArmored
+insert Pal_230_Ritter
+call B_Attack Pal_230_Ritter TST_ComboDummyArmored 0 0
+ztimer multiplyer 2
+wait 120
+quit
+
+# Progi (próba 2026-11-02, 120 s gry): mocny cios bez premii 35 (235 - 200 ochrony), z premią 49, 66
+# i 87 (140, 190, 250%, ułamek obcięty). Słaby cios (35 - 1) / 10 = 3 z premią daje 3, 4, 5, 7,
+# a minimum podnosi pierwsze dwa do 5. Trafienia na etapach 1-4: 77, 14, 10, 7.
+expect Pal_230_Ritter damage.stage.1.max == 35
+expect Pal_230_Ritter damage.stage.2.max == 49
+expect Pal_230_Ritter damage.stage.3.max == 66
+expect Pal_230_Ritter damage.stage.4.max == 87
+expect Pal_230_Ritter damage.min == 5

@@ -35,9 +35,10 @@ DOWN_STATES = ["stumble", "fly", "lie", "unconscious", "dead"]
 KNOWN_METRIC = re.compile(
     r"^(attacks|attacks\.tgt_down|res\.(hit|block|jumpback|miss)|res\.miss\.\w+|taken\.(hit|block|jumpback)"
     r"|combo\.max|combo\.count\.\d+|series\.(attack|side|front|triple|whirl|master|combo|multi)|break\.\w+"
-    r"|skip\.(max_ms|avg_ms)|link\.(min_pct|avg_pct)|damage\.stage\.\d+\.(avg|count)|state\.\w+"
-    r"|bonus\.stage\.\d+\.(min|max)|bonus\.dir\.\w+\.max)$")
-STATISTIC = re.compile(r"^(combo\.max|skip\.\w+|link\.\w+|damage\.stage\.\d+\.avg|bonus\.\S+)$")
+    r"|skip\.(max_ms|avg_ms)|link\.(min_pct|avg_pct)|damage\.stage\.\d+\.(avg|count|max)|damage\.(min|max)"
+    r"|state\.\w+|bonus\.stage\.\d+\.(min|max)|bonus\.dir\.\w+\.max)$")
+STATISTIC = re.compile(r"^(combo\.max|skip\.\w+|link\.\w+|damage\.stage\.\d+\.(avg|max)|damage\.(min|max)"
+                       r"|bonus\.\S+)$")
 OPS = {"==": operator.eq, "!=": operator.ne, "<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge}
 
 
@@ -197,6 +198,11 @@ def metrics(events: list[dict], ids: set[int]) -> dict[str, float]:
     for stage, values in damage.items():
         m[f"damage.stage.{stage}.avg"] = statistics.mean(values)
         m[f"damage.stage.{stage}.count"] = len(values)
+        m[f"damage.stage.{stage}.max"] = max(values)
+    hits = [v for values in damage.values() for v in values]
+    if hits:
+        m["damage.min"] = min(hits)
+        m["damage.max"] = max(hits)
     for stage, values in bonus_stage.items():
         m[f"bonus.stage.{stage}.min"] = min(values)
         m[f"bonus.stage.{stage}.max"] = max(values)

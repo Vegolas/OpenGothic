@@ -1,0 +1,26 @@
+# criterion: 002 K9
+# timeout: 240
+# save: build/testsaves/001-K9-v0.1.0-pal230.sav
+# Zapis z wersji 0.1.0 (Z1 w 001) się wczytuje, a premia combo działa na wczytanej grze: paladyn bije
+# cel testowy, który w 0.1.0 nie istniał (nowy symbol na końcu Gothic.src, ADR 0005).
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+cheat god
+set time 12 0
+insert TST_ComboDummy
+immortal TST_ComboDummy
+insert Pal_230_Ritter
+call B_Attack Pal_230_Ritter TST_ComboDummy 0 0
+ztimer multiplyer 2
+wait 90
+quit
+
+# Progi (próba 2026-11-02): zapis z 0.1.0 wczytany, paladyn zadał na celu premie z tablicy NPC.
+expect Pal_230_Ritter bonus.stage.1.max == 100
+expect Pal_230_Ritter bonus.stage.2.min == 140
+expect Pal_230_Ritter bonus.stage.2.max == 140
+expect Pal_230_Ritter bonus.stage.3.min == 190
+expect Pal_230_Ritter bonus.stage.3.max == 190

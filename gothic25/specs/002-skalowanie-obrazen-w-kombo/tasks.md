@@ -92,11 +92,16 @@ jako testem regresji (`gothic25/CLAUDE.md`).
       - K8: K1 bez moda (`# mod: off`), premia 100 na każdym etapie.
 
       (W1, W3, W7, W9, K1, K3, K7, K8)
-- [ ] **Z9** [P] Scenariusze `tests/002/` dla odporności i zapisów:
+- [x] **Z9** [P] Scenariusze `tests/002/` dla odporności i zapisów:
       - K5: paladyn kontra `MagicGolem` (bez utraty życia) i `StoneGolem` (obrażenia każdego ciosu =
         obrażenia bez premii × premia, nie mniej niż 5).
       - K9: zapis w środku combo paladyna (`wait ... combo 2`), wczytanie i porównanie etapu i premii
         pierwszego ciosu po wczytaniu z animacją. Wczytanie zapisu z 0.1.0 jak 001 K09c.
+
+      Dopisane przy realizacji (2026-11-02): golemy oddają i przerywają combo, więc paladyn trafia je
+      tylko pierwszym ciosem. Dalsze etapy sprawdzają cele testowe z ochroną 200 i odporne
+      (`TST_ComboDummyArmored`, `TST_ComboDummyImmune` na końcu `ComboDamageTest.d`), a raport ma
+      miary `damage.stage.<N>.max`, `damage.min` i `damage.max`.
 
       (W4, W10, K5, K9)
 - [ ] **Z10** [P] Scenariusze do trybu ręcznego dla ciosów bohatera:
