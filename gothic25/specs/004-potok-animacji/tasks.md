@@ -153,7 +153,7 @@ nie kopiujemy w całości.
         Walidacja obowiązuje więc tylko wpisy moda i odwzorowuje te reguły. Oryginałów nie sprawdza.
 
       Po Z5. (W4, W6, K3)
-- [ ] **Z7** Build w pakowaniu i układ `anims/`.
+- [x] **Z7** Build w pakowaniu i układ `anims/`.
       - `anims/anims.json` (model `HUMANS`, rozszerzenie `HUMANS.EXT.MDS`),
         `anims/HUMANS/HUMANS.skeleton.json` (`anim.py skeleton`) i `anims/HUMANS/HUMANS.EXT.MDS`
         z samym nagłówkiem, na razie bez wpisów.
@@ -161,6 +161,15 @@ nie kopiujemy w całości.
         `tools/test.ps1`: `-AnimExtra <katalog>` przekazywany do `build --extra`.
       - Sprawdzenie: `pack.ps1` i `test.ps1 -Spec 001` przechodzą (rozszerzenie bez wpisów niczego nie
         zmienia, a silnik jeszcze go nie czyta).
+      - Wynik (2026-11-03):
+        - `pack.ps1` buduje animacje, a paczka ma `_WORK/DATA/ANIMS/_COMPILED/HUMANS.EXT.MDS` (197 B,
+          pusty `aniEnum`);
+        - z `-AnimExtra tests\004\fixtures\valid` dochodzą `HUMANS-T_G25TEST.MAN` i scalone definicje;
+        - bez folderu gry build idzie z ostrzeżeniem, bez porównania z grą;
+        - `test.ps1 -Spec 001`: 17 z 17 przechodzi (przebiegi `20261103-213329` do `20261103-215740`).
+      - Mapa animacji to `build/anims/_COMPILED`, nie `build/anims`, żeby znacznik buildu nie trafiał
+        do paczki. `anims/.gitattributes`: `*.mds` w cp1252 z CRLF, `.anim` i `.json` z LF,
+        `*.blend` binarnie.
 
       Po Z6. (W4, W5, W6)
 - [ ] **Z8** [P] `anim.py check-pack`.

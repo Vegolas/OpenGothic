@@ -1,0 +1,7 @@
+# Model script extensions are read as cp1252 with CRLF, like the game's sources (decisions/0008).
+*.mds text working-tree-encoding=cp1252 eol=crlf
+*.MDS text working-tree-encoding=cp1252 eol=crlf
+# .anim and .json are UTF-8 text with LF
+*.anim text eol=lf
+*.json text eol=lf
+*.blend binary

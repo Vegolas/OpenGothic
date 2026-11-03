@@ -14,6 +14,9 @@
   Automatic mode (default): 800x600 window, the game quits after the scenario. -Manual (with
   -Scenario only) keeps the game open with the usual window and waits until it is closed.
 
+  -AnimExtra adds animation source folders to the packed mod (tools/anim.py build --extra), e.g. local
+  test data from tools/anim.py fixtures (spec 004).
+
   Exit code 0 when every scenario ended with ok and all its expectations passed.
 .EXAMPLE
   tools/test.ps1 -Scenario 001/K1-pal230
@@ -30,7 +33,8 @@ param(
   [switch]$Window,
   [int]$TimeoutSec = 0,
   [string]$GothicDir,
-  [string]$BuildDir
+  [string]$BuildDir,
+  [string[]]$AnimExtra
 )
 
 . (Join-Path $PSScriptRoot 'lib/common.ps1')
@@ -286,7 +290,7 @@ if($Spec) {
 $needMod = (-not $NoMod) -and @($scenarios | Where-Object { (Get-Headers $_)['mod'] -ne 'off' }).Count -gt 0
 if($needMod) {
   & (Join-Path $PSScriptRoot 'build-scripts.ps1') -GothicDir $gothic | Out-Null
-  & (Join-Path $PSScriptRoot 'pack.ps1') | Out-Null
+  & (Join-Path $PSScriptRoot 'pack.ps1') -GothicDir $gothic -AnimExtra $AnimExtra | Out-Null
 }
 $output = Get-ModOutput
 

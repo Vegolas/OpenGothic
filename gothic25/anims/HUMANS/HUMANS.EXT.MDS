@@ -1,0 +1,9 @@
+// Animation definitions of the Gothic 2.5 mod for the human model (HUMANS.MSB of the game).
+// Only entries of the mod: the engine merges them into the original model by name (ADR 0008).
+// ASCII only. Changes of a spec go into a block marked // G25 NNN.
+Model ("HUMANS")
+{
+	aniEnum
+	{
+	}
+}

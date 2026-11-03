@@ -1,0 +1,7 @@
+{
+  "models": {
+    "HUMANS": {
+      "skeleton": "HUMANS/HUMANS.skeleton.json"
+    }
+  }
+}
