@@ -118,6 +118,11 @@ const Animation::Sequence* AnimationSolver::implSolveAnim(AnimationSolver::Anim 
         return solveFrm("T_FISTATTACKMOVE");
       return solveFrm("S_FISTATTACK");
       }
+    // the original models have no side attacks with fists; a mod may add them
+    if(a==Anim::AttackL)
+      return solveFrm("T_FISTATTACKL");
+    if(a==Anim::AttackR)
+      return solveFrm("T_FISTATTACKR");
     if(a==Anim::AttackBlock) {
       bool g2 = Gothic::inst().version().game==2;
       return g2 ? solveFrm("T_FISTPARADE_0") : solveFrm("T_FISTPARADE_O");

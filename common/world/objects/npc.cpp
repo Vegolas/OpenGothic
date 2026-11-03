@@ -1054,6 +1054,12 @@ bool Npc::hasAnim(Anim a) const {
   return visual.hasAnim(a,st,wlk);
   }
 
+bool Npc::hasFistSideAttack(Anim a) const {
+  if(a!=Anim::AttackL && a!=Anim::AttackR)
+    return false;
+  return visual.hasAnim(a,WeaponState::Fist,walkMode());
+  }
+
 bool Npc::hasSwimAnimations() const {
   return hasAnim("S_SWIM") && hasAnim("S_SWIMF");
   }
@@ -4003,14 +4009,14 @@ void Npc::swingSword() {
 
 bool Npc::swingSwordL() {
   auto active=invent.activeWeapon();
-  if(active==nullptr)
+  if(active==nullptr && weaponState()!=WeaponState::Fist)
     return false;
   return doAttack(Anim::AttackL,BS_HIT);
   }
 
 bool Npc::swingSwordR() {
   auto active=invent.activeWeapon();
-  if(active==nullptr)
+  if(active==nullptr && weaponState()!=WeaponState::Fist)
     return false;
   return doAttack(Anim::AttackR,BS_HIT);
   }

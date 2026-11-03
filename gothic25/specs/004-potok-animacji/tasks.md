@@ -282,7 +282,7 @@ nie kopiujemy w całości.
         - opis obu poleceń w `tests/README.md`. Build bez nowych ostrzeżeń.
 
       (W9)
-- [ ] **Z12** [P] Ataki boczne pięściami bohatera.
+- [x] **Z12** [P] Ataki boczne pięściami bohatera.
       - `AnimationSolver::implSolveAnim`: w gałęzi pięści `AttackL/R` -> `T_FISTATTACKL/R`.
       - Metoda sprawdzająca, czy model ma atak boczny pięścią w danym kierunku (np.
         `Npc::hasFistSideAttack(Anim)` przez solver).
@@ -292,6 +292,17 @@ nie kopiujemy w całości.
         - build;
         - bez animacji (mod bez sierpowych i bez moda) atak z lewej pięściami nic nie robi;
         - `-Spec 001` i `-Spec 002` przechodzą.
+      - Wynik (2026-11-04):
+        - solver: `AttackL/R` pięściami -> `T_FISTATTACKL/R`; `Npc::hasFistSideAttack(Anim)`;
+          `swingSwordL/R` z pięściami bez broni;
+        - `PlayerControl`: ścieżkę broni dostaje tylko atak w bok, dla którego model ma animację.
+          W przeciwnym razie zostaje stara gałąź pięści bez zmian (blok na `ActBack`, flagi klawiszy
+          nie są czyszczone), więc bez animacji zachowanie jest takie jak dotąd;
+        - build bez nowych ostrzeżeń. Czysty mod nie ma `T_FISTATTACKL` (`ani info` kończy scenariusz
+          błędem w linii 6, przebieg `20261103-232721-Z12-no-side`);
+        - `-Spec 001` 17 z 17, `-Spec 002` 12 z 12 (przebiegi `20261103-232752` do `20261104-001014`);
+        - naciśnięcia klawiszy scenariusze nie symulują, więc atak w bok bohatera w grze sprawdzi
+          K5 (Z18, scenariusz ręczny) z sierpowymi z Z15-Z17.
 
       (W8, W12)
 - [ ] **Z13** Ataki boczne pięściami NPC.

@@ -180,6 +180,7 @@ class Npc final {
     bool       hasAnim(std::string_view scheme) const;
     auto       animSequence(std::string_view name) const -> const Animation::Sequence*;
     bool       hasAnim(Anim a) const;
+    bool       hasFistSideAttack(Anim a) const;
     bool       hasSwimAnimations() const;
     bool       isFinishingMove() const;
 
