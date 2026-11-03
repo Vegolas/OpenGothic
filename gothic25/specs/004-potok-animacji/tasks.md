@@ -93,7 +93,7 @@ nie kopiujemy w całości.
         „Kontekst”. Faza 2 wstrzymana do decyzji o zmianie planu.
 
       (W7)
-- [ ] **Z5** [P] Parsery definicji i `anim.py defs`.
+- [x] **Z5** [P] Parsery definicji i `anim.py defs`.
       - Parser binarnego MSB (układ chunków jak w ZenKit `ModelScriptBinary`) i tekstowego MDS
         (składnia jak w ZenKit `ModelScriptDsl`). Oba dają ten sam model danych: animacje, aliasy,
         blendy, połączenia, blokady, tagi modelu, zdarzenia z klatkami.
@@ -106,6 +106,16 @@ nie kopiujemy w całości.
           MDS, nic z niego nie trafia do repozytorium);
         - porównanie obu parserów dla tych plików: różnice tylko tam, gdzie MDK różni się od gry
           (raport do opisu commitu).
+      - Wynik (2026-11-03), `anim.py mds-check <gra>/_work/Data/Anims`:
+        - 117 plików definicji (3949 animacji), 0 błędów parsera, `HUMANS` 784 = 784 animacje;
+        - znane różnice ZenKit między formatami są liczone osobno: zasięg i slot dźwięku (668),
+          floaty czytane jako int (`pfx`/`pfx_stop`/`tremor`, 108), spacje w cudzysłowie (2);
+        - 60 pozostałych to różnice danych MDK i gry, np. `T_1HPARADE_0` w MDK ma `DEF_WINDOW`,
+          a w grze nie, i dodatkowe kroki w `T_1HWALKL_2_1HWALK` w grze.
+        - `defs HUMANS S_FISTATTACK` wypisuje definicję z gry. Z testowym rozszerzeniem: 1 dołożona,
+          1 zastąpiona, pochodzenie `mod`.
+        - Tokenizer naprawiony przy EOF (cofanie zostaje na końcu tekstu, jak w ZenKit, który przed
+          `maybe` sprawdza `eof()`).
 
       (W13, K11)
 - [ ] **Z6** `anim.py build`: walidacja i zapis.
@@ -239,6 +249,9 @@ nie kopiujemy w całości.
       - `anims/HUMANS/T_FISTATTACKL.blend` (bez siatek z gry) i `T_FISTATTACKL.anim`.
       - Blok `// G25 004` w `HUMANS.EXT.MDS`: `t_FistAttackL` na warstwie 1 z
         `DEF_HIT_LIMB "BIP01 L HAND"`, `DEF_OPT_FRAME`, `DEF_HIT_END`, `DEF_WINDOW` i `WHOOSH`.
+        Dźwięk jak w oryginałach: `*eventSFX (N "WHOOSH" R:2500)` bez `EMPTY_SLOT`. ZenKit czyta
+        oryginalne MSB jako zasięg 2500 i `empty_slot` = false, a tekst bez `R:` daje 1000 (Z5), a silnik
+        używa obu pól (`animation.cpp:361`).
       - Sprawdzenie:
         - `anim.ps1 check` bez różnic;
         - `anim.py build` i `check-pack` przechodzą;

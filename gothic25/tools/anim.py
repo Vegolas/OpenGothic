@@ -42,6 +42,8 @@ Usage:
   anim.py skeleton FILE.MDH [--out FILE.json]
   anim.py extract MODEL --gothic DIR [--out DIR] [--mesh NAME.MDM]
   anim.py roundtrip MODEL --gothic DIR
+  anim.py defs MODEL [ANI...] --gothic DIR [--ext FILE.EXT.MDS | --no-ext]
+  anim.py mds-check FOLDER --gothic DIR      *.mds sources against the game MSB, through both parsers
 """
 
 from __future__ import annotations
@@ -82,13 +84,16 @@ class Reader:
         self.pos += s.size
         return v
 
-    def line(self) -> str:
-        # zenkit::Read::read_line: stops at \0, \r or \n
+    def line(self, skipws: bool = False) -> str:
+        # zenkit::Read::read_line: stops at \0, \r or \n; skipws also eats the whitespace after it
         end = self.pos
         while end < len(self.data) and self.data[end] not in (0, 10, 13):
             end += 1
         text = self.data[self.pos:end].decode(ENCODING)
         self.pos = min(end + 1, len(self.data))
+        if skipws and end < len(self.data) and self.data[end] != 0:
+            while self.pos < len(self.data) and self.data[self.pos] in b" \t\r\n\v\f":
+                self.pos += 1
         return text
 
 
@@ -384,6 +389,574 @@ def from_text(text: str, source: str = "<text>") -> Man:
     return a
 
 
+# --- model scripts (MSB binary, MDS text) ---------------------------------------------------------------
+# Both parsers mirror lib/ZenKit/src/ModelScript.cc (parse_binary_script) and ModelScriptDsl.cc (MdsParser)
+# and fill the same data model, so a mod extension (<MODEL>.EXT.MDS, ADR 0008) can be merged and
+# checked the way the engine sees it.
+
+# event type names are matched exactly, like zenkit's event_types map
+FRAME_EVENTS = {"DEF_DAM_MULTIPLY", "DEF_PAR_FRAME", "DEF_OPT_FRAME", "DEF_HIT_END", "DEF_WINDOW"}
+SLOT_ITEM_EVENTS = {"DEF_CREATE_ITEM", "DEF_EXCHANGE_ITEM"}
+# events with one slot string: the text parser (make_event_tag) keeps fewer than the binary one
+SLOT_EVENTS_TEXT = {"DEF_INSERT_ITEM", "DEF_PLACE_MUNITION", "DEF_HIT_LIMB", "HIT_LIMB"}
+SLOT_EVENTS_BINARY = SLOT_EVENTS_TEXT | {"DEF_HIT_DIR", "DEF_DIR", "DEF_DRAWSOUND", "DEF_UNDRAWSOUND",
+                                         "DEF_REMOVE_MUNITION", "DEF_DESTROY_ITEM", "DEF_INV_TORCH",
+                                         "DEF_REMOVE_ITEM"}
+FLAG_LETTERS = "MREFIP"  # move, rotate, queue, fly, idle, in place
+C_SPACE = " \t\n\v\f\r"  # std::isspace in the C locale
+
+
+def zk_frames(text: str) -> list:
+    """Frame list of an event the way zenkit reads it with std::istringstream (a trailing blank or an
+    empty string yields one more 0)."""
+    out, pos = [], 0
+    while True:
+        while pos < len(text) and text[pos].isspace():
+            pos += 1
+        start = pos
+        if pos < len(text) and text[pos] in "+-":
+            pos += 1
+        while pos < len(text) and text[pos].isdigit():
+            pos += 1
+        if pos == start or text[start:pos] in ("+", "-"):
+            out.append(0)  # failed extraction stores 0 and ends the loop
+            return out
+        out.append(int(text[start:pos]))
+        if pos >= len(text):
+            return out
+
+
+def flags_of(text: str) -> str:
+    return "".join(c for c in FLAG_LETTERS if c in text)
+
+
+@dataclass
+class MdsEvent:
+    frame: int
+    type: str
+    slot: str = ""
+    slot2: str = ""
+    item: str = ""
+    frames: list = field(default_factory=list)
+    fight_mode: str = ""
+
+    def key(self) -> tuple:
+        # fields both zenkit parsers fill; the slot of a few event types only comes from binary scripts
+        slot = self.slot.upper() if self.type in SLOT_EVENTS_TEXT or self.type in SLOT_ITEM_EVENTS \
+            or self.type == "DEF_SWAPMESH" else ""
+        return (self.frame, self.type, slot, self.slot2.upper(), self.item.upper(), tuple(self.frames),
+                self.fight_mode)
+
+
+def fight_mode(text: str) -> str:
+    return {"FIST": "FIST", "1H": "1H", "1h": "1H", "2H": "2H", "2h": "2H", "BOW": "BOW", "CBOW": "CBOW",
+            "MAG": "MAG"}.get(text, "NONE")
+
+
+def make_event(frame: int, etype: str, a: str | None, b: str | None, binary: bool = False) -> MdsEvent:
+    e = MdsEvent(frame, etype)
+    if etype in SLOT_ITEM_EVENTS:
+        e.slot, e.item = a or "", b or ""
+    elif etype == "DEF_SWAPMESH":
+        e.slot, e.slot2 = a or "", b or ""
+    elif etype == "DEF_FIGHTMODE":
+        e.fight_mode = fight_mode(a or "")
+    elif etype in FRAME_EVENTS:
+        e.frames = zk_frames(a or "")
+    elif etype in (SLOT_EVENTS_BINARY if binary else SLOT_EVENTS_TEXT):
+        e.slot = a or ""
+    return e
+
+
+@dataclass
+class MdsAni:
+    name: str
+    layer: int = 1
+    next: str = ""
+    blend_in: float = 0.0
+    blend_out: float = 0.0
+    flags: str = ""
+    model: str = ""
+    direction: str = "F"
+    first_frame: int = 0
+    last_frame: int = 0
+    fps: float = 25.0
+    cvs: float = 1.0
+    events: list = field(default_factory=list)
+    sfx: list = field(default_factory=list)  # (frame, name, range, empty_slot)
+    sfx_ground: list = field(default_factory=list)
+    pfx: list = field(default_factory=list)  # (frame, index, name, position, attached)
+    pfx_stop: list = field(default_factory=list)  # (frame, index)
+    morph: list = field(default_factory=list)  # (frame, animation, node)
+    tremors: list = field(default_factory=list)  # (frame, f1, f2, f3, f4)
+    origin: str = "game"
+
+
+@dataclass
+class ModelScript:
+    animations: list = field(default_factory=list)
+    aliases: list = field(default_factory=list)  # dicts: name, layer, next, blend_in, blend_out, flags, alias, direction
+    blends: list = field(default_factory=list)  # dicts: name, next, blend_in, blend_out
+    combinations: list = field(default_factory=list)  # dicts: name, layer, next, blend_in, blend_out, flags, model, last_frame
+    disabled: list = field(default_factory=list)
+    model_tags: list = field(default_factory=list)  # bone names
+
+
+def f32r(v: float) -> float:
+    return round(f32(v), 6)
+
+
+def parse_msb(data: bytes) -> ModelScript:
+    s = ModelScript()
+    for ctype, payload in chunks(data):
+        r = Reader(payload)
+        if ctype == 0xF520:
+            name = r.line()
+            layer = r.unpack("I")[0]
+            nxt = r.line()
+            bi, bo = r.unpack("2f")
+            flags = flags_of(r.line())
+            model = r.line()
+            direction = "R" if r.line().startswith("R") else "F"
+            first, last = r.unpack("2i")
+            fps, _speed, cvs = r.unpack("3f")
+            s.animations.append(MdsAni(name, layer, nxt, f32r(bi), f32r(bo), flags, model, direction, first, last,
+                                       f32r(fps), f32r(cvs)))
+        elif ctype == 0xF530:
+            name = r.line()
+            layer = r.unpack("I")[0]
+            nxt = r.line()
+            bi, bo = r.unpack("2f")
+            flags = flags_of(r.line())
+            alias = r.line()
+            direction = "R" if r.line().startswith("R") else "F"
+            s.aliases.append({"name": name, "layer": layer, "next": nxt, "blend_in": f32r(bi), "blend_out": f32r(bo),
+                              "flags": flags, "alias": alias, "direction": direction})
+        elif ctype == 0xF540:
+            name, nxt = r.line(), r.line()
+            bi, bo = r.unpack("2f")
+            s.blends.append({"name": name, "next": nxt, "blend_in": f32r(bi), "blend_out": f32r(bo)})
+        elif ctype == 0xF570:
+            name = r.line()
+            layer = r.unpack("I")[0]
+            nxt = r.line()
+            bi, bo = r.unpack("2f")
+            flags = flags_of(r.line())
+            model = r.line()
+            last = r.unpack("i")[0]
+            s.combinations.append({"name": name, "layer": layer, "next": nxt, "blend_in": f32r(bi),
+                                   "blend_out": f32r(bo), "flags": flags, "model": model, "last_frame": last})
+        elif ctype == 0xF580:
+            s.disabled.append(r.line())
+        elif ctype == 0xF590:
+            r.unpack("i")
+            r.line()
+            s.model_tags.append(r.line(True))
+        elif ctype in (0xF5A1, 0xF5A2, 0xF5A3, 0xF5A4, 0xF5A5, 0xF5A9, 0xF5AA):
+            if not s.animations:
+                raise ValueError(f"event chunk {ctype:04X} before the first animation")
+            ani = s.animations[-1]
+            if ctype in (0xF5A1, 0xF5A2):
+                frame = r.unpack("i")[0]
+                name = r.line()
+                rng = r.unpack("f")[0]
+                empty = r.unpack("I")[0] != 0
+                (ani.sfx if ctype == 0xF5A1 else ani.sfx_ground).append((frame, name, f32r(rng), empty))
+            elif ctype == 0xF5A3:
+                frame = r.unpack("i")[0]
+                etype = r.line()
+                a = b = None
+                if etype in SLOT_ITEM_EVENTS or etype == "DEF_SWAPMESH":
+                    a, b = r.line(True), r.line(True)
+                elif etype in SLOT_EVENTS_BINARY or etype == "DEF_FIGHTMODE" or etype in FRAME_EVENTS:
+                    a = r.line(True)
+                ani.events.append(make_event(frame, etype, a, b, binary=True))
+            elif ctype == 0xF5A4:
+                frame, index = r.unpack("2i")
+                name, position = r.line(), r.line()
+                ani.pfx.append((frame, index, name, position, r.unpack("I")[0] != 0))
+            elif ctype == 0xF5A5:
+                ani.pfx_stop.append(tuple(r.unpack("2i")))
+            elif ctype == 0xF5A9:
+                frame = r.unpack("i")[0]
+                ani.morph.append((frame, r.line(), r.line()))
+            else:
+                ani.tremors.append(tuple(r.unpack("5i")))
+    return s
+
+
+class MdsTokens:
+    """Tokenizer of zenkit::MdsTokenizer: parens and semicolons are blanks, // starts a comment."""
+
+    def __init__(self, text: str, source: str):
+        self.text, self.source, self.pos, self.mark = text, source, 0, 0
+
+    def where(self) -> str:
+        return f"{self.source}:{self.text.count(chr(10), 0, self.pos) + 1}"
+
+    def next(self):
+        t = self.text
+        alpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        digits = "0123456789"
+        self.mark = self.pos  # backtracking from the end of the text stays at the end
+        while self.pos < len(t):
+            self.mark = self.pos
+            c = t[self.pos]
+            self.pos += 1
+            if c in C_SPACE or c in "();":
+                continue
+            if c == "/":
+                end = t.find("\n", self.pos)
+                self.pos = len(t) if end < 0 else end + 1
+                continue
+            if c in alpha or c in "*_.":
+                start = self.pos - 1
+                while self.pos < len(t) and (t[self.pos] in alpha or t[self.pos] in digits or t[self.pos] in "_-."):
+                    self.pos += 1
+                return "KEYWORD", t[start:self.pos]
+            if c == '"':
+                start = self.pos
+                while self.pos < len(t) and t[self.pos] not in '"\n':
+                    self.pos += 1
+                value = t[start:self.pos]
+                if self.pos < len(t) and t[self.pos] == '"':
+                    self.pos += 1
+                # zenkit drops the last character when the last non-blank one is ')'
+                last = value.rstrip(C_SPACE)
+                if last.endswith(")"):
+                    value = value[:-1]
+                return "STRING", value
+            if c in digits or c == "-":
+                start = self.pos - 1
+                floating = False
+                while self.pos < len(t):
+                    if t[self.pos] == ".":
+                        floating = True
+                        self.pos += 1
+                    if self.pos < len(t) and t[self.pos] in digits:
+                        self.pos += 1
+                    else:
+                        break
+                return ("FLOAT" if floating else "INTEGER"), t[start:self.pos]
+            if c in "{}:":
+                return {"{": "LBRACE", "}": "RBRACE", ":": "COLON"}[c], c
+            raise ValueError(f"{self.where()}: illegal character {c!r}")
+        return "EOF", ""
+
+    def maybe(self, kind: str, value: str | None = None):
+        k, v = self.next()
+        if k == kind and (value is None or v.upper() == value.upper()):
+            return v
+        self.pos = self.mark
+        return None
+
+    def expect(self, kind: str, value: str | None = None) -> str:
+        v = self.maybe(kind, value)
+        if v is None:
+            raise ValueError(f"{self.where()}: expected {value or kind}")
+        return v
+
+    def number(self) -> float:
+        k, v = self.next()
+        if k not in ("INTEGER", "FLOAT"):
+            raise ValueError(f"{self.where()}: expected a number")
+        return float(v)
+
+    def maybe_number(self):
+        k, v = self.next()
+        if k in ("INTEGER", "FLOAT"):
+            return float(v)
+        self.pos = self.mark
+        return None
+
+    def maybe_named(self, name: str):
+        if self.maybe("KEYWORD", name) is None:
+            return None
+        self.expect("COLON")
+        return self.number()
+
+
+def parse_mds(text: str, source: str = "<mds>", origin: str = "game") -> ModelScript:
+    s = ModelScript()
+    p = MdsTokens(text, source)
+    p.expect("KEYWORD", "Model")
+    p.expect("STRING")
+    p.expect("LBRACE")
+    while True:
+        if p.maybe("RBRACE") is not None or p.maybe("EOF") is not None:
+            break
+        kw = p.expect("KEYWORD").upper()
+        if kw == "MESHANDTREE":
+            p.expect("STRING")
+            p.maybe("KEYWORD", "DONT_USE_MESH")
+        elif kw == "REGISTERMESH":
+            p.expect("STRING")
+        elif kw == "ANIENUM":
+            parse_ani_enum(p, s, origin)
+        else:
+            break  # zenkit ignores the rest of the script
+    return s
+
+
+def parse_ani_enum(p: MdsTokens, s: ModelScript, origin: str):
+    p.expect("LBRACE")
+    while True:
+        if p.maybe("RBRACE") is not None or p.maybe("EOF") is not None:
+            return
+        kw = p.expect("KEYWORD").upper()
+        if kw == "ANI":
+            s.animations.append(parse_ani(p, origin))
+        elif kw == "ANIBLEND":
+            name = p.expect("STRING")
+            p.maybe("INTEGER")
+            nxt = p.expect("STRING")
+            bi = p.maybe_number() or 0.0
+            bo = p.maybe_number() or 0.0
+            k, v = p.next()
+            if not (k == "KEYWORD" and "ani" not in v and "model" not in v):
+                p.pos = p.mark
+            else:
+                p.maybe("COLON")
+            if p.maybe("LBRACE") is not None:
+                skip_block(p)
+            s.blends.append({"name": name, "next": nxt, "blend_in": f32r(bi), "blend_out": f32r(bo)})
+        elif kw == "ANIALIAS":
+            name = p.expect("STRING")
+            layer = int(p.expect("INTEGER"))
+            nxt = p.expect("STRING")
+            bi, bo = p.number(), p.number()
+            flags = flags_of(p.expect("KEYWORD"))
+            p.maybe("COLON")
+            alias = p.expect("STRING")
+            direction = "F"
+            if p.maybe("KEYWORD", "R") is not None:
+                direction = "R"
+            else:
+                p.maybe("KEYWORD", "F")
+            s.aliases.append({"name": name, "layer": layer, "next": nxt, "blend_in": f32r(bi), "blend_out": f32r(bo),
+                              "flags": flags, "alias": alias, "direction": direction})
+        elif kw == "ANICOMB":
+            name = p.expect("STRING")
+            layer = int(p.expect("INTEGER"))
+            nxt = p.expect("STRING")
+            bi, bo = p.number(), p.number()
+            flags = flags_of(p.expect("KEYWORD"))
+            p.maybe("COLON")
+            model = p.expect("STRING")
+            last = int(p.expect("INTEGER"))
+            if p.maybe("LBRACE") is not None:
+                skip_block(p)
+            s.combinations.append({"name": name, "layer": layer, "next": nxt, "blend_in": f32r(bi),
+                                   "blend_out": f32r(bo), "flags": flags, "model": model, "last_frame": last})
+        elif kw == "ANIDISABLE":
+            s.disabled.append(p.expect("STRING"))
+        elif kw == "MODELTAG":
+            if p.expect("STRING").upper() != "DEF_HIT_LIMB":
+                raise ValueError(f"{p.where()}: modelTag expects DEF_HIT_LIMB")
+            s.model_tags.append(p.expect("STRING"))
+        else:
+            end = p.text.find("\n", p.pos)  # zenkit warns and skips the line
+            p.pos = len(p.text) if end < 0 else end + 1
+
+
+def skip_block(p: MdsTokens):
+    while p.next()[0] not in ("RBRACE", "EOF"):
+        pass
+
+
+def parse_ani(p: MdsTokens, origin: str) -> MdsAni:
+    a = MdsAni(p.expect("STRING"), origin=origin)
+    a.layer = int(p.expect("INTEGER"))
+    a.next = p.expect("STRING")
+    a.blend_in, a.blend_out = f32r(p.number()), f32r(p.number())
+    a.flags = flags_of(p.expect("KEYWORD"))
+    p.maybe("COLON")
+    a.model = p.expect("STRING")
+    d = p.expect("KEYWORD").upper()
+    if d not in ("F", "R"):
+        raise ValueError(f"{p.where()}: expected F or R")
+    a.direction = d
+    a.first_frame, a.last_frame = int(p.expect("INTEGER")), int(p.expect("INTEGER"))
+    fps = p.maybe_named("FPS")
+    cvs = p.maybe_named("CVS")
+    a.fps = f32r(fps if fps is not None else 25.0)
+    a.cvs = f32r(cvs if cvs is not None else 1.0)
+    p.maybe("LBRACE")
+    while True:
+        if p.maybe("RBRACE") is not None or p.maybe("EOF") is not None:
+            break
+        k, kw = p.next()
+        if k != "KEYWORD":
+            p.pos = p.mark
+            break
+        kw = kw.upper()
+        if kw == "*EVENTTAG":
+            fr = p.maybe("INTEGER")
+            etype = p.expect("STRING")
+            ea = p.maybe("STRING")
+            eb = p.maybe("STRING")
+            p.maybe("KEYWORD", "ATTACH")
+            a.events.append(make_event(int(fr) if fr is not None else 0, etype, ea, eb))
+        elif kw in ("*EVENTSFX", "*EVENTSFXGRND"):
+            fr = int(p.expect("INTEGER"))
+            name = p.expect("STRING")
+            if kw == "*EVENTSFX":
+                rng = p.maybe_named("R")
+                empty = p.maybe("KEYWORD", "EMPTY_SLOT") is not None or p.maybe("KEYWORD", "EMTPY_SLOT") is not None
+                a.sfx.append((fr, name, f32r(rng if rng is not None else 1000.0), empty))
+            else:
+                p.maybe("KEYWORD", "EMPTY_SLOT")
+                a.sfx_ground.append((fr, name, 0.0, False))
+        elif kw == "*EVENTPFX":
+            fr = int(p.expect("INTEGER"))
+            idx = p.maybe("INTEGER")
+            name, pos = p.expect("STRING"), p.expect("STRING")
+            attached = p.maybe("KEYWORD", "ATTACH") is not None or p.maybe("STRING") is not None
+            a.pfx.append((fr, int(idx) if idx is not None else 0, name, pos, attached))
+        elif kw == "*EVENTPFXSTOP":
+            a.pfx_stop.append((int(p.expect("INTEGER")), int(p.expect("INTEGER"))))
+        elif kw == "*EVENTMMSTARTANI":
+            fr = int(p.expect("INTEGER"))
+            a.morph.append((fr, p.expect("STRING"), p.maybe("STRING") or ""))
+        elif kw == "*EVENTCAMTREMOR":
+            a.tremors.append(tuple(int(p.expect("INTEGER")) for _ in range(5)))
+        else:
+            p.pos = p.mark
+            break
+    return a
+
+
+def merge_scripts(base: ModelScript, ext: ModelScript) -> tuple:
+    """ADR 0008: entries of the extension replace entries of the same name (case-insensitive) or are
+    appended. Returns (merged, added, replaced)."""
+    out = ModelScript(list(base.animations), list(base.aliases), list(base.blends), list(base.combinations),
+                      list(base.disabled), list(base.model_tags))
+    added = replaced = 0
+
+    def put(items, entry, key):
+        nonlocal added, replaced
+        k = key(entry)
+        for i, old in enumerate(items):
+            if key(old) == k:
+                items[i] = entry
+                replaced += 1
+                return
+        items.append(entry)
+        added += 1
+
+    for a in ext.animations:
+        put(out.animations, a, lambda x: x.name.upper())
+    for a in ext.aliases:
+        put(out.aliases, a, lambda x: x["name"].upper())
+    for b in ext.blends:
+        put(out.blends, b, lambda x: (x["name"].upper(), x["next"].upper()))
+    for c in ext.combinations:
+        put(out.combinations, c, lambda x: x["name"].upper())
+    out.disabled += ext.disabled
+    out.model_tags += ext.model_tags
+    return out, added, replaced
+
+
+def fmt_num(v: float) -> str:
+    return f"{v:g}"
+
+
+def describe_ani(a: MdsAni, man_frames: int | None = None) -> list:
+    """Canonical text of one animation, the same lines as the 'ani info' console command."""
+    head = (f"ani {a.name.upper()} origin {a.origin} layer {a.layer} next {a.next.upper() or '-'} "
+            f"blend {fmt_num(a.blend_in)} {fmt_num(a.blend_out)} flags {a.flags or '-'} dir {a.direction} "
+            f"frames {a.first_frame}-{a.last_frame} fps {fmt_num(a.fps)}")
+    if man_frames is not None:
+        head += f" man {man_frames}"
+    out = [head]
+    for e in a.events:
+        detail = " ".join(f"{k}={v}" for k, v in (("slot", e.slot), ("slot2", e.slot2), ("item", e.item),
+                                                  ("mode", e.fight_mode)) if v)
+        if e.frames:
+            detail = (detail + " " if detail else "") + "frames=" + ",".join(str(f) for f in e.frames)
+        out.append(f"  tag {e.frame} {e.type.upper()} {detail}".rstrip())
+    out += [f"  sfx {f} {n.upper()} range={fmt_num(r)}{' empty' if e else ''}" for f, n, r, e in a.sfx]
+    out += [f"  sfxground {f} {n.upper()}" for f, n, _, _ in a.sfx_ground]
+    out += [f"  pfx {f} {i} {n.upper()} {pos.upper()}{' attach' if at else ''}" for f, i, n, pos, at in a.pfx]
+    out += [f"  pfxstop {f} {i}" for f, i in a.pfx_stop]
+    out += [f"  morph {f} {n.upper()} {nd.upper()}".rstrip() for f, n, nd in a.morph]
+    out += [f"  tremor {' '.join(str(v) for v in t)}" for t in a.tremors]
+    return out
+
+
+def pfx_index(v: int) -> int:
+    # compiled scripts store the effect index as a float, which zenkit reads as an int
+    if v > 0xFFFF:
+        return int(struct.unpack("<f", struct.pack("<i", v))[0])
+    return v
+
+
+def compare_scripts(left: ModelScript, right: ModelScript, known: dict | None = None) -> list:
+    """Differences between two parsed model scripts, ignoring order and fields the text format does
+    not carry (speed); names compare without case.
+
+    Known differences of zenkit's two parsers are counted in `known` instead of reported: the sound
+    range and slot flag (text: 1000 and EMPTY_SLOT, binary: the compiled values) and the effect index
+    read from a float."""
+    diffs = []
+    known = known if known is not None else {}
+
+    def by_name(items, key):
+        return {key(x): x for x in items}
+
+    la = by_name(left.animations, lambda x: x.name.upper())
+    ra = by_name(right.animations, lambda x: x.name.upper())
+    for name in sorted(set(la) | set(ra)):
+        if name not in la or name not in ra:
+            diffs.append(f"ani {name}: only in {'right' if name not in la else 'left'}")
+            continue
+        l, r = la[name], ra[name]
+        for f in ("layer", "next", "blend_in", "blend_out", "flags", "direction", "first_frame", "last_frame",
+                  "fps", "cvs", "sfx", "sfx_ground", "pfx", "pfx_stop", "morph", "tremors"):
+            lv, rv = getattr(l, f), getattr(r, f)
+            if f == "next":
+                lv, rv = lv.upper(), rv.upper()
+            if f in ("sfx", "sfx_ground"):
+                if f == "sfx" and [t[:2] for t in lv] == [t[:2] for t in rv] and lv != rv:
+                    known["sfx range/slot"] = known.get("sfx range/slot", 0) + 1
+                lv, rv = [t[:2] for t in lv], [t[:2] for t in rv]
+            if f in ("pfx", "pfx_stop", "tremors"):
+                # floats of compiled scripts read as ints (effect index, tremor parameters)
+                fixed = [(t[0],) + tuple(pfx_index(x) if isinstance(x, int) else x for x in t[1:])
+                         if f == "tremors" else (t[0], pfx_index(t[1])) + tuple(t[2:]) for t in lv]
+                if fixed != lv and fixed == rv:
+                    known["floats read as ints"] = known.get("floats read as ints", 0) + 1
+                lv = fixed
+            if f in ("sfx", "sfx_ground", "pfx", "morph"):
+                # the compiler trims blanks inside quotes, the text parser keeps them
+                strip = [tuple(x.strip(C_SPACE) if isinstance(x, str) else x for x in t) for t in rv]
+                if strip != rv and [tuple(str(x).upper() if isinstance(x, str) else x for x in t) for t in strip] == \
+                        [tuple(str(x).upper() if isinstance(x, str) else x for x in t) for t in lv]:
+                    known["blanks in quotes"] = known.get("blanks in quotes", 0) + 1
+                rv = strip
+            if f in ("sfx", "sfx_ground", "pfx", "morph"):
+                lv = [tuple(str(x).upper() if isinstance(x, str) else x for x in t) for t in lv]
+                rv = [tuple(str(x).upper() if isinstance(x, str) else x for x in t) for t in rv]
+            if lv != rv:
+                diffs.append(f"ani {name}: {f} {lv!r} != {rv!r}")
+        le, re_ = sorted(e.key() for e in l.events), sorted(e.key() for e in r.events)
+        if le != re_:
+            diffs.append(f"ani {name}: events {sorted(set(le) - set(re_))!r} != {sorted(set(re_) - set(le))!r}")
+    for what, key in (("aliases", lambda x: x["name"].upper()), ("combinations", lambda x: x["name"].upper()),
+                      ("blends", lambda x: (x["name"].upper(), x["next"].upper()))):
+        lm, rm = by_name(getattr(left, what), key), by_name(getattr(right, what), key)
+        for k in sorted(set(lm) | set(rm), key=str):
+            lv = {f: (v.strip(C_SPACE).upper() if isinstance(v, str) else v) for f, v in lm.get(k, {}).items()}
+            rv = {f: (v.strip(C_SPACE).upper() if isinstance(v, str) else v) for f, v in rm.get(k, {}).items()}
+            if lv != rv:
+                diffs.append(f"{what} {k}: {lv or 'missing'} != {rv or 'missing'}")
+    if sorted(x.upper() for x in left.disabled) != sorted(x.upper() for x in right.disabled):
+        diffs.append(f"disabled: {sorted(left.disabled)} != {sorted(right.disabled)}")
+    if sorted(x.upper() for x in left.model_tags) != sorted(x.upper() for x in right.model_tags):
+        diffs.append(f"model tags: {sorted(left.model_tags)} != {sorted(right.model_tags)}")
+    return diffs
+
+
 # --- game archives ------------------------------------------------------------------------------------
 
 def game_archives(gothic: Path) -> list[Path]:
@@ -511,9 +1084,117 @@ def cmd_roundtrip(args) -> int:
     return 0 if mans and not diffs else 1
 
 
+def default_ext(model: str) -> Path | None:
+    """The mod's extension of a model script, gothic25/anims/<base model>/<MODEL>.EXT.MDS, if it exists."""
+    base = model.split("_", 1)[0]
+    p = Path(__file__).resolve().parent.parent / "anims" / base / f"{model}.EXT.MDS"
+    return p if p.exists() else None
+
+
+def load_merged(gothic: Path, model: str, ext: Path | None) -> tuple:
+    files = game_files(gothic, [f"{model}.MSB", f"{model}-*.MAN"])
+    msb = files.get(f"{model}.MSB")
+    if msb is None:
+        raise ValueError(f"no {model}.MSB in the game archives of {gothic}")
+    script = parse_msb(read_entry(msb))
+    added = replaced = 0
+    if ext is not None:
+        mod = parse_mds(ext.read_text(encoding=ENCODING), str(ext), origin="mod")
+        script, added, replaced = merge_scripts(script, mod)
+    return script, files, added, replaced
+
+
+def man_frames(files: dict, model: str, ani: str) -> int | None:
+    entry = files.get(f"{model}-{ani.upper()}.MAN")
+    if entry is None:
+        return None
+    for ctype, payload in chunks(read_entry(entry)):
+        if ctype == MAN_HEADER:
+            r = Reader(payload)
+            r.unpack("H")
+            r.line()
+            return r.unpack("3I")[1]
+    return None
+
+
+def cmd_defs(args) -> int:
+    """Definitions of a model as the engine sees them: original MSB plus the mod extension (ADR 0008)."""
+    model = args.model.upper()
+    ext = Path(args.ext) if args.ext else (None if args.no_ext else default_ext(model))
+    script, files, added, replaced = load_merged(Path(args.gothic), model, ext)
+    wanted = {a.upper() for a in args.ani}
+    found = 0
+    for a in script.animations:
+        if wanted and a.name.upper() not in wanted:
+            continue
+        found += 1
+        print("\n".join(describe_ani(a, man_frames(files, model, a.name))))
+    if ext is not None:
+        print(f"# {ext.name}: {added} added, {replaced} replaced", file=sys.stderr)
+    missing = wanted - {a.name.upper() for a in script.animations}
+    for m in sorted(missing):
+        print(f"error: no animation {m} in {model}", file=sys.stderr)
+    return 1 if missing or not found else 0
+
+
+def cmd_mds_check(args) -> int:
+    """Parses every *.mds under a folder and the game's MSB of the same name with both parsers and
+    reports the differences (a check of the parsers against each other and of an MDK against the game)."""
+    gothic = Path(args.gothic)
+    sources = sorted(Path(args.folder).rglob("*.mds"), key=lambda p: p.name.upper())
+    names = [p.stem.upper() for p in sources]
+    files = game_files(gothic, [f"{n}.MSB" for n in names])
+    total_diffs = checked = animations = 0
+    errors = []
+    known: dict = {}
+    for src, name in zip(sources, names):
+        entry = files.get(f"{name}.MSB")
+        if entry is None:
+            continue
+        try:
+            text = parse_mds(src.read_text(encoding=ENCODING), str(src))
+            binary = parse_msb(read_entry(entry))
+        except ValueError as e:
+            errors.append(f"{src.name}: {e}")
+            continue
+        checked += 1
+        animations += len(binary.animations)
+        diffs = compare_scripts(binary, text, known)
+        if not diffs and not args.all:
+            continue
+        total_diffs += len(diffs)
+        print(f"{name}: {len(binary.animations)} animations in MSB, {len(text.animations)} in {src.name}, "
+              f"{len(diffs)} differences")
+        for d in diffs[:args.max]:
+            print("  " + d)
+        if len(diffs) > args.max:
+            print(f"  ... {len(diffs) - args.max} more")
+    for e in errors:
+        print("error: " + e)
+    print(f"checked {checked} model scripts ({animations} animations), {total_diffs} differences, "
+          f"{len(errors)} parse errors; known parser differences: "
+          + (", ".join(f"{k} {v}" for k, v in sorted(known.items())) or "none"))
+    return 1 if errors or not checked else 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="command", required=True)
+
+    p = sub.add_parser("defs", help="definitions of a model: game MSB plus the mod extension (ADR 0008)")
+    p.add_argument("model", help="model or overlay script name, e.g. HUMANS or HUMANS_1HST1")
+    p.add_argument("ani", nargs="*", help="only these animations")
+    p.add_argument("--gothic", required=True, help="Gothic II folder")
+    p.add_argument("--ext", help="extension file (default: gothic25/anims/<MODEL>/<MODEL>.EXT.MDS)")
+    p.add_argument("--no-ext", action="store_true", help="only the game definitions")
+    p.set_defaults(func=cmd_defs)
+
+    p = sub.add_parser("mds-check", help="compare *.mds sources with the game MSB through both parsers")
+    p.add_argument("folder")
+    p.add_argument("--gothic", required=True, help="Gothic II folder")
+    p.add_argument("--max", type=int, default=10, help="differences shown per model")
+    p.add_argument("--all", action="store_true", help="also list models without differences")
+    p.set_defaults(func=cmd_mds_check)
 
     p = sub.add_parser("to-text", help="MAN -> .anim")
     p.add_argument("file")
