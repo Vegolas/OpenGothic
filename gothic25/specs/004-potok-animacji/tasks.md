@@ -118,7 +118,7 @@ nie kopiujemy w całości.
           `maybe` sprawdza `eof()`).
 
       (W13, K11)
-- [ ] **Z6** `anim.py build`: walidacja i zapis.
+- [x] **Z6** `anim.py build`: walidacja i zapis.
       - Wejście: `anims/anims.json`, `anims/<MODEL>/*.EXT.MDS`, pliki `.anim` i opcjonalny katalog
         `--extra`. Wyjście: `build/anims/_COMPILED/` z MAN i `<MODEL>.EXT.MDS` (wpisy moda i bloki
         odbić z Z16).
@@ -135,6 +135,22 @@ nie kopiujemy w całości.
         brakująca animacja), zrobione jako nasze pliki (czysty szkielet, własne wpisy MDS).
       - Sprawdzenie: dwa buildy z tego samego stanu dają identyczne pliki, każdy zepsuty przypadek
         kończy się błędem, a build działa bez Blendera.
+      - Wynik (2026-11-03):
+        - `tests/004/fixtures/valid`: dwa buildy identyczne, a bez `--gothic` (bez danych gry) ten sam
+          wynik. `HUMANS.EXT.MDS` zawiera tylko wpisy moda, a `defs` pokazuje animację testową
+          z pochodzeniem `mod`;
+        - `broken/missing-bone`, `broken/event-range` i `broken/missing-anim` kończą się kodem 1
+          z nazwą animacji i powodem. Bez danych gry brakująca animacja jest tylko notką (nie da się
+          jej sprawdzić);
+        - zapis MDS (`write_mds`) daje te same dane dla wszystkich 117 plików MDK (`mds-check`).
+      - Ustalenie z kalibracji na oryginałach: liczba klatek MAN różni się od zakresu definicji
+        w 156 z 1035 animacji ludzi, a zdarzenia często leżą poza zakresem.
+        - Silnik bierze długość z MAN.
+        - `DEF_HIT_END`, `DEF_WINDOW` i `DEF_PAR_FRAME` liczy jako klatki od początku animacji
+          (`setupTime`).
+        - `DEF_OPT_FRAME` i efekty liczy jako klatki zakresu (`frameClamp`).
+
+        Walidacja obowiązuje więc tylko wpisy moda i odwzorowuje te reguły. Oryginałów nie sprawdza.
 
       Po Z5. (W4, W6, K3)
 - [ ] **Z7** Build w pakowaniu i układ `anims/`.

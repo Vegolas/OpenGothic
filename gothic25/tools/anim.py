@@ -439,6 +439,8 @@ class MdsEvent:
     item: str = ""
     frames: list = field(default_factory=list)
     fight_mode: str = ""
+    raw: tuple = ()  # the event's argument strings as written, for write_mds
+    attached: bool = False
 
     def key(self) -> tuple:
         # fields both zenkit parsers fill; the slot of a few event types only comes from binary scripts
@@ -453,8 +455,9 @@ def fight_mode(text: str) -> str:
             "MAG": "MAG"}.get(text, "NONE")
 
 
-def make_event(frame: int, etype: str, a: str | None, b: str | None, binary: bool = False) -> MdsEvent:
-    e = MdsEvent(frame, etype)
+def make_event(frame: int, etype: str, a: str | None, b: str | None, binary: bool = False,
+               attached: bool = False) -> MdsEvent:
+    e = MdsEvent(frame, etype, raw=tuple(x for x in (a, b) if x is not None), attached=attached)
     if etype in SLOT_ITEM_EVENTS:
         e.slot, e.item = a or "", b or ""
     elif etype == "DEF_SWAPMESH":
@@ -795,8 +798,8 @@ def parse_ani(p: MdsTokens, origin: str) -> MdsAni:
             etype = p.expect("STRING")
             ea = p.maybe("STRING")
             eb = p.maybe("STRING")
-            p.maybe("KEYWORD", "ATTACH")
-            a.events.append(make_event(int(fr) if fr is not None else 0, etype, ea, eb))
+            attach = p.maybe("KEYWORD", "ATTACH") is not None
+            a.events.append(make_event(int(fr) if fr is not None else 0, etype, ea, eb, attached=attach))
         elif kw in ("*EVENTSFX", "*EVENTSFXGRND"):
             fr = int(p.expect("INTEGER"))
             name = p.expect("STRING")
@@ -859,6 +862,47 @@ def merge_scripts(base: ModelScript, ext: ModelScript) -> tuple:
 
 def fmt_num(v: float) -> str:
     return f"{v:g}"
+
+
+def fmt_f(v: float) -> str:
+    # plain decimal (no exponent), which the MDS tokenizer reads as a number
+    s = f"{v:.6f}".rstrip("0").rstrip(".")
+    return "0" if s in ("", "-0") else s
+
+
+def write_mds(s: ModelScript, model: str, header: str = "") -> str:
+    """MDS text of a model script, in the syntax parse_mds and zenkit read back to the same data."""
+    out = [f"// {line}".rstrip() for line in header.splitlines()]
+    out += [f'Model ("{model}")', "{", "\taniEnum", "\t{"]
+    for a in s.animations:
+        extra = (f" FPS:{fmt_f(a.fps)}" if a.fps != 25.0 else "") + (f" CVS:{fmt_f(a.cvs)}" if a.cvs != 1.0 else "")
+        out.append(f'\t\tani ("{a.name}" {a.layer} "{a.next}" {fmt_f(a.blend_in)} {fmt_f(a.blend_out)} '
+                   f'{a.flags or "."} "{a.model}" {a.direction} {a.first_frame} {a.last_frame}{extra})')
+        out.append("\t\t{")
+        for e in a.events:
+            args = "".join(f' "{x}"' for x in e.raw)
+            out.append(f'\t\t\t*eventTag ({e.frame} "{e.type}"{args}{" ATTACH" if e.attached else ""})')
+        for f, n, r, empty in a.sfx:
+            rng = "" if r == 1000.0 else f" R:{fmt_f(r)}"
+            out.append(f'\t\t\t*eventSFX ({f} "{n}"{rng}{" EMPTY_SLOT" if empty else ""})')
+        out += [f'\t\t\t*eventSFXGrnd ({f} "{n}")' for f, n, _, _ in a.sfx_ground]
+        out += [f'\t\t\t*eventPFX ({f} {i} "{n}" "{p}"{" ATTACH" if at else ""})' for f, i, n, p, at in a.pfx]
+        out += [f"\t\t\t*eventPFXStop ({f} {i})" for f, i in a.pfx_stop]
+        out += [f'\t\t\t*eventMMStartAni ({f} "{n}"{f" {chr(34)}{nd}{chr(34)}" if nd else ""})' for f, n, nd in a.morph]
+        out += [f"\t\t\t*eventCamTremor ({' '.join(str(v) for v in t)})" for t in a.tremors]
+        out.append("\t\t}")
+    for x in s.aliases:
+        out.append(f'\t\taniAlias ("{x["name"]}" {x["layer"]} "{x["next"]}" {fmt_f(x["blend_in"])} '
+                   f'{fmt_f(x["blend_out"])} {x["flags"] or "."} "{x["alias"]}" {x["direction"]})')
+    for x in s.blends:
+        out.append(f'\t\taniBlend ("{x["name"]}" "{x["next"]}" {fmt_f(x["blend_in"])} {fmt_f(x["blend_out"])})')
+    for x in s.combinations:
+        out.append(f'\t\taniComb ("{x["name"]}" {x["layer"]} "{x["next"]}" {fmt_f(x["blend_in"])} '
+                   f'{fmt_f(x["blend_out"])} {x["flags"] or "."} "{x["model"]}" {x["last_frame"]})')
+    out += [f'\t\taniDisable ("{x}")' for x in s.disabled]
+    out += [f'\t\tmodelTag ("DEF_HIT_LIMB" "{x}")' for x in s.model_tags]
+    out += ["\t}", "}"]
+    return "\r\n".join(out) + "\r\n"
 
 
 def describe_ani(a: MdsAni, man_frames: int | None = None) -> list:
@@ -930,10 +974,12 @@ def compare_scripts(left: ModelScript, right: ModelScript, known: dict | None = 
             if f in ("sfx", "sfx_ground", "pfx", "morph"):
                 # the compiler trims blanks inside quotes, the text parser keeps them
                 strip = [tuple(x.strip(C_SPACE) if isinstance(x, str) else x for x in t) for t in rv]
-                if strip != rv and [tuple(str(x).upper() if isinstance(x, str) else x for x in t) for t in strip] == \
+                lstrip = [tuple(x.strip(C_SPACE) if isinstance(x, str) else x for x in t) for t in lv]
+                if strip != rv and lstrip == lv and \
+                        [tuple(str(x).upper() if isinstance(x, str) else x for x in t) for t in strip] == \
                         [tuple(str(x).upper() if isinstance(x, str) else x for x in t) for t in lv]:
                     known["blanks in quotes"] = known.get("blanks in quotes", 0) + 1
-                rv = strip
+                lv, rv = lstrip, strip
             if f in ("sfx", "sfx_ground", "pfx", "morph"):
                 lv = [tuple(str(x).upper() if isinstance(x, str) else x for x in t) for t in lv]
                 rv = [tuple(str(x).upper() if isinstance(x, str) else x for x in t) for t in rv]
@@ -1159,6 +1205,10 @@ def cmd_mds_check(args) -> int:
             continue
         checked += 1
         animations += len(binary.animations)
+        # the writer must give the same data back
+        again = parse_mds(write_mds(text, name), f"write_mds({src.name})")
+        writer_diffs = compare_scripts(text, again)
+        errors += [f"{src.name}: write_mds round trip: {d}" for d in writer_diffs[:3]]
         diffs = compare_scripts(binary, text, known)
         if not diffs and not args.all:
             continue
@@ -1177,9 +1227,200 @@ def cmd_mds_check(args) -> int:
     return 1 if errors or not checked else 0
 
 
+# --- build (spec 004 W4) -------------------------------------------------------------------------------
+# Sources: <src>/anims.json lists the models; <src>/<MODEL>/ holds <SCRIPT>.EXT.MDS (definitions of the
+# mod for the model or an overlay) and <NAME>.anim (animations, the 'model' line names the script).
+# Output: <out>/_COMPILED/<SCRIPT>-<NAME>.MAN and <SCRIPT>.EXT.MDS, which pack.ps1 puts under
+# _WORK/DATA/ANIMS/_COMPILED. Event frames are checked the way the engine reads them
+# (common/graphics/mesh/animation.cpp): DEF_HIT_END, DEF_WINDOW and DEF_PAR_FRAME are frames from the
+# start of the animation (setupTime), DEF_OPT_FRAME and effects are frames of the definition's range
+# (frameClamp).
+
+RELATIVE_EVENTS = {"DEF_HIT_END", "DEF_WINDOW", "DEF_PAR_FRAME"}
+BUILD_MARKER = ".anim-build"
+
+
+def find_ani(script: ModelScript | None, name: str) -> MdsAni | None:
+    if script is None:
+        return None
+    return next((a for a in script.animations if a.name.upper() == name.upper()), None)
+
+
+def check_definition(where: str, d: MdsAni, frames: int | None) -> list:
+    """Problems of one definition of the mod against the length of its MAN (when known)."""
+    errors = []
+    lo, hi = d.first_frame, d.last_frame
+    if hi < lo:
+        errors.append(f"{where}: frame range {lo}-{hi} is empty")
+        return errors
+    n = hi - lo + 1
+    if frames is not None and frames != n:
+        errors.append(f"{where}: the animation has {frames} frames, the definition {lo}-{hi} needs {n}")
+    for e in d.events:
+        if e.type == "DEF_OPT_FRAME":
+            bad = [f for f in e.frames if not lo <= f <= hi]
+            if bad:
+                errors.append(f"{where}: DEF_OPT_FRAME {bad} outside frames {lo}-{hi}")
+        elif e.type in RELATIVE_EVENTS:
+            bad = [f for f in e.frames if not 0 <= f <= n]
+            if bad:
+                errors.append(f"{where}: {e.type} {bad} outside 0-{n} (frames from the start)")
+            if e.type == "DEF_WINDOW" and len(e.frames) % 2:
+                errors.append(f"{where}: DEF_WINDOW needs pairs of frames, got {e.frames}")
+    effects = [("sound", t[0]) for t in d.sfx + d.sfx_ground] + [("effect", t[0]) for t in d.pfx + d.pfx_stop]
+    effects += [("morph", t[0]) for t in d.morph] + [("tremor", t[0]) for t in d.tremors]
+    for what, f in effects:
+        if not lo <= f <= hi:
+            errors.append(f"{where}: {what} at frame {f} outside frames {lo}-{hi}")
+    return errors
+
+
+def check_skeleton(where: str, a: Man, skel: dict) -> list:
+    """Node list of an animation of the mod against the model hierarchy: every bone once, known slots."""
+    errors = []
+    nodes = [n["name"] for n in skel["nodes"]]
+    if f"{a.checksum:08X}" != skel["checksum"].upper():
+        errors.append(f"{where}: checksum {a.checksum:08X}, the model has {skel['checksum']}")
+    seen = set()
+    for index, name in zip(a.node_indices, a.node_names):
+        if index >= len(nodes) or nodes[index] != name:
+            expected = nodes[index] if index < len(nodes) else "nothing"
+            errors.append(f"{where}: node {index} is {name!r}, the model has {expected!r}")
+        seen.add(index)
+    missing = [n for i, n in enumerate(nodes) if not n.upper().startswith("ZS_") and i not in seen]
+    if missing:
+        errors.append(f"{where}: bones without samples: {', '.join(missing)}")
+    if len(seen) != len(a.node_indices):
+        errors.append(f"{where}: a node is sampled twice")
+    return errors
+
+
+def build(src: Path, extras: list, gothic: Path | None) -> tuple:
+    """Returns (outputs {file name: bytes}, errors, notes)."""
+    manifest_path = src / "anims.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    outputs, errors, notes = {}, [], []
+    for model, cfg in sorted(manifest.get("models", {}).items()):
+        model = model.upper()
+        skel = json.loads((manifest_path.parent / cfg["skeleton"]).read_text(encoding="utf-8"))
+        dirs = [src / model] + [Path(e) / model for e in extras if (Path(e) / model).is_dir()]
+
+        exts: dict = {}
+        for d in dirs:
+            for p in sorted(d.glob("*.EXT.MDS"), key=lambda p: p.name.upper()):
+                script = p.name[:-len(".EXT.MDS")].upper()
+                try:
+                    exts.setdefault(script, []).append(parse_mds(p.read_text(encoding=ENCODING), str(p), "mod"))
+                except ValueError as e:
+                    errors.append(f"{p}: {e}")
+        mod_defs = {}
+        for script, parts in exts.items():
+            merged = ModelScript()
+            for part in parts:  # the repository first, extra folders after, later entries win
+                merged, _, _ = merge_scripts(merged, part)
+            mod_defs[script] = merged
+
+        game_defs, game_mans = {}, set()
+        if gothic is not None:
+            files = game_files(gothic, model_patterns(model))
+            game_mans = {b for b in files if b.endswith(".MAN")}
+            for b in files:
+                if b.endswith(".MSB"):
+                    game_defs[b[:-4]] = parse_msb(read_entry(files[b]))
+
+        built = {}
+        for d in dirs:
+            for p in sorted(d.glob("*.anim"), key=lambda p: p.name.upper()):
+                try:
+                    a = from_text(p.read_text(encoding="utf-8"), str(p))
+                except ValueError as e:
+                    errors.append(str(e))
+                    continue
+                script, name = a.model.upper(), a.name.upper()
+                where = f"{p.name} ({script}-{name})"
+                if not script.startswith(model):
+                    errors.append(f"{where}: model {script} is not {model} or one of its overlays")
+                    continue
+                errors += check_skeleton(where, a, skel)
+                definition = find_ani(mod_defs.get(script), name) or find_ani(game_defs.get(script), name)
+                if definition is None:
+                    if gothic is None and script not in mod_defs:
+                        notes.append(f"{where}: no definition in the mod; the game's is not checked (no --gothic)")
+                    else:
+                        errors.append(f"{where}: no definition of {name} in {script}.EXT.MDS or the game")
+                else:
+                    a.layer, a.next = definition.layer, definition.next.upper()
+                    errors += check_definition(where, definition, a.frame_count)
+                a.name = name
+                try:
+                    built[f"{script}-{name}.MAN"] = write_man(a)
+                except ValueError as e:
+                    errors.append(f"{where}: {e}")
+
+        for script, defs in sorted(mod_defs.items()):
+            merged_names = {x.name.upper() for x in defs.animations}
+            merged_names |= {x.name.upper() for x in game_defs.get(script, ModelScript()).animations}
+            for d in defs.animations:
+                man = f"{script}-{d.name.upper()}.MAN"
+                where = f"{script}.EXT.MDS ({d.name})"
+                if man in built:
+                    continue  # checked with its animation above
+                if man in game_mans:
+                    errors += check_definition(where, d, man_frames(files, script, d.name))
+                elif gothic is None:
+                    notes.append(f"{where}: no animation in the mod; the game's is not checked (no --gothic)")
+                    errors += check_definition(where, d, None)
+                else:
+                    errors.append(f"{where}: the definition points to a missing animation {man}")
+            for x in defs.aliases:
+                if gothic is not None and x["alias"].upper() not in merged_names:
+                    errors.append(f"{script}.EXT.MDS (alias {x['name']}): no animation {x['alias']}")
+            outputs[f"{script}.EXT.MDS"] = write_mds(
+                defs, script, f"Animation definitions of the Gothic 2.5 mod for {script}, merged into the\n"
+                              "original model by the engine (ADR 0008). Generated by tools/anim.py build."
+            ).encode(ENCODING)
+        outputs.update(built)
+    return outputs, errors, notes
+
+
+def cmd_build(args) -> int:
+    root = Path(__file__).resolve().parent.parent
+    src = Path(args.src) if args.src else root / "anims"
+    out = Path(args.out) if args.out else root / "build" / "anims"
+    gothic = Path(args.gothic) if args.gothic else None
+    outputs, errors, notes = build(src, args.extra, gothic)
+    for n in notes:
+        print("note: " + n)
+    if errors:
+        for e in errors:
+            print("error: " + e, file=sys.stderr)
+        print(f"build failed: {len(errors)} errors", file=sys.stderr)
+        return 1
+    compiled = out / "_COMPILED"
+    if out.exists() and not (out / BUILD_MARKER).exists() and any(out.iterdir()):
+        print(f"error: {out} is not a folder of anim.py build, not cleaning it", file=sys.stderr)
+        return 1
+    if compiled.exists():
+        for old in compiled.iterdir():
+            old.unlink()
+    compiled.mkdir(parents=True, exist_ok=True)
+    (out / BUILD_MARKER).write_text("output of tools/anim.py build\n", encoding="utf-8")
+    for name in sorted(outputs):
+        (compiled / name).write_bytes(outputs[name])
+    print(f"built {len(outputs)} files -> {compiled}")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="command", required=True)
+
+    p = sub.add_parser("build", help="MAN and definition files of the mod from gothic25/anims (spec 004 W4)")
+    p.add_argument("--src", help="source folder with anims.json (default: gothic25/anims)")
+    p.add_argument("--out", help="output folder (default: gothic25/build/anims)")
+    p.add_argument("--extra", action="append", default=[], help="another source folder, e.g. local test data")
+    p.add_argument("--gothic", help="Gothic II folder, to check definitions against the game")
+    p.set_defaults(func=cmd_build)
 
     p = sub.add_parser("defs", help="definitions of a model: game MSB plus the mod extension (ADR 0008)")
     p.add_argument("model", help="model or overlay script name, e.g. HUMANS or HUMANS_1HST1")
