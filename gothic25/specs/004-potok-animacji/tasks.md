@@ -187,7 +187,7 @@ nie kopiujemy w całości.
           pełny `HUMANS.MDS` i `HUMANS.MSB` dają 4 błędy i kod 1, a `HUMANS.EXT.MDS` przechodzi.
 
       Po Z7. (W7, K7)
-- [ ] **Z9** [P] Nowa animacja na czystym szkielecie i blokada pochodnych.
+- [x] **Z9** [P] Nowa animacja na czystym szkielecie i blokada pochodnych.
       - `rig.py new` i `anim.ps1 new -Anim <NAZWA>`: szkielet z MDH i pusta akcja z `g25_anim`
         bez danych oryginału: pochodzenie `mod`, węzły = kości modelu, nagłówek z MDH, bez slotów
         i `raw`.
@@ -203,6 +203,15 @@ nie kopiujemy w całości.
         - z `-AllowDerived` zapisuje dane tylko w `build/`;
         - `new` + `export` daje `.anim` bez `raw`, `quant` i slotów oryginału;
         - `check` dla nowej animacji przechodzi.
+      - Wynik (2026-11-03):
+        - `anim.py fixtures`: `k04/HUMANS/S_RUN.anim` (obrót głowy) i `k11/HUMANS/` z `T_G25TEST`,
+          `T_G25OVERLAYTEST`, `HUMANS.EXT.MDS` i `HUMANS_1HST1.EXT.MDS`. `build --extra` z każdym
+          zestawem daje kod 0, a `defs` pokazuje nowe wpisy i `S_FISTATTACK` z pochodzeniem `mod`;
+        - kopia importu `S_FISTATTACK` pod nazwą `T_G25COPY`: eksport do katalogu źródeł daje błąd W16
+          z podpowiedzią `anim.ps1 new`, z `-AllowDerived` do scratchpada błąd, do `build/` zapis;
+        - `new -Anim T_G25NEW -Frames 12` + `export`: 12 klatek, 25 węzłów (kości modelu), bez `raw`,
+          `layout` i slotów. Linia `quant` jest dopasowana do własnych próbek (`snap`), nie z oryginału;
+        - `check` dla nowej animacji przechodzi, a z dołożoną pochodną `.blend` poza `build/` daje błąd W16.
 
       Po Z3. (W2, W16, K14)
 

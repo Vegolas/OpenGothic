@@ -7,9 +7,12 @@
   used). Original files come from the game archives into gothic25/build/anims-work/<MODEL>/
   (tools/anim.py extract); they never go to the repository.
 
-    import     original animation -> working .blend with the body, to start a new animation from
+    import     original animation -> working .blend with the body, as a reference to look at
+    new        new animation of the mod on the bare skeleton (rest pose, -Frames, default 30)
     open       source .blend from anims/<MODEL>/ -> working .blend with the body
     export     action of a working .blend -> anims/<MODEL>/<ACTION>.anim and <ACTION>.blend (no game meshes)
+               Actions imported from originals are refused (spec 004 W16); -AllowDerived exports them
+               into gothic25/build only, for local test data.
     check      every anims/<MODEL>/*.blend matches its .anim
     roundtrip  every original animation of the model: MAN -> Blender -> MAN, byte compare (spec 004 K1)
 
@@ -18,14 +21,15 @@
 .EXAMPLE
   tools/anim.ps1 import -Anim S_FISTATTACK
   tools/anim.ps1 import -Anim T_1HATTACKL -Overlay HUMANS_1HST1
-  tools/anim.ps1 export -Blend build/anims-work/HUMANS/blend/S_FISTATTACK.blend -Action T_FISTATTACKL
+  tools/anim.ps1 new -Anim T_FISTATTACKL -Frames 24
+  tools/anim.ps1 export -Blend build/anims-work/HUMANS/blend/T_FISTATTACKL.blend
   tools/anim.ps1 open -Blend anims/HUMANS/T_FISTATTACKL.blend
   tools/anim.ps1 check
   tools/anim.ps1 roundtrip
 #>
 param(
   [Parameter(Mandatory = $true, Position = 0)]
-  [ValidateSet('import', 'open', 'export', 'check', 'roundtrip')]
+  [ValidateSet('import', 'new', 'open', 'export', 'check', 'roundtrip')]
   [string]$Command,
   [string]$Model = 'HUMANS',
   [string]$Anim,
@@ -34,6 +38,8 @@ param(
   [string]$Action,
   [string]$Out,
   [string]$Mesh = 'HUM_BODY_NAKED0.MDM',
+  [int]$Frames = 30,
+  [switch]$AllowDerived,
   [switch]$Refresh,
   [string]$GothicDir,
   [string]$Blender
@@ -101,6 +107,14 @@ switch($Command) {
     $target = if($Out) { Resolve-Full $Out } else { Join-Path $blendDir "$($Anim.ToUpperInvariant()).blend" }
     Invoke-Blender 'rig.py' @('import', $workDir, $Model, $man, $target, '--mesh', $Mesh)
   }
+  'new' {
+    if(-not $Anim) { throw "new needs -Anim, the name of the new animation, e.g. -Anim T_FISTATTACKL" }
+    Initialize-WorkDir
+    $name   = $Anim.ToUpperInvariant()
+    $target = if($Out) { Resolve-Full $Out } else { Join-Path $blendDir "$name.blend" }
+    if(Test-Path $target) { throw "$target exists; pass -Out or remove it first" }
+    Invoke-Blender 'rig.py' @('new', $workDir, $Model, $name, $target, '--mesh', $Mesh, '--frames', "$Frames")
+  }
   'open' {
     if(-not $Blend) { throw "open needs -Blend, e.g. -Blend anims/$Model/T_FISTATTACKL.blend" }
     Initialize-WorkDir
@@ -115,6 +129,7 @@ switch($Command) {
     $target = if($Out) { Resolve-Full $Out } else { $srcDir }
     $arguments = @((Resolve-Full $Blend), $target, $workDir, $Model)
     if($Action) { $arguments += @('--action', $Action) }
+    if($AllowDerived) { $arguments += '--allow-derived' }
     Invoke-Blender 'export.py' $arguments
   }
   'check' {

@@ -3,7 +3,9 @@
 Started by tools/anim.ps1 with Blender 5.2 in background mode and the pinned KrxImpExp add-on:
 
   blender --background --factory-startup --python-exit-code 1 --python rig.py -- <command> ...
-    import    WORKDIR MODEL MAN_NAME OUT.blend [--mesh MDM]   rig + action from an original MAN
+    import    WORKDIR MODEL MAN_NAME OUT.blend [--mesh MDM]   rig + action from an original MAN (reference)
+    new       WORKDIR MODEL NAME OUT.blend [--mesh MDM] [--frames N]
+                                                               rig + a new animation of the mod (rest pose)
     open      LIGHT.blend WORKDIR MODEL OUT.blend [--mesh MDM] working copy of a source .blend with the body
     roundtrip WORKDIR MODEL                                    MAN -> action -> MAN for every animation
 
@@ -189,28 +191,75 @@ def assign_action(arm, act):
 
 # --- MAN <-> action ----------------------------------------------------------------------------------------
 
-def header_of(a) -> dict:
-    return {"model": a.model, "name": a.name, "next": a.next, "version": a.version, "layer": a.layer,
-            "fps": a.fps, "fps_source": a.fps_source, "checksum": a.checksum, "bbox": list(a.bbox),
-            "quant": list(a.quant) if a.quant is not None else None, "layout": a.layout,
+def header_of(a, origin: str) -> dict:
+    # origin "game": imported from an original (local reference only, spec 004 W16); "mod": our own keys
+    return {"origin": origin, "model": a.model, "name": a.name, "next": a.next, "version": a.version,
+            "layer": a.layer, "fps": a.fps, "fps_source": a.fps_source, "checksum": a.checksum,
+            "bbox": list(a.bbox), "quant": list(a.quant) if a.quant is not None else None, "layout": a.layout,
             "raw": {f"{k:04X}": base64.b64encode(v).decode("ascii") for k, v in a.raw.items()},
             "frames": a.frame_count,
             "node_indices": a.node_indices, "node_names": a.node_names}
 
 
-def man_to_action(rig: RigMap, a, action_name: str | None = None):
-    """Keys the bones of the MAN on a new action. Samples of non-bone nodes go to the property."""
+def origin_of(act) -> str:
+    # actions without the mark come from imports made before it existed
+    return json.loads(act.get(PROP, "{}")).get("origin", "game")
+
+
+def key_bones(rig: RigMap, act, keys: dict, frames: list):
+    """keys[node] = (locations, rotations), one per frame of `frames`; LINEAR keys on the action."""
     from bpy_extras import anim_utils
-    arm, bones = rig.arm, rig.arm.data.bones
+    slot = assign_action(rig.arm, act)
+    bag = anim_utils.action_ensure_channelbag_for_slot(act, slot)
+    n = len(frames)
+    for i in rig.bone_ids:
+        name = rig.names[i]
+        for comp, path, vals in ((3, f'pose.bones["{name}"].location', keys[i][0]),
+                                 (4, f'pose.bones["{name}"].rotation_quaternion', keys[i][1])):
+            for c in range(comp):
+                fc = bag.fcurves.new(path, index=c, group_name=name)
+                fc.keyframe_points.add(n)
+                co = [0.0] * (2 * n)
+                co[0::2] = frames
+                co[1::2] = [v[c] for v in vals]
+                fc.keyframe_points.foreach_set("co", co)
+                set_linear(fc)
+                fc.update()
+
+
+def reset_pose(arm):
     arm.rotation_mode = "QUATERNION"
     for pb in arm.pose.bones:
         pb.rotation_mode = "QUATERNION"
         pb.location, pb.rotation_quaternion, pb.scale = (0, 0, 0), (1, 0, 0, 0), (1, 1, 1)
 
+
+def new_action(rig: RigMap, model: str, name: str, frames: int):
+    """Action of a new animation of the mod on the bare skeleton: the rest pose keyed on the first and
+    last frame, a header from the model hierarchy and no data of any original (spec 004 W2, W16)."""
+    reset_pose(rig.arm)
+    act = bpy.data.actions.new(name.upper())
+    act.use_fake_user = True
+    rest = ([Vector((0, 0, 0))] * 2, [Quaternion((1, 0, 0, 0))] * 2)
+    key_bones(rig, act, {i: rest for i in rig.bone_ids}, [0, frames - 1])
+    a = anim.Man(model=model, name=act.name, version=12, layer=1, checksum=rig.mdh.checksum)
+    a.node_indices = list(rig.bone_ids)
+    a.node_names = [rig.names[i] for i in rig.bone_ids]
+    prop = header_of(a, "mod")
+    prop["frames"], prop["slots"] = frames, {}
+    act[PROP] = json.dumps(prop, separators=(",", ":"))
+    act.use_frame_range = True
+    act.frame_range = (0, max(frames - 1, 1))
+    set_scene_range(frames, 25.0)
+    return act
+
+
+def man_to_action(rig: RigMap, a, action_name: str | None = None, origin: str = "game"):
+    """Keys the bones of the MAN on a new action. Samples of non-bone nodes go to the property."""
+    arm, bones = rig.arm, rig.arm.data.bones
+    reset_pose(arm)
     act = bpy.data.actions.new(action_name or a.name)
     act.use_fake_user = True
-    slot = assign_action(arm, act)
-    bag = anim_utils.action_ensure_channelbag_for_slot(act, slot)
 
     sampled = {ni: k for k, ni in enumerate(a.node_indices)}
     slots = {str(k): [] for k, ni in enumerate(a.node_indices) if ni not in rig.offsets}
@@ -237,22 +286,9 @@ def man_to_action(rig: RigMap, a, action_name: str | None = None):
             rots.append(r)
 
     n = a.frame_count
-    frames = list(range(n))
-    for i in rig.bone_ids:
-        name = rig.names[i]
-        for comp, path, vals in ((3, f'pose.bones["{name}"].location', keys[i][0]),
-                                 (4, f'pose.bones["{name}"].rotation_quaternion', keys[i][1])):
-            for c in range(comp):
-                fc = bag.fcurves.new(path, index=c, group_name=name)
-                fc.keyframe_points.add(n)
-                co = [0.0] * (2 * n)
-                co[0::2] = frames
-                co[1::2] = [v[c] for v in vals]
-                fc.keyframe_points.foreach_set("co", co)
-                set_linear(fc)
-                fc.update()
+    key_bones(rig, act, keys, list(range(n)))
 
-    prop = header_of(a)
+    prop = header_of(a, origin)
     prop["slots"] = slots
     act[PROP] = json.dumps(prop, separators=(",", ":"))
     act.use_frame_range = True
@@ -283,12 +319,13 @@ def action_frames(act) -> tuple:
 def action_to_man(rig: RigMap, act):
     """MAN of an action: bones from the evaluated pose, the rest from the property.
 
-    An action renamed against its property (e.g. a copy of an original) is a new animation: it keeps
-    the node list, bbox and slot samples, but not the original's name, raw chunks and quantization.
+    An action renamed against its property is a new animation: it keeps the node list, bbox and slot
+    samples, but not the name, raw chunks and quantization of the property. Whether the data may go
+    into the mod's sources is decided by its origin (origin_of, export.py).
     """
     prop = json.loads(act.get(PROP, "{}"))
     if not prop:
-        fail(f"action {act.name} has no {PROP} property; start from tools/anim.ps1 import")
+        fail(f"action {act.name} has no {PROP} property; start from tools/anim.ps1 new")
     a = anim.Man()
     original = prop["name"] == act.name
     a.model, a.name = prop["model"], act.name
@@ -336,6 +373,14 @@ def cmd_import(workdir, model, man_name, out, mesh):
     act = man_to_action(rig, a)
     save_blend(out)
     print(f"imported {man_name}: action {act.name}, {a.frame_count} frames, {len(a.node_indices)} nodes -> {out}")
+
+
+def cmd_new(workdir, model, name, out, mesh, frames):
+    clear_scene()
+    arm, mdh = import_rig(workdir, model, mesh)
+    act = new_action(RigMap(arm, mdh), model, name, frames)
+    save_blend(out)
+    print(f"new animation {act.name}: {frames} frames on the bare {model} skeleton -> {out}")
 
 
 def cmd_open(light, workdir, model, out, mesh):
@@ -390,22 +435,31 @@ def cmd_roundtrip(workdir, model):
 
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-    mesh = None
-    if "--mesh" in argv:
-        i = argv.index("--mesh")
-        mesh = argv[i + 1]
-        del argv[i:i + 2]
+    mesh, frames = None, 30
+    for flag in ("--mesh", "--frames"):
+        if flag in argv:
+            i = argv.index(flag)
+            if flag == "--mesh":
+                mesh = argv[i + 1]
+            else:
+                frames = int(argv[i + 1])
+            del argv[i:i + 2]
     require_blender()
     enable_krx()
     cmd, args = (argv[0], argv[1:]) if argv else ("", [])
     if cmd == "import" and len(args) == 4:
         cmd_import(*args, mesh)
+    elif cmd == "new" and len(args) == 4:
+        if frames < 2:
+            fail("a new animation needs at least 2 frames")
+        cmd_new(*args, mesh, frames)
     elif cmd == "open" and len(args) == 4:
         cmd_open(*args, mesh)
     elif cmd == "roundtrip" and len(args) == 2:
         cmd_roundtrip(*args)
     else:
         fail("usage: rig.py -- import WORKDIR MODEL MAN_NAME OUT.blend [--mesh MDM] | "
+             "new WORKDIR MODEL NAME OUT.blend [--mesh MDM] [--frames N] | "
              "open LIGHT.blend WORKDIR MODEL OUT.blend [--mesh MDM] | roundtrip WORKDIR MODEL")
 
 

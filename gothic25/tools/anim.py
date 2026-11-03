@@ -1411,6 +1411,104 @@ def cmd_build(args) -> int:
     return 0
 
 
+# --- local test data (spec 004 K4, K11; never committed: made from the player's game) -----------------
+
+def quat_mul(a: tuple, b: tuple) -> tuple:
+    w1, x1, y1, z1 = a
+    w2, x2, y2, z2 = b
+    return (w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2, w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2,
+            w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2, w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2)
+
+
+def quat_axis(axis: tuple, angle: float) -> tuple:
+    s = math.sin(angle / 2)
+    return (math.cos(angle / 2), axis[0] * s, axis[1] * s, axis[2] * s)
+
+
+def up_axis_of_parent(mdh: Mdh, node: int) -> tuple:
+    """The model's up direction (+Y) in the rest frame of the node's parent. MDH matrices are
+    column-vector rows: world = parent_world * local."""
+    chain, p = [], mdh.nodes[node].parent
+    while p >= 0:
+        chain.append(p)
+        p = mdh.nodes[p].parent
+    r = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+    for i in reversed(chain):
+        m = mdh.nodes[i].matrix
+        local = [[m[0], m[1], m[2]], [m[4], m[5], m[6]], [m[8], m[9], m[10]]]
+        r = [[sum(r[a][k] * local[k][b] for k in range(3)) for b in range(3)] for a in range(3)]
+    v = [r[0][1], r[1][1], r[2][1]]  # R^T * (0, 1, 0)
+    n = math.sqrt(sum(c * c for c in v))
+    return tuple(c / n for c in v)
+
+
+def test_pose_anim(mdh: Mdh, model: str, name: str, frames: int) -> Man:
+    """Our own test animation: identity rotations, the root rising 1 cm per frame."""
+    a = Man(model=model, name=name, version=12, layer=1, checksum=mdh.checksum)
+    bones = [(i, n.name) for i, n in enumerate(mdh.nodes) if not n.name.upper().startswith("ZS_")]
+    a.node_indices, a.node_names = [i for i, _ in bones], [n for _, n in bones]
+    a.samples = [[(1.0, 0.0, 0.0, 0.0, 0.0, 90.0 + f if i == 0 else 0.0, 0.0) for i, _ in bones]
+                 for f in range(frames)]
+    return snap(a)
+
+
+def test_ani(name: str, frames: int, hand: str) -> str:
+    return (f'\t\tani ("{name}" 1 "" 0.0 0.2 M. "{name}.anim" F 1 {frames})\r\n\t\t{{\r\n'
+            f'\t\t\t*eventTag (0 "DEF_HIT_LIMB" "{hand}")\r\n'
+            f'\t\t\t*eventTag (0 "DEF_OPT_FRAME" "{frames // 2}")\r\n'
+            f'\t\t\t*eventTag (0 "DEF_HIT_END" "{frames}")\r\n'
+            f'\t\t\t*eventTag (0 "DEF_WINDOW" "{frames // 3} {frames}")\r\n\t\t}}\r\n')
+
+
+def cmd_fixtures(args) -> int:
+    gothic = Path(args.gothic)
+    out = Path(args.out or Path(__file__).resolve().parent.parent / "build" / "anims-fixtures")
+    files = game_files(gothic, model_patterns("HUMANS"))
+    mdh = parse_mdh(read_entry(files["HUMANS.MDH"]))
+    names = [n.name for n in mdh.nodes]
+    header = "// Local test data of spec 004 made by tools/anim.py fixtures from the game. Never commit.\r\n"
+
+    # K4: the standing loop with the head turning left and right, same length as the original
+    k04 = out / "k04" / "HUMANS"
+    k04.mkdir(parents=True, exist_ok=True)
+    srun = parse_man(read_entry(files["HUMANS-S_RUN.MAN"]), "HUMANS")
+    srun.node_names = [names[i] for i in srun.node_indices]
+    head = names.index("BIP01 HEAD")
+    k = srun.node_indices.index(head)
+    axis = up_axis_of_parent(mdh, head)
+    for f, row in enumerate(srun.samples):
+        w, x, y, z, px, py, pz = row[k]
+        turn = math.radians(35.0) * math.sin(2 * math.pi * f / srun.frame_count)
+        q = quat_mul((w, x, y, z), quat_axis(axis, -turn))
+        row[k] = q + (px, py, pz)
+    (k04 / "S_RUN.anim").write_text(to_text(srun), encoding="utf-8", newline="\n")
+
+    # K11: a new animation, a replaced original definition and an animation added to an overlay
+    k11 = out / "k11" / "HUMANS"
+    k11.mkdir(parents=True, exist_ok=True)
+    for model, name in (("HUMANS", "T_G25TEST"), ("HUMANS_1HST1", "T_G25OVERLAYTEST")):
+        (k11 / f"{name}.anim").write_text(to_text(test_pose_anim(mdh, model, name, 12)), encoding="utf-8",
+                                         newline="\n")
+    fist = find_ani(parse_msb(read_entry(files["HUMANS.MSB"])), "S_FISTATTACK")
+    for e in fist.events:
+        if e.type == "DEF_OPT_FRAME":
+            e.frames = [f + 1 for f in e.frames]
+            e.raw = (" ".join(str(f) for f in e.frames),)
+    fist.origin = "mod"
+    replaced = write_mds(ModelScript([fist]), "HUMANS").split("\r\n")
+    body = "\r\n".join(replaced[4:-3]) + "\r\n"  # the ani block between the aniEnum braces
+    (k11 / "HUMANS.EXT.MDS").write_bytes((header + 'Model ("HUMANS")\r\n{\r\n\taniEnum\r\n\t{\r\n'
+                                          + test_ani("t_G25Test", 12, "BIP01 L HAND") + body
+                                          + "\t}\r\n}\r\n").encode(ENCODING))
+    (k11 / "HUMANS_1HST1.EXT.MDS").write_bytes((header + 'Model ("HUMANS_1HST1")\r\n{\r\n\taniEnum\r\n\t{\r\n'
+                                                + test_ani("t_G25OverlayTest", 12, "ZS_RIGHTHAND")
+                                                + "\t}\r\n}\r\n").encode(ENCODING))
+    print(f"test data -> {out} (k04: S_RUN with a head turn; k11: T_G25TEST, S_FISTATTACK with "
+          f"DEF_OPT_FRAME {fist.events and [e.frames for e in fist.events if e.type == 'DEF_OPT_FRAME']}, "
+          "T_G25OVERLAYTEST in HUMANS_1HST1)")
+    return 0
+
+
 def default_archive() -> Path:
     root = Path(__file__).resolve().parent.parent
     manifest = json.loads((root / "mod.json").read_text(encoding="utf-8"))
@@ -1456,6 +1554,11 @@ def cmd_check_pack(args) -> int:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="command", required=True)
+
+    p = sub.add_parser("fixtures", help="local test data for spec 004 K4 and K11 from the game (never commit)")
+    p.add_argument("--gothic", required=True, help="Gothic II folder")
+    p.add_argument("--out", help="default: gothic25/build/anims-fixtures")
+    p.set_defaults(func=cmd_fixtures)
 
     p = sub.add_parser("check-pack", help="animation files of the mod archive against the game (W7, K7)")
     p.add_argument("archive", nargs="?", help="mod archive (default: build/game/Data/ModVDF/<archive>)")
