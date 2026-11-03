@@ -89,6 +89,8 @@ Nowe polecenia konsoli (działają też ręcznie po `F2`):
 | `remove npc <instancja> <promień>` | usuwa ze świata wszystkie postacie tej instancji w promieniu (w metrach) od bohatera, np. potwory, które dołączyłyby do walki; gdy żadnej tam nie ma, zgłasza błąd |
 | `immortal <instancja>` | postać nie traci życia (flaga `NPC_FLAG_IMMORTAL`); walka NPC z NPC trwa wtedy do końca scenariusza |
 | `info told <kwestia>` | kwestia dialogowa (instancja `C_INFO`) liczy się jako przegadana z bohaterem; `info told DIA_Xardas_Hello` na początku scenariusza zatrzymuje powitanie Xardasa w nowej grze |
+| `play ani <postać> <animacja>` | postać (`hero` albo instancja) odtwarza animację po nazwie; gdy postaci albo animacji nie ma, zgłasza błąd. Bez postaci (`play ani <animacja>`) działa jak dotąd na bohatera |
+| `ani info <postać> <animacja>` | wypisuje definicję animacji z modelu postaci tak, jak ją trzyma gra (nakładki przed modelem): pochodzenie (`game` albo `mod`, z `<MODEL>.EXT.MDS`), warstwę, `next`, przejścia, flagi, kierunek, zakres klatek, fps i liczbę klatek MAN, a pod spodem zdarzenia. Format jak w `tools/anim.py defs <MODEL> <animacja> --mans build/anims/_COMPILED` (spec. 004 W9); w scenariuszu linie trafiają do `log.txt` z przedrostkiem `scenario: `. Gdy postaci albo animacji nie ma, zgłasza błąd |
 | `quit` | kończy grę (w scenariuszu: kończy scenariusz, zob. polecenia sterujące) |
 
 Argumenty `call` dobierane są według typu parametru funkcji:

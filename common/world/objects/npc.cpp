@@ -1044,6 +1044,10 @@ bool Npc::hasAnim(std::string_view scheme) const {
   return visual.hasAnim(scheme);
   }
 
+const Animation::Sequence* Npc::animSequence(std::string_view name) const {
+  return visual.animSequence(name);
+  }
+
 bool Npc::hasAnim(Anim a) const {
   auto st  = weaponState();
   auto wlk = walkMode();

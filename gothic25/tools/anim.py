@@ -913,26 +913,80 @@ def write_mds(s: ModelScript, model: str, header: str = "") -> str:
     return "\r\n".join(out) + "\r\n"
 
 
-def describe_ani(a: MdsAni, man_frames: int | None = None) -> list:
-    """Canonical text of one animation, the same lines as the 'ani info' console command."""
-    head = (f"ani {a.name.upper()} origin {a.origin} layer {a.layer} next {a.next.upper() or '-'} "
-            f"blend {fmt_num(a.blend_in)} {fmt_num(a.blend_out)} flags {a.flags or '-'} dir {a.direction} "
-            f"frames {a.first_frame}-{a.last_frame} fps {fmt_num(a.fps)}")
-    if man_frames is not None:
-        head += f" man {man_frames}"
-    out = [head]
-    for e in a.events:
-        detail = " ".join(f"{k}={v}" for k, v in (("slot", e.slot), ("slot2", e.slot2), ("item", e.item),
-                                                  ("mode", e.fight_mode)) if v)
+# event type names of zenkit's event_types map; ani info prints one name per MdsEventType
+EVENT_NAMES = {"DEF_CREATE_ITEM", "DEF_INSERT_ITEM", "DEF_REMOVE_ITEM", "DEF_DESTROY_ITEM", "DEF_PLACE_ITEM",
+               "DEF_EXCHANGE_ITEM", "DEF_FIGHTMODE", "DEF_PLACE_MUNITION", "DEF_REMOVE_MUNITION", "DEF_DRAWSOUND",
+               "DEF_UNDRAWSOUND", "DEF_SWAPMESH", "DEF_DRAWTORCH", "DEF_INV_TORCH", "DEF_DROP_TORCH",
+               "DEF_HIT_LIMB", "DEF_DIR", "DEF_DAM_MULTIPLY", "DEF_PAR_FRAME", "DEF_OPT_FRAME", "DEF_HIT_END",
+               "DEF_WINDOW"}
+EVENT_ALIASES = {"HIT_LIMB": "DEF_HIT_LIMB", "DEF_HIT_DIR": "DEF_DIR"}
+# Animation::setupIndex: these transitions never chain to their next animation
+NO_NEXT = {"T_1HRUN_2_1H", "T_BOWRUN_2_BOW", "T_2HRUN_2_2H", "T_CBOWRUN_2_CBOW", "T_MAGRUN_2_MAG",
+           "T_FISTRUN_2_FIST"}
+
+
+def event_name(etype: str) -> str:
+    name = EVENT_ALIASES.get(etype, etype)
+    return name if name in EVENT_NAMES else "UNKNOWN"
+
+
+def engine_events(events: list) -> list:
+    """Events as Animation::AnimData::setupEvents leaves them: of several DEF_OPT_FRAME only the ones at
+    the earliest frame stay, each removed one replaced by the last event."""
+    ev = list(events)
+    opt = [e.frames[0] for e in ev if event_name(e.type) == "DEF_OPT_FRAME" and e.frames]
+    if opt:
+        first, i = min(opt), 0
+        while i < len(ev):
+            e = ev[i]
+            if event_name(e.type) == "DEF_OPT_FRAME" and e.frames and e.frames[0] != first:
+                ev[i] = ev[-1]
+                ev.pop()
+            i += 1
+    return ev
+
+
+def blend_ms(v: float) -> int:
+    # uint64_t(1000*hdr.blend_in) in Animation::Sequence: a float product, truncated
+    return int(f32(1000.0 * f32(v)))
+
+
+def line(*tokens) -> str:
+    return " ".join(str(t) for t in tokens if t != "")
+
+
+def describe_ani(a: MdsAni, man: dict | None = None) -> list:
+    """Canonical text of one animation as the engine holds it, the same lines as the 'ani info' console
+    command (Marvin::aniInfo). With the MAN header (man_header) the name, layer and fps come from the
+    MAN, like in Animation::Sequence; without it the game cannot play the animation, so fps and the
+    frame count of the MAN are left out. The game ignores camera tremors, so they are not listed."""
+    events = engine_events(a.events)
+    windows = [e for e in events if event_name(e.type) == "DEF_WINDOW"]
+    name = (man["name"] if man else a.name).upper()
+    nxt = a.next.upper()
+    if (windows and windows[-1].frames) or name in NO_NEXT:
+        nxt = ""  # Animation::setupIndex: a combo window ends the animation
+    head = ["ani", name, "origin", a.origin, "layer", man["layer"] if man else a.layer, "next", nxt or "-",
+            "blend", fmt_num(blend_ms(a.blend_in) / 1000), fmt_num(blend_ms(a.blend_out) / 1000),
+            "flags", flags_of(a.flags) or "-", "dir", "R" if a.direction.upper().startswith("R") else "F",
+            "frames", f"{a.first_frame}-{a.last_frame}"]
+    if man:
+        head += ["fps", fmt_num(man["fps"]), "man", man["frames"]]
+    out = [line(*head)]
+    for e in events:
+        etype = event_name(e.type)
+        detail = [f"{k}={v.upper()}" for k, v in (("slot", e.slot), ("slot2", e.slot2), ("item", e.item)) if v]
+        if etype == "DEF_FIGHTMODE" and e.fight_mode:
+            detail.append(f"mode={e.fight_mode}")
         if e.frames:
-            detail = (detail + " " if detail else "") + "frames=" + ",".join(str(f) for f in e.frames)
-        out.append(f"  tag {e.frame} {e.type.upper()} {detail}".rstrip())
-    out += [f"  sfx {f} {n.upper()} range={fmt_num(r)}{' empty' if e else ''}" for f, n, r, e in a.sfx]
-    out += [f"  sfxground {f} {n.upper()}" for f, n, _, _ in a.sfx_ground]
-    out += [f"  pfx {f} {i} {n.upper()} {pos.upper()}{' attach' if at else ''}" for f, i, n, pos, at in a.pfx]
-    out += [f"  pfxstop {f} {i}" for f, i in a.pfx_stop]
-    out += [f"  morph {f} {n.upper()} {nd.upper()}".rstrip() for f, n, nd in a.morph]
-    out += [f"  tremor {' '.join(str(v) for v in t)}" for t in a.tremors]
+            detail.append("frames=" + ",".join(str(f) for f in e.frames))
+        out.append("  " + line("tag", e.frame, etype, *detail))
+    out += ["  " + line("sfx", f, n.upper(), f"range={fmt_num(r)}", "empty" if em else "") for f, n, r, em in a.sfx]
+    out += ["  " + line("sfxground", f, n.upper()) for f, n, _, _ in a.sfx_ground]
+    pfx = sorted(a.pfx, key=lambda x: x[0])  # Animation::Animation sorts the effects by frame (stable)
+    out += ["  " + line("pfx", f, i, n.upper(), pos.upper(), "attach" if at else "") for f, i, n, pos, at in pfx]
+    out += ["  " + line("pfxstop", f, i) for f, i in sorted(a.pfx_stop, key=lambda x: x[0])]
+    out += ["  " + line("morph", f, n.upper(), nd.upper()) for f, n, nd in a.morph]
     return out
 
 
@@ -1158,16 +1212,25 @@ def load_merged(gothic: Path, model: str, ext: Path | None) -> tuple:
     return script, files, added, replaced
 
 
-def man_frames(files: dict, model: str, ani: str) -> int | None:
-    entry = files.get(f"{model}-{ani.upper()}.MAN")
-    if entry is None:
+def man_header(files: dict, mans: Path | None, model: str, ani: str) -> dict | None:
+    """Name, layer, fps and frame count of <MODEL>-<ANI>.MAN: from the mod build (MAN files of the mod
+    archive win over the game) or the game archives."""
+    base = f"{model}-{ani.upper()}.MAN"
+    data = None
+    if mans is not None and (mans / base).is_file():
+        data = (mans / base).read_bytes()
+    elif base in files:
+        data = read_entry(files[base])
+    if data is None:
         return None
-    for ctype, payload in chunks(read_entry(entry)):
+    for ctype, payload in chunks(data):
         if ctype == MAN_HEADER:
             r = Reader(payload)
             r.unpack("H")
-            r.line()
-            return r.unpack("3I")[1]
+            name = r.line()
+            layer, frames, _ = r.unpack("3I")
+            fps = r.unpack("f")[0]
+            return {"name": name, "layer": layer, "frames": frames, "fps": round(fps, 6)}
     return None
 
 
@@ -1176,13 +1239,14 @@ def cmd_defs(args) -> int:
     model = args.model.upper()
     ext = Path(args.ext) if args.ext else (None if args.no_ext else default_ext(model))
     script, files, added, replaced = load_merged(Path(args.gothic), model, ext)
+    mans = Path(args.mans) if args.mans else None
     wanted = {a.upper() for a in args.ani}
     found = 0
     for a in script.animations:
         if wanted and a.name.upper() not in wanted:
             continue
         found += 1
-        print("\n".join(describe_ani(a, man_frames(files, model, a.name))))
+        print("\n".join(describe_ani(a, man_header(files, mans, model, a.name))))
     if ext is not None:
         print(f"# {ext.name}: {added} added, {replaced} replaced", file=sys.stderr)
     missing = wanted - {a.name.upper() for a in script.animations}
@@ -1374,7 +1438,7 @@ def build(src: Path, extras: list, gothic: Path | None) -> tuple:
                 if man in built:
                     continue  # checked with its animation above
                 if man in game_mans:
-                    errors += check_definition(where, d, man_frames(files, script, d.name))
+                    errors += check_definition(where, d, man_header(files, None, script, d.name)["frames"])
                 elif gothic is None:
                     notes.append(f"{where}: no animation in the mod; the game's is not checked (no --gothic)")
                     errors += check_definition(where, d, None)
@@ -1586,6 +1650,7 @@ def main() -> int:
     p.add_argument("--gothic", required=True, help="Gothic II folder")
     p.add_argument("--ext", help="extension file (default: gothic25/anims/<MODEL>/<MODEL>.EXT.MDS)")
     p.add_argument("--no-ext", action="store_true", help="only the game definitions")
+    p.add_argument("--mans", help="MAN files of the mod build, e.g. gothic25/build/anims/_COMPILED")
     p.set_defaults(func=cmd_defs)
 
     p = sub.add_parser("mds-check", help="compare *.mds sources with the game MSB through both parsers")

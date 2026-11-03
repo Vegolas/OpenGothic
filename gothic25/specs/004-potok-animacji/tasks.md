@@ -249,7 +249,7 @@ nie kopiujemy w całości.
           więc pochodzi z oryginalnych MSB.
 
       Po Z7 i Z9 (dane testowe). (W6, W7, W12, W13)
-- [ ] **Z11** [P] Polecenia konsoli `play ani` i `ani info`.
+- [x] **Z11** [P] Polecenia konsoli `play ani` i `ani info`.
       - `C_PlayAni` i `C_AniInfo` w `common/marvin.h` i tabeli `Marvin::Marvin`, obsługa wzorem
         `C_Immortal` (`hero` albo instancja):
         - `play ani <postać> <animacja>`: `Npc::playAnimByName`;
@@ -261,6 +261,25 @@ nie kopiujemy w całości.
         - scenariusz z `play ani hero S_FISTATTACK` i serią zrzutów pokazuje cios;
         - `ani info hero S_FISTATTACK` wypisuje to samo co `anim.py defs HUMANS S_FISTATTACK`;
         - nieznana nazwa kończy scenariusz błędem z numerem linii.
+      - Wynik (2026-11-03):
+        - `play ani <animacja>` już był (bohater), więc doszło `C_PlayAniNpc` (`play ani %c %s`, przed
+          starym wpisem) i `C_AniInfo`. `Marvin::playAni` i `Marvin::aniInfo` szukają animacji przez
+          `Npc::animSequence` -> `MdlVisual::animSequence` -> `AnimationSolver::solveFrm` (nakładki przed
+          modelem);
+        - `ani info` wypisuje to, co silnik trzyma po wczytaniu. `anim.py defs` pokazuje teraz ten sam
+          widok (`describe_ani`), bo silnik część definicji zmienia:
+          - nazwa, warstwa i fps pochodzą z MAN (`--mans` wskazuje MAN z buildu moda, potem gra);
+          - `next` jest pusty przy oknie combo i w przejściach `T_*RUN_2_*`;
+          - przejścia są ucięte do milisekund, flagi w stałej kolejności `MREFIP`;
+          - z kilku `DEF_OPT_FRAME` zostają te z najwcześniejszej klatki, jak w `setupEvents`;
+          - wstrząsy kamery silnik pomija, więc ich nie ma;
+        - scenariusz z danymi z Z9 (przebieg `20261103-231805-Z11-ani`): `ani info` dla `S_FISTATTACK`
+          (zastąpiona, `mod`), `S_RUN` (`game`), `T_G25TEST` (nowa) i `T_G25OVERLAYTEST` szkieleta
+          (nakładka) daje 18 linii identycznych z `anim.py defs ... --mans` (różnica tylko w końcach
+          linii). Zrzuty `ani-0` do `ani-5` co 0,2 s pokazują cios prawą ręką i powrót do stania;
+        - `ani info hero T_G25NOPE` i `play ani hero T_G25NOPE`: scenariusz kończy się błędem w linii 6
+          z komunikatem `"HERO" has no animation "T_G25NOPE"`;
+        - opis obu poleceń w `tests/README.md`. Build bez nowych ostrzeżeń.
 
       (W9)
 - [ ] **Z12** [P] Ataki boczne pięściami bohatera.

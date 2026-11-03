@@ -178,6 +178,7 @@ class Npc final {
     void       startFaceAnim(std::string_view anim, float intensity, uint64_t duration);
     bool       stopItemStateAnim();
     bool       hasAnim(std::string_view scheme) const;
+    auto       animSequence(std::string_view name) const -> const Animation::Sequence*;
     bool       hasAnim(Anim a) const;
     bool       hasSwimAnimations() const;
     bool       isFinishingMove() const;
