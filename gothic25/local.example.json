@@ -3,6 +3,7 @@
   "engineBuildDir": "",
   "engineBuildType": "RelWithDebInfo",
   "python": "python",
+  "blender": "C:/Program Files/Blender Foundation/Blender 5.2/blender.exe",
   "scriptCompiler": {
     "command": "",
     "args": [ "{src}", "--output-dat", "{dat}" ],
