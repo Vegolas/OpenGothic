@@ -1,6 +1,6 @@
 # ADR 0007: Źródła i budowanie animacji moda
 
-- **Status:** Przyjęta <!-- Proponowana / Przyjęta / Zastąpiona przez ADR NNNN / Odrzucona -->
+- **Status:** Przyjęta, punkt 3 zastąpiony przez [ADR 0008](0008-dokladanie-definicji-animacji-moda-przez.md) <!-- Proponowana / Przyjęta / Zastąpiona przez ADR NNNN / Odrzucona -->
 - **Data:** 2026-11-03 (zaproponowana i przyjęta razem z planem 004)
 
 ## Kontekst
@@ -26,6 +26,21 @@ Ustalenia ze specyfikacji 004 (P1, P2, P6) i fakty:
 - Konstytucja, zasada 6: bez oryginalnych plików gry w niezmienionej postaci. Zasada 10: każdy
   powtarzalny krok robi narzędzie z `tools/`.
 - ADR 0003 każe włączać zmiany silnika opcjonalnymi symbolami skryptów.
+- **Licencja MDK (sprawdzone 2026-11-03, zadanie Z4 planu 004).** Źródło: umowa licencyjna MDK
+  `G2MDK-EULA.rtf` (© 2004 Pluto 13 GmbH / Piranha Bytes), sekcje „Lizensierung der Daten/Software”
+  i „Ausnahmen”, w kopii instalatora MDK na
+  [github.com/dzieje-khorinis/Gothic-2-Mod-Development-Kit](https://github.com/dzieje-khorinis/Gothic-2-Mod-Development-Kit).
+  Umowa dzieli dane tak:
+  - na licencji GothicMOD są dane nowo utworzone narzędziami Gothica II oraz skrypty
+    z `/_work/data/Scripts`;
+  - `/_work/tools` i `/_work/demo` mają licencję w stylu BSD;
+  - wszystkie inne dane zainstalowane, rozpakowane i przekonwertowane przez instalator podlegają
+    umowie licencyjnej samej gry, która daje prawo osobistego użytku przy legalnej instalacji gry,
+    bez prawa rozpowszechniania.
+
+  Definicje animacji z MDK (`_work/Data/Anims/*.mds`) i oryginalne animacje z archiwów gry nie są
+  więc objęte GothicMOD. Punkt 3 decyzji w pierwotnej postaci (pełne definicje z MDK w paczce moda)
+  jest nieważny, zob. „Konsekwencje”.
 
 ## Opcje
 
@@ -75,7 +90,8 @@ Przyjęta razem z planem 004. Punkt 3 zależy od licencji MDK, którą sprawdza 
      opcjonalnie kwantyzacja i metadane źródła oryginału) i jedną linią na węzeł w każdej klatce:
      kwaternion `w x y z` i pozycja w centymetrach, ze stałą liczbą miejsc po przecinku.
    - MAN buduje z niego `tools/anim.py build`, bez Blendera.
-3. **Definicje:** opcja 1. Mod trzyma pełne tekstowe definicje z MDK tylko dla modeli i nakładek,
+3. **Definicje (zastąpione przez ADR 0008, bo licencja MDK nie pozwala ich rozpowszechniać):**
+   opcja 1. Mod trzyma pełne tekstowe definicje z MDK tylko dla modeli i nakładek,
    które zmienia, w kodowaniu i końcach linii oryginału (cp1252, CRLF). Build zapisuje je pod nazwą
    `<MODEL>.MSB`. Zmienione definicje z MDK rozpowszechniamy na licencji GothicMOD i wymieniamy
    w `NOTICE.txt`. Zanim definicje z MDK zastąpią oryginał, porównujemy je z grą
@@ -96,12 +112,9 @@ Przyjęta razem z planem 004. Punkt 3 zależy od licencji MDK, którą sprawdza 
 
 - Animację da się zbudować i przetestować bez Blendera (CI, inny komputer). Blender jest potrzebny
   tylko do edycji, importu oryginałów i sprawdzenia zgodności `.blend` z `.anim`.
-- W repozytorium są pełne definicje modelu ludzi z MDK (ok. 170 kB tekstu), także te, których mod
-  nie zmienia. Zmiany moda w nich trzeba oznaczać komentarzem, żeby dało się je odróżnić
-  od oryginału.
-- Kolejne funkcje zmieniają animacje i definicje w tym samym miejscu, więc mogą wchodzić sobie
-  w konflikty w jednym pliku definicji. Zmiany grupujemy w blokach oznaczonych numerem specyfikacji.
-- Mod na starszym silniku nadal się uruchomi, bo tekstowe definicje czyta każda wersja ZenKit
-  z rozpoznawaniem formatu. Zachowania zależne od animacji zadziałają tylko na nowym silniku.
-- Jeśli MDK okaże się nieobjęte licencją GothicMOD, punkt 3 trzeba zastąpić opcją 3 (dokładanie
-  definicji przez silnik) w nowym ADR.
+- Kolejne funkcje dopisują definicje do tych samych plików moda, więc mogą wchodzić sobie
+  w konflikty. Zmiany grupujemy w blokach oznaczonych numerem specyfikacji.
+- Zachowania zależne od animacji zadziałają tylko na nowym silniku.
+- MDK okazało się nieobjęte licencją GothicMOD (Z4). Punkt 3 zastępuje
+  [ADR 0008](0008-dokladanie-definicji-animacji-moda-przez.md): silnik dokłada definicje moda do
+  oryginalnych, a w paczce są tylko animacje i definicje moda.

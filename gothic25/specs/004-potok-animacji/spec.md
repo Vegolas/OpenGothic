@@ -2,6 +2,8 @@
 
 - **Status:** W realizacji
 - **Utworzono:** 2026-11-03
+- **Zmieniona:** 2026-11-03 po sprawdzeniu licencji MDK (zadanie Z4): P2 rozstrzygnięte od nowa,
+  doszło P9, zmienione W2, W5-W7, W9, W13, W16, K4, K7, K11 i K14.
 - **Warstwa (wstępnie):** narzędzia, zasoby i silnik <!-- zasoby / skrypty / silnik -->
 
 - **Powiązane:** [001: Combosy NPC w walce wręcz](../001-combosy-npc-w-walce-wrecz/spec.md)
@@ -10,7 +12,9 @@
   premii), [003: Scenariusze testowe i dziennik walki](../003-scenariusze-testowe-i-dziennik-walki/spec.md)
   (sprawdzanie animacji w grze), [ADR 0002](../../decisions/0002-duze-zasoby-w-repo.md) (duże
   zasoby w repozytorium, zob. W1), [ADR 0006](../../decisions/0006-mod-tylko-dla-opengothic.md),
-  konstytucja, zasady 6, 9 i 10.
+  [ADR 0007](../../decisions/0007-zrodla-i-budowanie-animacji-moda.md) (źródła i narzędzia),
+  [ADR 0008](../../decisions/0008-dokladanie-definicji-animacji-moda-przez.md) (definicje moda
+  dokładane przez silnik), konstytucja, zasady 6, 9 i 10.
 
 ## Problem
 
@@ -40,13 +44,18 @@ Brakuje powtarzalnego narzędzia od Blendera do paczki moda, definicji moda dla 
 i obsługi ataków bocznych pięściami. Podmiana istniejącej animacji działa, bo jej definicja już
 jest w grze. Nowej animacji, np. sierpowego z lewej, gra bez definicji nie użyje.
 
+Definicji modelu z MDK i oryginalnych animacji nie wolno rozpowszechniać, także po zmianach.
+Umowa licencyjna MDK obejmuje licencją GothicMOD tylko skrypty i nowe dane moderów, a resztę
+zostawia na licencji gry (zadanie Z4, ADR 0007). Mod musi więc mieć własne definicje i własne
+animacje, które gra łączy z oryginałem z kopii gracza.
+
 ## Cel
 
 Autor moda tworzy albo zmienia animację człowieka w Blenderze i jednym poleceniem, bez okien
 i bez ręcznych kroków, dostaje ją w grze. Dotyczy to zarówno podmiany istniejącej animacji, jak
-i nowej animacji razem z jej definicją. Pierwszym prawdziwym przypadkiem są sierpowe z lewej
-i z prawej (prawy jako lustrzane odbicie lewego): bohater i NPC walczący pięściami zadają nimi
-ciosy w grze.
+i nowej animacji razem z jej definicją. Paczka zawiera tylko animacje i definicje moda, a gra łączy
+je z oryginałem z kopii gracza. Pierwszym prawdziwym przypadkiem są sierpowe z lewej i z prawej
+(prawy jako lustrzane odbicie lewego): bohater i NPC walczący pięściami zadają nimi ciosy w grze.
 
 ## Poza zakresem
 
@@ -70,13 +79,13 @@ ciosy w grze.
 „Gracz” to tutaj głównie autor moda (właściciel projektu albo Claude), a w scenariuszach 5, 6 i 8
 ktoś, kto gra w moda.
 
-1. **Gdy** autor chce zacząć od oryginalnej animacji, np. ciosu pięścią, **wtedy** jednym poleceniem
-   wczytuje ją z własnej kopii gry do Blendera, razem ze szkieletem i ciałem. Widzi ją tak jak w grze
-   i może ją zapisać jako punkt wyjścia nowej animacji.
-2. **Gdy** autor zmienił w Blenderze istniejącą animację, np. stanie, **wtedy** po zbudowaniu moda
-   zmieniona animacja zastępuje oryginalną w grze, a pozostałe animacje zostają bez zmian.
+1. **Gdy** autor chce zobaczyć oryginalną animację jako wzorzec, np. cios pięścią, **wtedy** jednym
+   poleceniem wczytuje ją z własnej kopii gry do Blendera, razem ze szkieletem i ciałem, i widzi ją
+   tak jak w grze. Nową animację zaczyna od czystego szkieletu i kluczuje ją sam.
+2. **Gdy** autor zrobił w Blenderze własną animację o nazwie istniejącej, np. nowe stanie, **wtedy**
+   po zbudowaniu moda zastępuje ona oryginalną w grze, a pozostałe animacje zostają bez zmian.
 3. **Gdy** autor dodaje nową animację, np. sierpowy z lewej, **wtedy** dopisuje jej definicję
-   do tekstowych definicji modelu (nazwa, warstwa, przejścia, flagi, klatki, zdarzenia, takie jak
+   do tekstowych definicji moda (nazwa, warstwa, przejścia, flagi, klatki, zdarzenia, takie jak
    klatka trafienia i okno combo). Po zbudowaniu moda gra używa jej tak samo jak oryginalnych animacji.
 4. **Gdy** Claude buduje animacje bez okna Blendera i bez udziału człowieka, **wtedy** polecenie
    kończy się sukcesem albo błędem z nazwą animacji i powodem, np. zły szkielet, brak klatek,
@@ -103,7 +112,9 @@ ktoś, kto gra w moda.
   tekstowy nie zgadza się z plikiem Blendera.
 - **W2:** Narzędzie wczytuje do Blendera dowolną oryginalną animację ludzi z kopii gry autora
   (także z modeli nakładek, np. stylów walki), razem ze szkieletem i ciałem, w pozie zgodnej z grą.
-  Pliki z gry trafiają przy tym tylko do lokalnego katalogu roboczego, nie do repozytorium.
+  Oryginał służy jako wzorzec do oglądania i do testów. Pliki z gry i robocze pliki z oryginałami
+  trafiają tylko do lokalnego katalogu roboczego, nie do repozytorium. Nową animację narzędzie
+  zakłada na czystym szkielecie, bez danych z oryginału.
 - **W3:** Konwersja nie traci danych. Oryginalna animacja wczytana do Blendera i zapisana z powrotem
   bez zmian daje plik bajt w bajt równy oryginałowi.
 - **W4:** Budowanie animacji to jedno polecenie z narzędzi moda, wykonywane także przy zwykłym
@@ -117,16 +128,19 @@ ktoś, kto gra w moda.
 - **W5:** Animacja moda o nazwie oryginalnej animacji zastępuje ją w grze. Pozostałe animacje
   modelu zostają oryginalne.
 - **W6:** Mod może dodać nowe animacje do modelu ludzi i do każdej jego nakładki (style walki,
-  postawy, chód). Każda ma definicję z nazwą, warstwą, następną animacją, czasem wejścia i wyjścia,
-  flagami (ruch, obrót, kolejka, bezczynność), zakresem klatek oraz zdarzeniami, których używa gra:
-  okno combo, optymalna klatka trafienia, kończyna trafiająca, dźwięki i efekty. W grze nowa
-  animacja działa tak samo jak oryginalna o tych samych ustawieniach.
-- **W7:** Paczka moda nie zawiera oryginalnych animacji ani oryginalnych definicji modelu
-  w niezmienionej postaci (konstytucja, zasada 6).
-  - Definicje modelu ludzi albo nakładki, którą mod zmienia, to pełne tekstowe definicje z MDK
-    w oryginalnej składni Gothica, zmienione o animacje moda. Rozpowszechniamy je na licencji
-    GothicMOD, tak jak skrypty (konstytucja, zasada 9).
-  - Niezmienione modele i nakładki zostają oryginalne z kopii gracza i nie trafiają do paczki.
+  postawy, chód) oraz zastąpić definicję oryginalnej animacji.
+  - Każda definicja ma nazwę, warstwę, następną animację, czas wejścia i wyjścia, flagi (ruch,
+    obrót, kolejka, bezczynność), zakres klatek oraz zdarzenia, których używa gra: okno combo,
+    optymalną klatkę trafienia, kończynę trafiającą, dźwięki i efekty.
+  - Definicje moda są w tekstowym pliku w składni Gothica, osobnym dla modelu albo nakładki. Plik
+    zawiera tylko wpisy moda.
+  - W grze nowa animacja działa tak samo jak oryginalna o tych samych ustawieniach.
+- **W7:** Paczka moda zawiera tylko animacje i definicje moda. Nie ma w niej oryginalnych animacji
+  ani definicji modelu, także po zmianach, ani animacji z kluczami skopiowanymi z oryginałów
+  (konstytucja, zasada 6, i umowa licencyjna MDK).
+  - Gra łączy definicje moda z oryginalnymi z kopii gracza: animacja o nowej nazwie dochodzi, a wpis
+    o nazwie oryginalnej animacji zastępuje oryginał (W13).
+  - Animacje i definicje moda to nowa praca moda na licencji GothicMOD (konstytucja, zasada 9).
 - **W8:** Bohater walczący pięściami wyprowadza atak z lewej i z prawej, jeśli model ma dla niego
   animację. Pierwsze takie animacje to sierpowy z lewej i jego lustrzane odbicie, sierpowy z prawej
   (W14).
@@ -137,9 +151,11 @@ ktoś, kto gra w moda.
     wyprowadzić kolejny sierpowy albo cios do przodu. Okna combo i klatki trafienia pochodzą
     z definicji animacji (W6).
   - Bez takiej animacji, w tym bez moda, atak boczny pięściami działa jak dotąd, czyli nic nie robi.
-- **W9:** W trybie deweloperskim da się odtworzyć wskazaną animację na wskazanej postaci poleceniem
-  konsoli, także w scenariuszu testowym (003). Animację da się obejrzeć na serii zrzutów bez
-  sterowania bohaterem.
+- **W9:** W trybie deweloperskim da się poleceniami konsoli, także w scenariuszu testowym (003):
+  - odtworzyć wskazaną animację na wskazanej postaci, a potem obejrzeć ją na serii zrzutów bez
+    sterowania bohaterem;
+  - wypisać definicję animacji z modelu postaci, tak jak widzi ją gra: skąd pochodzi (oryginał albo
+    mod), warstwę, zakres klatek i zdarzenia.
 - **W10:** Narzędzia sprawdzają wersję Blendera i dodatku importu. Brak programu albo zła wersja
   kończy się jasnym komunikatem, co i gdzie ustawić, a nie błędem w trakcie konwersji.
   - Ścieżka do Blendera jest ustawieniem dewelopera, nie ścieżką wpisaną w narzędzia.
@@ -149,10 +165,11 @@ ktoś, kto gra w moda.
   nową animację, jak ją obejrzeć w grze.
 - **W12:** Bez moda Gothic 2.5 silnik zachowuje się jak dotąd. Zapisy gry z poprzednich wersji moda
   się wczytują.
-- **W13:** Definicje z MDK (model ludzi i każda jego nakładka) przed zmianami moda są równoważne
-  definicjom z gry (Noc Kruka): te same animacje, flagi, przejścia, zakresy klatek i zdarzenia.
-  Różnice, jeśli są, zostają opisane i usunięte, zanim definicje z MDK zastąpią w modzie oryginał.
-  Dzięki temu mod bez własnych animacji gra tak samo jak oryginał.
+- **W13:** Łączenie definicji moda z oryginałem:
+  - bez pliku definicji moda model działa dokładnie jak oryginał;
+  - z plikiem model ma wszystkie oryginalne animacje, a do tego animacje moda;
+  - wpis moda o nazwie oryginalnej animacji zastępuje tylko ją;
+  - to samo dotyczy nakładek, a nakładki stylów walki i stare zapisy działają bez zmian.
 - **W14:** Narzędzie tworzy lustrzane odbicie animacji (lewo i prawo): zamienia kości lewej i prawej
   strony, odbija ruch względem płaszczyzny symetrii postaci i zamienia strony w zdarzeniach
   (np. kończyna trafiająca). Odbicie jest częścią buildu, więc odbita animacja nie ma osobnego źródła.
@@ -165,6 +182,10 @@ ktoś, kto gra w moda.
     bez premii).
   - Po wdrożeniu zdanie z 001 W1 o ciosach bocznych pięściami trzeba zaktualizować odwołaniem do tej
     specyfikacji.
+- **W16:** Narzędzia pilnują, żeby do źródeł moda nie trafiły dane z oryginałów:
+  - eksport do źródeł moda odmawia animacji zrobionej z importu oryginału (także skopiowanej pod
+    nową nazwą), z komunikatem, jak zacząć od czystego szkieletu;
+  - wyjątek, jawnie włączany, mają tylko lokalne dane testowe, które nie trafiają do repozytorium.
 
 ## Kryteria akceptacji
 
@@ -192,10 +213,11 @@ w wersjach z W10 (Blender 5.2 LTS, KrxImpExp z przypiętego commitu gałęzi `de
     zepsuty przypadek i niezgodny eksport kończą się kodem błędu i komunikatem z nazwą animacji
     i powodem.
 - [ ] **K4** (W5, W9): Podmiana istniejącej animacji.
-  - Kroki: testowa zmiana animacji stania ludzi (np. spojrzenie w bok), zbudowanie moda, scenariusz
-    z W9 z serią zrzutów bohatera.
+  - Kroki: testowa podmiana animacji stania ludzi (np. spojrzenie w bok) jako lokalne dane testowe
+    (W16), zbudowanie moda z nimi, scenariusz z W9 z serią zrzutów bohatera.
   - Oczekiwane: na zrzutach widać zmienioną animację. Bohater stoi w miejscu, a inne animacje
-    (bieg, walka) są oryginalne. Zmianę testową usuwamy po kryterium, nie wchodzi do wydania.
+    (bieg, walka) są oryginalne. Dane testowe powstają lokalnie z kopii gry, nie trafiają do
+    repozytorium ani do wydania.
 - [ ] **K5** (W6, W8): Sierpowe bohatera w grze.
   - Kroki: P0 z `-Manual`, bohater z pięściami, `insert` przeciwnika, który nie oddaje. Kilka razy
     atak z lewej i z prawej z miejsca. Potem serie: cios do przodu i w jego oknie combo atak z lewej,
@@ -215,9 +237,9 @@ w wersjach z W10 (Blender 5.2 LTS, KrxImpExp z przypiętego commitu gałęzi `de
 - [ ] **K7** (W7): Paczka nie zawiera oryginałów.
   - Kroki: zbuduj paczkę moda i porównaj jej zawartość z archiwami oryginalnej gry (nazwy i sumy
     kontrolne).
-  - Oczekiwane: żaden plik animacji w paczce nie jest identyczny z oryginalnym, a definicje modelu
-    różnią się od źródła z MDK zmianami moda. Paczka zawiera tylko animacje i definicje z W1,
-    a `NOTICE.txt` wymienia definicje z MDK jako materiał na licencji GothicMOD.
+  - Oczekiwane: w paczce nie ma żadnego pliku animacji ani definicji modelu z gry, w tym pełnych
+    definicji modelu. Są tylko MAN zbudowane z `.anim` moda i pliki definicji moda (W1, W6).
+    Żaden MAN z paczki nie ma tych samych próbek co oryginał.
 - [ ] **K8** (W8, W12, W15): Bez moda bez zmian.
   - Kroki: ta sama kompilacja silnika bez moda, bohater z pięściami: atak z lewej, zwykły atak,
     combo. Potem scenariusz z K13 bez moda.
@@ -235,11 +257,16 @@ w wersjach z W10 (Blender 5.2 LTS, KrxImpExp z przypiętego commitu gałęzi `de
     i ogląda ją w grze.
   - Oczekiwane: oba złe ustawienia kończą się komunikatem, co poprawić. Według opisu da się przejść
     całą drogę bez dodatkowych pytań.
-- [ ] **K11** (W13): Definicje z MDK są równoważne grze.
-  - Kroki: polecenie porównania definicji modelu ludzi z MDK (przed zmianami moda) z definicjami
-    z archiwów gry, dla modelu podstawowego i każdej jego nakładki.
-  - Oczekiwane: raport bez różnic w animacjach, flagach, przejściach, zakresach klatek
-    i zdarzeniach. Każda różnica ma w raporcie nazwę animacji i pole.
+- [ ] **K11** (W9, W13): Definicje moda łączą się z oryginałem.
+  - Kroki: scenariusz z lokalnym plikiem testowym definicji moda (W16), który dodaje nową animację
+    do modelu ludzi, zastępuje definicję jednej oryginalnej animacji (np. zmienia jej zdarzenie)
+    i dodaje animację do nakładki stylu walki. Poleceniem z W9 wypisuje definicje tych animacji
+    i jednej niezmienionej. Potem to samo bez pliku testowego i bez moda.
+  - Oczekiwane:
+    - z plikiem testowym nowa animacja i podmieniona definicja pochodzą z moda, a niezmieniona
+      z oryginału;
+    - animacja dodana do nakładki działa po nałożeniu nakładki;
+    - bez pliku i bez moda wszystkie trzy wypisują się jak w oryginale, a nowej nie ma.
 - [ ] **K12** (W14): Odbicie lustrzane.
   - Kroki: odbij w narzędziu sierpowy z lewej, a wynik odbij jeszcze raz. Odbij też oryginalny atak
     boczny mieczem z lewej i porównaj z oryginalnym atakiem z prawej. Scenariusz z W9 ze zrzutami
@@ -256,6 +283,13 @@ w wersjach z W10 (Blender 5.2 LTS, KrxImpExp z przypiętego commitu gałęzi `de
     bez premii. Combo do przodu pięściami ma nadal 2 ciosy. Zestaw 001 przechodzi. Jeśli jakieś
     kryterium 001 zakładało ciosy boczne pięściami jako ciosy do przodu, poprawiamy jego oczekiwania
     (W15).
+- [ ] **K14** (W16): Eksport nie przepuszcza danych z oryginałów.
+  - Kroki: zaimportuj oryginał, skopiuj jego akcję pod nową nazwą i spróbuj ją wyeksportować do
+    źródeł moda. Potem to samo z jawnym wyjątkiem dla danych testowych do katalogu lokalnego. Na
+    koniec załóż nową animację na czystym szkielecie i ją wyeksportuj.
+  - Oczekiwane: pierwszy eksport kończy się błędem z komunikatem, jak zacząć od czystego szkieletu.
+    Wyjątek zapisuje dane tylko poza repozytorium. Animacja z czystego szkieletu eksportuje się bez
+    danych z oryginału (bez metadanych źródła i bez próbek slotów z oryginału).
 
 ## Wpływ na zapisy gry
 
@@ -265,13 +299,17 @@ zrobiony w trakcie sierpowego wczytany bez moda nie zatrzyma postaci. Sprawdza t
 
 ## Zasoby i prawa
 
-- Nowe animacje (na początek sierpowe) robimy sami w Blenderze, bez zewnętrznych źródeł.
-- Oryginalne animacje i szkielet służą tylko jako punkt wyjścia w lokalnym katalogu roboczym
-  autora i nie trafiają do repozytorium ani do paczki w niezmienionej postaci (W2, W7). Animacja
-  zrobiona na bazie oryginału, np. zmienione stanie, jest opracowaniem materiałów Piranha Bytes
-  i podlega licencji GothicMOD (konstytucja, zasada 9).
-- Definicje modelu ludzi i nakładek pochodzą z tekstowych źródeł MDK Piranha Bytes. W repozytorium
-  i w paczce są tylko w postaci zmienionej przez moda, na licencji GothicMOD, z wpisem w `NOTICE.txt`.
+- Licencja (zadanie Z4, ADR 0007): umowa licencyjna MDK (`G2MDK-EULA.rtf`, © 2004 Pluto 13 GmbH /
+  Piranha Bytes) obejmuje licencją GothicMOD tylko skrypty z `/_work/data/Scripts` i dane nowo
+  utworzone przez moderów. Pozostałe dane, w tym definicje animacji z MDK i oryginalne animacje
+  z gry, podlegają umowie licencyjnej gry i nie wolno ich rozpowszechniać, także po zmianach.
+- Nowe animacje (na początek sierpowe) robimy sami w Blenderze, z własnymi kluczami, bez
+  zewnętrznych źródeł. To nowe dane moda na licencji GothicMOD (konstytucja, zasada 9).
+- Oryginalne animacje, definicje i szkielet służą tylko lokalnie: jako wzorzec do oglądania, do
+  testów narzędzi (K1, K2) i jako lokalne dane testowe (K4, K11). Nie trafiają do repozytorium ani do
+  paczki (W2, W7, W16). Szkielet w lekkim pliku Blendera i lista węzłów w eksporcie opisują budowę
+  modelu ludzi, do której animacja moda musi pasować. Nie są kopią animacji.
+- Definicje moda to własne wpisy w składni Gothica (W6), bez kopii definicji z MDK.
 - Narzędzia: Blender 5.2 (GPL) i KrxImpExp, gałąź `dev` z gitlab.com/Patrix9999/krximpexp
   (GPL-3.0 według nagłówka w kodzie). Oba działają tylko u dewelopera i nie trafiają do paczki moda.
   Dodatek MCP Blender Lab (GPL) służy tylko do podglądu.
@@ -286,10 +324,14 @@ zrobiony w trakcie sierpowego wczytany bez moda nie zatrzyma postaci. Sprawdza t
   definicje z MDK zmienione przez moda, własna nakładka nakładana przez skrypty, dokładanie definicji
   przez silnik albo pełne skompilowane definicje z buildu. Fakty: silnik już dziś czyta tekstowe
   definicje pod nazwą wersji skompilowanej, a w kopii gry właściciela są tekstowe źródła z MDK.
-  **Odpowiedź (2026-11-03):** pełne tekstowe definicje z MDK, zmienione o animacje moda, na licencji
-  GothicMOD. Zapisane w W6, W7, W13, K7, K11 i „Zasobach i prawach”.
+  **Pierwsza odpowiedź (2026-11-03):** pełne tekstowe definicje z MDK, zmienione o animacje moda, pod
+  warunkiem, że MDK jest na GothicMOD. **Warunek się nie spełnił** (zadanie Z4, „Zasoby i prawa”).
+  **Odpowiedź po sprawdzeniu licencji (2026-11-03):** silnik dokłada definicje moda do oryginalnych
+  ([ADR 0008](../../decisions/0008-dokladanie-definicji-animacji-moda-przez.md)). Mod ma tekstowy plik
+  tylko z własnymi wpisami dla modelu albo nakładki. Zapisane w W6, W7, W9, W13, K7, K11
+  i „Zasobach i prawach”.
 - [x] **P3:** Składnia definicji: oryginalna składnia Gothica czy własny format? **Rozstrzygnięte
-  przez P2:** oryginalna składnia, bo definicje moda to zmienione źródła z MDK.
+  przez P2:** oryginalna składnia Gothica (MDS), którą biblioteka silnika już czyta.
 - [x] **P4:** Czy w tej specyfikacji robimy też sierpowy z prawej? **Odpowiedź (2026-11-03):** tak,
   przez odbicie lustrzane w narzędziu. Zapisane w celu, scenariuszu 5, W8, W14, K5 i K12.
 - [x] **P5:** Zakres modeli: tylko podstawowy model ludzi czy także nakładki? **Odpowiedź
@@ -304,6 +346,10 @@ zrobiony w trakcie sierpowego wczytany bez moda nie zatrzyma postaci. Sprawdza t
   dziś zlecają ciosy boczne pięściami, a silnik zamienia je na ciosy do przodu (001 W1).
   **Odpowiedź (2026-11-03):** tak, tam gdzie ich styl zleca cios boczny, bez zmian w AI. Zapisane
   w celu, scenariuszu 8, W15, K8, K13 i „Poza zakresem”.
+- [x] **P9:** Oryginalne animacje też podlegają umowie licencyjnej gry. Jakie animacje mogą trafić
+  do paczki moda: tylko z własnymi kluczami, czy także przeróbki oryginałów? **Odpowiedź
+  (2026-11-03):** tylko z własnymi kluczami. Oryginały służą lokalnie jako wzorzec i do testów.
+  Zapisane w scenariuszach 1 i 2, W2, W7, W16, K4, K14 i „Zasobach i prawach”.
 
 ## Weryfikacja
 
