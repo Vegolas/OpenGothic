@@ -1411,9 +1411,56 @@ def cmd_build(args) -> int:
     return 0
 
 
+def default_archive() -> Path:
+    root = Path(__file__).resolve().parent.parent
+    manifest = json.loads((root / "mod.json").read_text(encoding="utf-8"))
+    return root / "build" / "game" / "Data" / "ModVDF" / manifest["archive"]
+
+
+def cmd_check_pack(args) -> int:
+    """Animation files of the mod archive against the game (spec 004 W7, K7): no model script of the
+    game, no file equal to a game file, no MAN with the samples of the original of the same name."""
+    import hashlib
+    archive = Path(args.archive) if args.archive else default_archive()
+    _, entries = vdf.read_catalog(archive)
+    anims = [(n, off, size) for n, off, size in entries if n.upper().startswith("_WORK/DATA/ANIMS/")]
+    game = game_files(Path(args.gothic), ["*.MAN", "*.MSB", "*.MDS", "*.MDH", "*.MDM", "*.MMB", "*.MDL"])
+    game_hashes = {}
+    for base, entry in game.items():
+        game_hashes.setdefault(hashlib.sha256(read_entry(entry)).hexdigest(), base)
+    errors = []
+    print(f"{archive.name}: {len(anims)} animation files")
+    for name, off, size in sorted(anims):
+        base = name.rsplit("/", 1)[-1].upper()
+        data = read_entry((archive, off, size))
+        verdict = "ok"
+        if base.endswith(".MSB") or (base.endswith(".MDS") and not base.endswith(".EXT.MDS")):
+            verdict = "model script: the mod may only ship <MODEL>.EXT.MDS (ADR 0008)"
+        elif hashlib.sha256(data).hexdigest() in game_hashes:
+            verdict = f"identical to the game file {game_hashes[hashlib.sha256(data).hexdigest()]}"
+        elif base.endswith(".MAN") and base in game:
+            try:
+                mine, orig = parse_man(data), parse_man(read_entry(game[base]))
+                if mine.samples == orig.samples:
+                    verdict = f"same samples as the game's {base}"
+            except ValueError as e:
+                verdict = f"not a valid animation: {e}"
+        print(f"  {size:8d}  {name}  {verdict}")
+        if verdict != "ok":
+            errors.append(f"{name}: {verdict}")
+    for e in errors:
+        print("error: " + e, file=sys.stderr)
+    return 1 if errors else 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="command", required=True)
+
+    p = sub.add_parser("check-pack", help="animation files of the mod archive against the game (W7, K7)")
+    p.add_argument("archive", nargs="?", help="mod archive (default: build/game/Data/ModVDF/<archive>)")
+    p.add_argument("--gothic", required=True, help="Gothic II folder")
+    p.set_defaults(func=cmd_check_pack)
 
     p = sub.add_parser("build", help="MAN and definition files of the mod from gothic25/anims (spec 004 W4)")
     p.add_argument("--src", help="source folder with anims.json (default: gothic25/anims)")

@@ -172,7 +172,7 @@ nie kopiujemy w całości.
         `*.blend` binarnie.
 
       Po Z6. (W4, W5, W6)
-- [ ] **Z8** [P] `anim.py check-pack`.
+- [x] **Z8** [P] `anim.py check-pack`.
       - Porównuje paczkę moda z archiwami gry. Błąd przy:
         - pliku definicji modelu z gry (`*.MSB`, pełne `*.MDS`);
         - pliku identycznym z oryginałem (SHA-256);
@@ -180,6 +180,11 @@ nie kopiujemy w całości.
       - Raport z listą plików animacji w paczce.
       - Sprawdzenie: paczka z Z7 przechodzi. Sztuczne przypadki w `--extra` (oryginalny MAN
         i oryginalny MSB z `build/anims-work`) dają błąd.
+      - Wynik (2026-11-03):
+        - `check-pack` dla paczki z Z7: 1 plik (`HUMANS.EXT.MDS`), bez błędów, ok. 0,6 s;
+        - sztuczna paczka (`vdf.py pack` w scratchpadzie, bo `build` nie przepuszcza obcych MAN):
+          oryginalny `HUMANS-S_RUN.MAN`, `HUMANS-S_FISTATTACK.MAN` przepisany przez `.anim` na inne bajty,
+          pełny `HUMANS.MDS` i `HUMANS.MSB` dają 4 błędy i kod 1, a `HUMANS.EXT.MDS` przechodzi.
 
       Po Z7. (W7, K7)
 - [ ] **Z9** [P] Nowa animacja na czystym szkielecie i blokada pochodnych.
