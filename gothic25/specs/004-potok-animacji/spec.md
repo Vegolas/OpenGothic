@@ -1,0 +1,310 @@
+# 004: Potok animacji
+
+- **Status:** W realizacji
+- **Utworzono:** 2026-11-03
+- **Warstwa (wstępnie):** narzędzia, zasoby i silnik <!-- zasoby / skrypty / silnik -->
+
+- **Powiązane:** [001: Combosy NPC w walce wręcz](../001-combosy-npc-w-walce-wrecz/spec.md)
+  (combo na pięści; W15 zmienia zdanie z 001 W1 o ciosach bocznych pięściami),
+  [002: Skalowanie obrażeń w kombo](../002-skalowanie-obrazen-w-kombo/spec.md) (ataki boczne bez
+  premii), [003: Scenariusze testowe i dziennik walki](../003-scenariusze-testowe-i-dziennik-walki/spec.md)
+  (sprawdzanie animacji w grze), [ADR 0002](../../decisions/0002-duze-zasoby-w-repo.md) (duże
+  zasoby w repozytorium, zob. W1), [ADR 0006](../../decisions/0006-mod-tylko-dla-opengothic.md),
+  konstytucja, zasady 6, 9 i 10.
+
+## Problem
+
+Mod nie ma dziś jak dodać nowej animacji postaci ani zmienić istniejącej. Każdy pomysł, który
+potrzebuje nowych ruchów, stoi przez to w miejscu, np. styl walki bez broni z atakami bocznymi,
+nowe animacje stania NPC czy losowe animacje bezczynności.
+
+- Silnik w trybie Gothic II czyta klatki każdej animacji tylko w postaci skompilowanej, a definicje
+  modelu (nazwy animacji, flagi, przejścia, zdarzenia, np. klatka trafienia i okno combo) tylko pod
+  nazwą wersji skompilowanej. Treść definicji może być tekstowa, w składni Gothica.
+- Oryginalna droga, czyli kompilacja zasobów przez grę, odpada (ADR 0006). Biblioteka, na której
+  stoi silnik, czyta formaty skompilowane, ale ich nie zapisuje. Dodatek do Blendera (KrxImpExp)
+  importuje i eksportuje animacje w formacie źródłowym Gothica (ASC), ale nie zapisuje formatów,
+  które czyta gra.
+- Walka pięściami nie ma ataków bocznych: przyciski ataku z lewej i z prawej nic nie robią, a ciosy
+  boczne ze stylu walki NPC silnik zamienia na ciosy do przodu.
+
+Test stosu z 2026-11-02 i prototyp z 2026-11-03 pokazały, że droga istnieje:
+
+- Blender 5.2 z KrxImpExp poprawnie wczytuje szkielet i ciało HUMANS.
+- Animację z gry da się przenieść do Blendera i z powrotem do pliku gry bez straty: wynik jest bajt
+  w bajt równy oryginałowi.
+- Testowa animacja stania, zrobiona w Blenderze i podmieniona w miejsce oryginalnej, zadziałała
+  w grze.
+
+Brakuje powtarzalnego narzędzia od Blendera do paczki moda, definicji moda dla nowych animacji
+i obsługi ataków bocznych pięściami. Podmiana istniejącej animacji działa, bo jej definicja już
+jest w grze. Nowej animacji, np. sierpowego z lewej, gra bez definicji nie użyje.
+
+## Cel
+
+Autor moda tworzy albo zmienia animację człowieka w Blenderze i jednym poleceniem, bez okien
+i bez ręcznych kroków, dostaje ją w grze. Dotyczy to zarówno podmiany istniejącej animacji, jak
+i nowej animacji razem z jej definicją. Pierwszym prawdziwym przypadkiem są sierpowe z lewej
+i z prawej (prawy jako lustrzane odbicie lewego): bohater i NPC walczący pięściami zadają nimi
+ciosy w grze.
+
+## Poza zakresem
+
+- Szkielety inne niż ludzki (potwory, orkowie, zwierzęta) oraz zmiany samego szkieletu i ciała:
+  nowe kości, nowe siatki, nowe sloty na broń.
+- Animacje twarzy (mimika, ruch ust).
+- Pełny styl walki bez broni: inne nowe ciosy niż sierpowe (kopnięcia, podbródkowy, dłuższe combo
+  do przodu), warianty parady i uniki, zmiany stylów walki NPC (AI), balans i talent. To osobna
+  specyfikacja, która skorzysta z tej. Tutaj sierpowe są pierwszym przypadkiem, który sprawdza potok.
+  NPC używają ich tylko tam, gdzie ich obecny styl już przewiduje cios boczny (W15).
+- Jakość artystyczna animacji. Sierpowy może być zgrubny, byle czytelny jako cios.
+- Zgodność z oryginalnym silnikiem `Gothic2.exe` i jego narzędziami (ADR 0006).
+- Automatyczna ocena wyglądu animacji (płynność, poślizg stóp, przenikanie). To ocenia człowiek.
+- Zewnętrzne źródła animacji (mocap, biblioteki animacji, generowanie przez AI). Każde takie źródło
+  wymaga osobnej decyzji o licencji (konstytucja, zasada 6).
+- Podgląd na żywo w Blenderze (połączenie przez MCP) jako część budowania. Podgląd pomaga autorowi
+  i Claude'owi, ale build go nie wymaga.
+
+## Scenariusze gracza
+
+„Gracz” to tutaj głównie autor moda (właściciel projektu albo Claude), a w scenariuszach 5, 6 i 8
+ktoś, kto gra w moda.
+
+1. **Gdy** autor chce zacząć od oryginalnej animacji, np. ciosu pięścią, **wtedy** jednym poleceniem
+   wczytuje ją z własnej kopii gry do Blendera, razem ze szkieletem i ciałem. Widzi ją tak jak w grze
+   i może ją zapisać jako punkt wyjścia nowej animacji.
+2. **Gdy** autor zmienił w Blenderze istniejącą animację, np. stanie, **wtedy** po zbudowaniu moda
+   zmieniona animacja zastępuje oryginalną w grze, a pozostałe animacje zostają bez zmian.
+3. **Gdy** autor dodaje nową animację, np. sierpowy z lewej, **wtedy** dopisuje jej definicję
+   do tekstowych definicji modelu (nazwa, warstwa, przejścia, flagi, klatki, zdarzenia, takie jak
+   klatka trafienia i okno combo). Po zbudowaniu moda gra używa jej tak samo jak oryginalnych animacji.
+4. **Gdy** Claude buduje animacje bez okna Blendera i bez udziału człowieka, **wtedy** polecenie
+   kończy się sukcesem albo błędem z nazwą animacji i powodem, np. zły szkielet, brak klatek,
+   zdarzenie poza zakresem klatek. Ten sam stan repozytorium daje te same pliki.
+5. **Gdy** gracz walczy pięściami i atakuje z lewej albo z prawej, także w oknie combo po ciosie
+   do przodu, **wtedy** bohater wyprowadza sierpowy z tej strony i trafia przeciwnika jak zwykłym
+   ciosem pięścią.
+6. **Gdy** ktoś uruchomi grę bez moda Gothic 2.5, **wtedy** walka pięściami i wszystkie animacje
+   wyglądają jak dotąd, a atak z lewej pięściami niczego nie robi, tak jak w oryginale.
+7. **Gdy** autor albo Claude chce obejrzeć animację w grze bez grania, **wtedy** scenariusz testowy
+   odtwarza ją na postaci i robi serię zrzutów ekranu.
+8. **Gdy** bohater bije się na pięści z kopaczem albo bandytą, którego styl walki przewiduje ciosy
+   boczne, **wtedy** przeciwnik w seriach wyprowadza sierpowe zamiast samych prostych.
+
+## Wymagania
+
+- **W1:** Każda animacja moda ma w repozytorium dwie postacie:
+  - plik Blendera, czyli plik roboczy do edycji (rozmiar i sposób przechowywania według ADR 0002);
+  - tekstowy eksport z Blendera, który jest źródłem buildu: bezstratny, klatka po klatce, czytelny
+    w diffie.
+
+  Definicje animacji są w plikach tekstowych (W7). Pliki w formatach gry powstają z eksportu
+  i definicji narzędziem i nie są wersjonowane jako źródło. Narzędzie zgłasza błąd, gdy eksport
+  tekstowy nie zgadza się z plikiem Blendera.
+- **W2:** Narzędzie wczytuje do Blendera dowolną oryginalną animację ludzi z kopii gry autora
+  (także z modeli nakładek, np. stylów walki), razem ze szkieletem i ciałem, w pozie zgodnej z grą.
+  Pliki z gry trafiają przy tym tylko do lokalnego katalogu roboczego, nie do repozytorium.
+- **W3:** Konwersja nie traci danych. Oryginalna animacja wczytana do Blendera i zapisana z powrotem
+  bez zmian daje plik bajt w bajt równy oryginałowi.
+- **W4:** Budowanie animacji to jedno polecenie z narzędzi moda, wykonywane także przy zwykłym
+  budowaniu moda.
+  - Działa bez okien i bez interakcji, a z tych samych źródeł daje identyczne pliki.
+  - Nie wymaga Blendera: buduje z eksportu tekstowego (W1). Blendera potrzebują tylko import
+    oryginałów (W2), eksport i sprawdzenie zgodności eksportu z plikiem Blendera.
+  - Kończy się kodem błędu i komunikatem z nazwą animacji, gdy: szkielet nie pasuje do modelu
+    (brak albo nadmiar kości), animacja nie ma klatek, definicja wskazuje nieistniejącą animację,
+    zdarzenie wypada poza zakresem klatek.
+- **W5:** Animacja moda o nazwie oryginalnej animacji zastępuje ją w grze. Pozostałe animacje
+  modelu zostają oryginalne.
+- **W6:** Mod może dodać nowe animacje do modelu ludzi i do każdej jego nakładki (style walki,
+  postawy, chód). Każda ma definicję z nazwą, warstwą, następną animacją, czasem wejścia i wyjścia,
+  flagami (ruch, obrót, kolejka, bezczynność), zakresem klatek oraz zdarzeniami, których używa gra:
+  okno combo, optymalna klatka trafienia, kończyna trafiająca, dźwięki i efekty. W grze nowa
+  animacja działa tak samo jak oryginalna o tych samych ustawieniach.
+- **W7:** Paczka moda nie zawiera oryginalnych animacji ani oryginalnych definicji modelu
+  w niezmienionej postaci (konstytucja, zasada 6).
+  - Definicje modelu ludzi albo nakładki, którą mod zmienia, to pełne tekstowe definicje z MDK
+    w oryginalnej składni Gothica, zmienione o animacje moda. Rozpowszechniamy je na licencji
+    GothicMOD, tak jak skrypty (konstytucja, zasada 9).
+  - Niezmienione modele i nakładki zostają oryginalne z kopii gracza i nie trafiają do paczki.
+- **W8:** Bohater walczący pięściami wyprowadza atak z lewej i z prawej, jeśli model ma dla niego
+  animację. Pierwsze takie animacje to sierpowy z lewej i jego lustrzane odbicie, sierpowy z prawej
+  (W14).
+  - Cios trafia jak zwykły cios pięścią i zadaje obrażenia jak atak boczny w 002 (bez premii combo,
+    także gdy jest częścią serii).
+  - Sierpowe łączą się w serie tak jak ataki boczne bronią. W oknie combo ciosu pięścią do przodu
+    atak z lewej albo z prawej przechodzi w sierpowy z tej strony. W oknie combo sierpowego można
+    wyprowadzić kolejny sierpowy albo cios do przodu. Okna combo i klatki trafienia pochodzą
+    z definicji animacji (W6).
+  - Bez takiej animacji, w tym bez moda, atak boczny pięściami działa jak dotąd, czyli nic nie robi.
+- **W9:** W trybie deweloperskim da się odtworzyć wskazaną animację na wskazanej postaci poleceniem
+  konsoli, także w scenariuszu testowym (003). Animację da się obejrzeć na serii zrzutów bez
+  sterowania bohaterem.
+- **W10:** Narzędzia sprawdzają wersję Blendera i dodatku importu. Brak programu albo zła wersja
+  kończy się jasnym komunikatem, co i gdzie ustawić, a nie błędem w trakcie konwersji.
+  - Ścieżka do Blendera jest ustawieniem dewelopera, nie ścieżką wpisaną w narzędzia.
+  - Dodatek importu w przypiętym commicie pobiera narzędzie moda, bez instalacji w profilu Blendera
+    dewelopera. Zmiana wersji dodatku to zmiana commitu zapisanego w repozytorium.
+- **W11:** W repozytorium jest opis kroków dla autora: jak wczytać oryginał, jak dodać i zbudować
+  nową animację, jak ją obejrzeć w grze.
+- **W12:** Bez moda Gothic 2.5 silnik zachowuje się jak dotąd. Zapisy gry z poprzednich wersji moda
+  się wczytują.
+- **W13:** Definicje z MDK (model ludzi i każda jego nakładka) przed zmianami moda są równoważne
+  definicjom z gry (Noc Kruka): te same animacje, flagi, przejścia, zakresy klatek i zdarzenia.
+  Różnice, jeśli są, zostają opisane i usunięte, zanim definicje z MDK zastąpią w modzie oryginał.
+  Dzięki temu mod bez własnych animacji gra tak samo jak oryginał.
+- **W14:** Narzędzie tworzy lustrzane odbicie animacji (lewo i prawo): zamienia kości lewej i prawej
+  strony, odbija ruch względem płaszczyzny symetrii postaci i zamienia strony w zdarzeniach
+  (np. kończyna trafiająca). Odbicie jest częścią buildu, więc odbita animacja nie ma osobnego źródła.
+  Podwójne odbicie daje animację wyjściową.
+- **W15:** NPC walczący pięściami wyprowadza sierpowy tam, gdzie jego styl walki zleca cios boczny
+  (pojedynczy albo w serii).
+  - Dziś silnik zamienia taki cios na cios do przodu (001 W1). Bez animacji sierpowych, w tym bez
+    moda, tak zostaje.
+  - Styl walki NPC (AI) się nie zmienia. Obrażenia sierpowych NPC są takie jak ataku bocznego (002,
+    bez premii).
+  - Po wdrożeniu zdanie z 001 W1 o ciosach bocznych pięściami trzeba zaktualizować odwołaniem do tej
+    specyfikacji.
+
+## Kryteria akceptacji
+
+Wspólne przygotowanie (P0): mod zbudowany z repozytorium, gra uruchamiana przez `tools/test.ps1`
+(scenariusze z `tests/004/`), dla kryteriów ręcznych z `-Manual`. Blender i dodatek importu
+w wersjach z W10 (Blender 5.2 LTS, KrxImpExp z przypiętego commitu gałęzi `dev`).
+
+- [ ] **K1** (W2, W3): Oryginalne animacje przechodzą konwersję bez straty.
+  - Kroki: polecenie konwersji w obie strony dla wszystkich animacji modelu ludzi i jego nakładek
+    z kopii gry (podstawa i dodatek), bez otwierania Blendera.
+  - Oczekiwane: każdy plik wynikowy jest bajt w bajt równy oryginałowi. Raport podaje liczbę
+    sprawdzonych animacji i listę różnic (pustą).
+- [ ] **K2** (W2): Oryginał wczytany do Blendera wygląda jak w grze.
+  - Kroki: wczytaj do Blendera oryginalny cios pięścią i atak mieczem jednoręcznym ze stylu
+    mistrza. Porównaj klatki z optymalną klatką trafienia z tymi samymi chwilami w grze
+    (scenariusz z W9).
+  - Oczekiwane: pozy się zgadzają (ocena człowieka): stopy na ziemi, ten sam kierunek ciosu
+    i ruch postaci w tę samą stronę.
+- [ ] **K3** (W1, W4): Budowanie jest powtarzalne i zgłasza błędy.
+  - Kroki: zbuduj animacje dwa razy z tego samego stanu repozytorium i porównaj wyniki. Potem
+    zbuduj kolejno z trzema zepsutymi źródłami testowymi: animacja bez jednej kości, zdarzenie poza
+    zakresem klatek, definicja wskazująca brakującą animację. Na koniec zmień plik Blendera bez
+    ponownego eksportu i uruchom sprawdzenie zgodności.
+  - Oczekiwane: oba wyniki są identyczne, a budowanie działa na komputerze bez Blendera. Każdy
+    zepsuty przypadek i niezgodny eksport kończą się kodem błędu i komunikatem z nazwą animacji
+    i powodem.
+- [ ] **K4** (W5, W9): Podmiana istniejącej animacji.
+  - Kroki: testowa zmiana animacji stania ludzi (np. spojrzenie w bok), zbudowanie moda, scenariusz
+    z W9 z serią zrzutów bohatera.
+  - Oczekiwane: na zrzutach widać zmienioną animację. Bohater stoi w miejscu, a inne animacje
+    (bieg, walka) są oryginalne. Zmianę testową usuwamy po kryterium, nie wchodzi do wydania.
+- [ ] **K5** (W6, W8): Sierpowe bohatera w grze.
+  - Kroki: P0 z `-Manual`, bohater z pięściami, `insert` przeciwnika, który nie oddaje. Kilka razy
+    atak z lewej i z prawej z miejsca. Potem serie: cios do przodu i w jego oknie combo atak z lewej,
+    w oknie sierpowego atak z prawej, a na koniec cios do przodu. Na koniec samo zwykłe combo
+    pięściami. Dziennik walki z 003.
+  - Oczekiwane:
+    - atak z lewej i z prawej odtwarza sierpowy z tej strony (ocena człowieka: czytelny jako cios
+      z tej strony);
+    - serie płynnie przechodzą z ciosu w cios, a dziennik pokazuje je jako jedną serię;
+    - trafienia wypadają w klatkach trafienia z definicji, a sierpowe mają obrażenia ataku bocznego
+      bez premii (002 W3);
+    - zwykłe combo pięściami działa jak dotąd.
+- [ ] **K6** (W6): Zdarzenia z definicji działają.
+  - Kroki: scenariusz z W9 odtwarza sierpowy na bohaterze stojącym przy przeciwniku. Dziennik walki
+    i log gry.
+  - Oczekiwane: trafienie, dźwięk zamachu i okno combo pojawiają się w klatkach z definicji.
+- [ ] **K7** (W7): Paczka nie zawiera oryginałów.
+  - Kroki: zbuduj paczkę moda i porównaj jej zawartość z archiwami oryginalnej gry (nazwy i sumy
+    kontrolne).
+  - Oczekiwane: żaden plik animacji w paczce nie jest identyczny z oryginalnym, a definicje modelu
+    różnią się od źródła z MDK zmianami moda. Paczka zawiera tylko animacje i definicje z W1,
+    a `NOTICE.txt` wymienia definicje z MDK jako materiał na licencji GothicMOD.
+- [ ] **K8** (W8, W12, W15): Bez moda bez zmian.
+  - Kroki: ta sama kompilacja silnika bez moda, bohater z pięściami: atak z lewej, zwykły atak,
+    combo. Potem scenariusz z K13 bez moda.
+  - Oczekiwane: atak z lewej niczego nie robi, zwykły atak i combo są jak w oryginale. Kopacz nie
+    wyprowadza sierpowych, a jego ciosy boczne ze stylu są ciosami do przodu.
+- [ ] **K9** (W12): Zapisy.
+  - Kroki: zapis z poprzedniej wersji moda wczytany w nowej. Potem zapis zrobiony w trakcie
+    sierpowego, wczytany ponownie z modem i bez moda.
+  - Oczekiwane: wszystkie zapisy się wczytują. Z modem bohater po wczytaniu może walczyć pięściami
+    i wyprowadzić sierpowy, a bez moda wraca do zwykłej pozy.
+- [ ] **K10** (W10, W11): Złe ustawienia i opis kroków.
+  - Kroki: na czystym checkoucie pobierz dodatek importu narzędziem moda i wykonaj import oryginału.
+    Potem uruchom import ze złą ścieżką do Blendera, a potem z innym commitem dodatku importu.
+    Osoba spoza implementacji (albo nowa sesja Claude'a) dodaje według opisu z W11 testową animację
+    i ogląda ją w grze.
+  - Oczekiwane: oba złe ustawienia kończą się komunikatem, co poprawić. Według opisu da się przejść
+    całą drogę bez dodatkowych pytań.
+- [ ] **K11** (W13): Definicje z MDK są równoważne grze.
+  - Kroki: polecenie porównania definicji modelu ludzi z MDK (przed zmianami moda) z definicjami
+    z archiwów gry, dla modelu podstawowego i każdej jego nakładki.
+  - Oczekiwane: raport bez różnic w animacjach, flagach, przejściach, zakresach klatek
+    i zdarzeniach. Każda różnica ma w raporcie nazwę animacji i pole.
+- [ ] **K12** (W14): Odbicie lustrzane.
+  - Kroki: odbij w narzędziu sierpowy z lewej, a wynik odbij jeszcze raz. Odbij też oryginalny atak
+    boczny mieczem z lewej i porównaj z oryginalnym atakiem z prawej. Scenariusz z W9 ze zrzutami
+    obu sierpowych.
+  - Oczekiwane: podwójne odbicie jest równe animacji wyjściowej w granicach dokładności formatu.
+    Odbity atak mieczem z lewej jest ruchem w drugą stronę, a kończyna trafiająca w zdarzeniach jest
+    po drugiej stronie. Na zrzutach sierpowy z prawej jest lustrzanym odbiciem lewego: stopy na
+    ziemi, ta sama wysokość ciosu (ocena człowieka).
+- [ ] **K13** (W15): NPC wyprowadzają sierpowe.
+  - Kroki: scenariusz automatyczny jak 001 K12: `insert BDT_10027_Addon_Buddler` (styl silny, bez broni
+    białej) atakuje nieśmiertelnego bohatera przez 2 minuty. Potem zestaw `tools/test.ps1 -Spec 001`
+    jako test regresji.
+  - Oczekiwane: dziennik pokazuje ciosy boczne kopacza (sierpowe), także w seriach, z obrażeniami
+    bez premii. Combo do przodu pięściami ma nadal 2 ciosy. Zestaw 001 przechodzi. Jeśli jakieś
+    kryterium 001 zakładało ciosy boczne pięściami jako ciosy do przodu, poprawiamy jego oczekiwania
+    (W15).
+
+## Wpływ na zapisy gry
+
+Funkcja nie dodaje nowego stanu do zapisu. Zapis zawiera jednak nazwy animacji, które postać
+właśnie odtwarza. Silnik już dziś przy wczytaniu pomija animacje, których model nie ma, więc zapis
+zrobiony w trakcie sierpowego wczytany bez moda nie zatrzyma postaci. Sprawdza to K9.
+
+## Zasoby i prawa
+
+- Nowe animacje (na początek sierpowe) robimy sami w Blenderze, bez zewnętrznych źródeł.
+- Oryginalne animacje i szkielet służą tylko jako punkt wyjścia w lokalnym katalogu roboczym
+  autora i nie trafiają do repozytorium ani do paczki w niezmienionej postaci (W2, W7). Animacja
+  zrobiona na bazie oryginału, np. zmienione stanie, jest opracowaniem materiałów Piranha Bytes
+  i podlega licencji GothicMOD (konstytucja, zasada 9).
+- Definicje modelu ludzi i nakładek pochodzą z tekstowych źródeł MDK Piranha Bytes. W repozytorium
+  i w paczce są tylko w postaci zmienionej przez moda, na licencji GothicMOD, z wpisem w `NOTICE.txt`.
+- Narzędzia: Blender 5.2 (GPL) i KrxImpExp, gałąź `dev` z gitlab.com/Patrix9999/krximpexp
+  (GPL-3.0 według nagłówka w kodzie). Oba działają tylko u dewelopera i nie trafiają do paczki moda.
+  Dodatek MCP Blender Lab (GPL) służy tylko do podglądu.
+
+## Pytania otwarte
+
+- [x] **P1:** Co jest źródłem animacji w repozytorium: plik Blendera, tekstowy eksport czy oba?
+  **Odpowiedź (2026-11-03):** oba. Plik Blendera jest plikiem roboczym, a bezstratny eksport
+  tekstowy (klatka po klatce) jest źródłem buildu. ASC z KrxImpExp odpadł jako źródło, bo w teście
+  tracił do 0,5° w pojedynczych klatkach. Zapisane w W1, W4 i K3.
+- [x] **P2:** Jak definicje moda mają się łączyć z oryginalnymi? Do wyboru były: pełne tekstowe
+  definicje z MDK zmienione przez moda, własna nakładka nakładana przez skrypty, dokładanie definicji
+  przez silnik albo pełne skompilowane definicje z buildu. Fakty: silnik już dziś czyta tekstowe
+  definicje pod nazwą wersji skompilowanej, a w kopii gry właściciela są tekstowe źródła z MDK.
+  **Odpowiedź (2026-11-03):** pełne tekstowe definicje z MDK, zmienione o animacje moda, na licencji
+  GothicMOD. Zapisane w W6, W7, W13, K7, K11 i „Zasobach i prawach”.
+- [x] **P3:** Składnia definicji: oryginalna składnia Gothica czy własny format? **Rozstrzygnięte
+  przez P2:** oryginalna składnia, bo definicje moda to zmienione źródła z MDK.
+- [x] **P4:** Czy w tej specyfikacji robimy też sierpowy z prawej? **Odpowiedź (2026-11-03):** tak,
+  przez odbicie lustrzane w narzędziu. Zapisane w celu, scenariuszu 5, W8, W14, K5 i K12.
+- [x] **P5:** Zakres modeli: tylko podstawowy model ludzi czy także nakładki? **Odpowiedź
+  (2026-11-03):** model ludzi i wszystkie jego nakładki, bez innych szkieletów. Zapisane w W6, W7,
+  W13, K1 i K11.
+- [x] **P6:** Jak deweloper dostaje KrxImpExp w przypiętej wersji? **Odpowiedź (2026-11-03):**
+  narzędzie moda pobiera przypięty commit. Zapisane w W10 i K10.
+- [x] **P7:** Czy sierpowy ma od razu wchodzić w serie, czy wystarczy pojedynczy atak boczny?
+  **Odpowiedź (2026-11-03):** od razu w serie, tak jak ataki boczne bronią (po ciosie do przodu
+  i po sierpowym). Obrażenia zgodnie z 002, bez premii. Zapisane w W8 i K5.
+- [x] **P8:** Czy NPC walczący pięściami mają używać sierpowych? Fakt z kodu: style walki NPC już
+  dziś zlecają ciosy boczne pięściami, a silnik zamienia je na ciosy do przodu (001 W1).
+  **Odpowiedź (2026-11-03):** tak, tam gdzie ich styl zleca cios boczny, bez zmian w AI. Zapisane
+  w celu, scenariuszu 8, W15, K8, K13 i „Poza zakresem”.
+
+## Weryfikacja
+
+<!-- Wypełniane po implementacji: kto, kiedy, na jakiej wersji, wynik dla każdego K. -->

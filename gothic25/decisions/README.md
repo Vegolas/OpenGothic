@@ -12,3 +12,4 @@ Decyzje, które dotyczą więcej niż jednej funkcji: narzędzia, formaty, konwe
 | [0005](0005-stabilne-numery-symboli.md) | Stabilne numery symboli w GOTHIC.DAT (zapisy gry) | Przyjęta |
 | [0006](0006-mod-tylko-dla-opengothic.md) | Mod tylko dla OpenGothic | Przyjęta |
 | [0006](0006-mod-tylko-dla-opengothic.md) | Mod tylko dla OpenGothic | Proponowana |
+| [0007](0007-zrodla-i-budowanie-animacji-moda.md) | Źródła i budowanie animacji moda | Przyjęta |
