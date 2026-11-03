@@ -830,33 +830,41 @@ def parse_ani(p: MdsTokens, origin: str) -> MdsAni:
 
 
 def merge_scripts(base: ModelScript, ext: ModelScript) -> tuple:
-    """ADR 0008: entries of the extension replace entries of the same name (case-insensitive) or are
-    appended. Returns (merged, added, replaced)."""
+    """ADR 0008, as Resources::implLoadAnimation merges it: an entry of the extension replaces every
+    entry of the same name (case-insensitive), also of another kind (an ani over an aniAlias), or is
+    appended. Blends match by both names. Disabled animations and model tags are appended.
+    Returns (merged, added, replaced)."""
     out = ModelScript(list(base.animations), list(base.aliases), list(base.blends), list(base.combinations),
                       list(base.disabled), list(base.model_tags))
     added = replaced = 0
 
-    def put(items, entry, key):
+    def name_of(x) -> str:
+        return (x["name"] if isinstance(x, dict) else x.name).upper()
+
+    def put(items, entry):
         nonlocal added, replaced
-        k = key(entry)
-        for i, old in enumerate(items):
-            if key(old) == k:
-                items[i] = entry
-                replaced += 1
-                return
+        k, found = name_of(entry), False
+        for lst in (out.animations, out.aliases, out.combinations):
+            kept = [x for x in lst if name_of(x) != k]
+            found |= len(kept) != len(lst)
+            lst[:] = kept
         items.append(entry)
-        added += 1
+        replaced, added = replaced + found, added + (not found)
 
     for a in ext.animations:
-        put(out.animations, a, lambda x: x.name.upper())
+        put(out.animations, a)
     for a in ext.aliases:
-        put(out.aliases, a, lambda x: x["name"].upper())
-    for b in ext.blends:
-        put(out.blends, b, lambda x: (x["name"].upper(), x["next"].upper()))
+        put(out.aliases, a)
     for c in ext.combinations:
-        put(out.combinations, c, lambda x: x["name"].upper())
+        put(out.combinations, c)
+    for b in ext.blends:
+        k = (b["name"].upper(), b["next"].upper())
+        kept = [x for x in out.blends if (x["name"].upper(), x["next"].upper()) != k]
+        replaced, added = replaced + (len(kept) != len(out.blends)), added + (len(kept) == len(out.blends))
+        out.blends = kept + [b]
     out.disabled += ext.disabled
     out.model_tags += ext.model_tags
+    added += len(ext.disabled) + len(ext.model_tags)
     return out, added, replaced
 
 

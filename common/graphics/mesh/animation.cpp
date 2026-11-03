@@ -1,6 +1,7 @@
 #include "animation.h"
 
 #include <Tempest/Log>
+#include <zenkit/Misc.hh>
 #include <cctype>
 
 #include "world/objects/npc.h"
@@ -29,11 +30,20 @@ static uint64_t frameClamp(int32_t frame,uint32_t first,uint32_t numFrames,uint3
   return uint64_t(frame)-first;
   }
 
-Animation::Animation(zenkit::ModelScript& p, std::string_view name, const bool ignoreErrChunks) {
+static bool hasName(const std::vector<std::string>& names, std::string_view name) {
+  for(auto& i:names)
+    if(zenkit::iequals(i,name))
+      return true;
+  return false;
+  }
+
+Animation::Animation(zenkit::ModelScript& p, std::string_view name, const bool ignoreErrChunks,
+                     const std::vector<std::string>& extension) {
   ref = std::move(p.aliases);
 
   for(auto& ani : p.animations) {
     auto& data = loadMAN(ani, std::string(name) + '-' + ani.name + ".MAN");
+    data.extension = hasName(extension,ani.name);
     data.data->sfx = std::move(ani.sfx);
     data.data->gfx = std::move(ani.sfx_ground);
     data.data->events = std::move(ani.events);
@@ -74,6 +84,7 @@ Animation::Animation(zenkit::ModelScript& p, std::string_view name, const bool i
         ani.next     = std::move(co.next);
         ani.data     = d; // set first as default
         ani.comb.resize(size_t(co.last_frame));
+        ani.extension = hasName(extension,co.name);
         found=true;
         break;
         }
@@ -87,7 +98,7 @@ Animation::Animation(zenkit::ModelScript& p, std::string_view name, const bool i
   mesh = std::move(p.meshes);
   meshDef = std::move(p.skeleton);
 
-  setupIndex();
+  setupIndex(extension);
   }
 
 const Animation::Sequence* Animation::sequence(std::string_view name) const {
@@ -132,7 +143,7 @@ Animation::Sequence& Animation::loadMAN(const zenkit::MdsAnimation& hdr, std::st
   return ret;
   }
 
-void Animation::setupIndex() {
+void Animation::setupIndex(const std::vector<std::string>& extension) {
   for(auto& sq:sequences)
     sq.data->setupEvents(sq.data->fpsRate);
 
@@ -154,6 +165,7 @@ void Animation::setupIndex() {
     ani.blendOut = uint64_t(1000 * r.blend_out);
     ani.reverse  = r.direction != zenkit::AnimationDirection::FORWARD;
     ani.next     = r.next;
+    ani.extension = hasName(extension,r.name);
     sequences.emplace_back(std::move(ani));
     }
   ref.clear();

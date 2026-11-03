@@ -112,9 +112,9 @@ gry G1 i G2 nie mają ani jednego, ani drugiego (sprawdza K8 i K11).
    - `Resources::implLoadAnimation` po wczytaniu definicji modelu albo nakładki szuka pliku
      `<nazwa bez rozszerzenia>.EXT.MDS`, a gdy go znajdzie, ładuje go przez `zenkit::ModelScript::load`.
    - Wpisy łączy według nazwy, bez rozróżniania wielkości liter:
-     - `animations` i `aliases`: wpis z rozszerzenia zastępuje oryginał albo dochodzi;
+     - `animations`, `aliases` i `combinations`: wpis z rozszerzenia zastępuje każdy wpis oryginału
+       o tej samej nazwie, także innego rodzaju (`ani` zamiast `aniAlias`), albo dochodzi;
      - `blends` według pary nazw;
-     - `combinations` według nazwy;
      - `disabled_animations` i `model_tags` dochodzą.
    - `meshes` i `skeleton` z rozszerzenia są pomijane.
    - Animacje z rozszerzenia dostają znacznik pochodzenia (dla polecenia z pkt 5).

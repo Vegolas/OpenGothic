@@ -50,7 +50,9 @@ Fakty z kodu:
 - Nazwa pliku: `<MODEL>.EXT.MDS`, gdzie `<MODEL>` to nazwa definicji modelu albo nakładki bez
   rozszerzenia. Treść w składni MDS, z blokiem `Model` i `aniEnum`. Siatki i szkielet w pliku
   rozszerzenia są ignorowane.
-- Łączenie według nazwy, bez rozróżniania wielkości liter. Wpis z rozszerzenia wygrywa z oryginałem.
+- Łączenie według nazwy, bez rozróżniania wielkości liter. Wpis z rozszerzenia wygrywa z oryginałem,
+  także z wpisem innego rodzaju o tej samej nazwie (np. `ani` zastępuje `aniAlias`), bo w grze nazwa
+  wskazuje jedną animację.
 - Zachowanie włącza obecność pliku (dane moda), tak jak animacje w ADR 0007, pkt 5. Plan dowodzi,
   że oryginalne gry takich plików nie mają.
 - Narzędzia moda (`tools/anim.py`) łączą definicje tak samo, żeby walidować build bez silnika.

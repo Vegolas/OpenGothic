@@ -217,7 +217,7 @@ nie kopiujemy w całości.
 
 ## Faza 3: Silnik
 
-- [ ] **Z10** [P] Dokładanie definicji moda (ADR 0008).
+- [x] **Z10** [P] Dokładanie definicji moda (ADR 0008).
       - `Resources::implLoadAnimation`:
         - po wczytaniu definicji modelu albo nakładki szuka `<nazwa>.EXT.MDS` i ładuje go przez
           `zenkit::ModelScript::load`;
@@ -231,6 +231,22 @@ nie kopiujemy w całości.
         - z danymi testowymi z Z9 log pokazuje dołożone i zastąpione wpisy, a nowa animacja ma MAN
           z paczki;
         - `-Spec 001` i `-Spec 002` z pustym rozszerzeniem przechodzą.
+      - Wynik (2026-11-03):
+        - `common/resources.cpp`: `loadExtension` i `mergeExtension` przy `implLoadAnimation`.
+          `Animation::Sequence::extension` oznacza wpisy z rozszerzenia (dla `ani info`, Z11). Build
+          bez ostrzeżeń w zmienionych plikach;
+        - wpis z rozszerzenia zastępuje każdy wpis oryginału o tej samej nazwie, także innego rodzaju
+          (`ani` zamiast `aniAlias`). `anim.py merge_scripts` łączy tak samo i tak samo liczy, a blokady
+          i znaczniki modelu liczy jako dołożone. Doprecyzowane w planie i ADR 0008;
+        - scenariusz z danymi z Z9 (`-AnimExtra buildnims-fixtures\k11`, szkielet z nakładką
+          `humans_1hST1.mds`, przebieg `20261103-222610-Z10-merge`): w logu
+          `HUMANS.EXT.MDS: 1 added, 1 replaced` i `HUMANS_1HST1.EXT.MDS: 1 added, 0 replaced`, tak jak
+          w `anim.py defs`. Brak błędu ładowania `T_G25TEST` i `T_G25OVERLAYTEST`, więc ich MAN pochodzą
+          z paczki (w grze ich nie ma);
+        - regresja z pustym rozszerzeniem: `-Spec 001` 17 z 17, `-Spec 002` 12 z 12 (przebiegi
+          `20261103-222727` do `20261103-230706`). W logu `0 added, 0 replaced`, a bez moda (K08) nie ma
+          linii rozszerzenia. Ostrzeżenie ZenKit `Unexpected value for MdsEventType` jest też bez moda,
+          więc pochodzi z oryginalnych MSB.
 
       Po Z7 i Z9 (dane testowe). (W6, W7, W12, W13)
 - [ ] **Z11** [P] Polecenia konsoli `play ani` i `ani info`.

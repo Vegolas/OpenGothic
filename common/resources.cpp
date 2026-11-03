@@ -15,6 +15,7 @@
 #include <zenkit/ModelHierarchy.hh>
 #include <zenkit/Model.hh>
 #include <zenkit/ModelScript.hh>
+#include <zenkit/Misc.hh>
 #include <zenkit/Material.hh>
 #include <zenkit/Texture.hh>
 #include <zenkit/addon/texcvt.hh>
@@ -664,6 +665,75 @@ ProtoMesh* Resources::implDecalMesh(const zenkit::VisualDecal& decal) {
   return ret;
   }
 
+template<class T>
+static bool eraseByName(std::vector<T>& list, std::string_view name) {
+  auto it = std::remove_if(list.begin(),list.end(),[name](const T& i){ return zenkit::iequals(i.name,name); });
+  const bool found = it!=list.end();
+  list.erase(it,list.end());
+  return found;
+  }
+
+// An entry of the extension replaces every entry of the same name in the model script, also of another
+// kind (an ani over an aniAlias), or is appended. Blends match by both names. Meshes and the skeleton
+// of the extension are ignored.
+static void mergeExtension(zenkit::ModelScript& mds, zenkit::ModelScript& ext, std::vector<std::string>& names,
+                           uint32_t& added, uint32_t& replaced) {
+  auto put = [&](auto& list, auto& entry) {
+    bool found = false;
+    found |= eraseByName(mds.animations,  entry.name);
+    found |= eraseByName(mds.aliases,     entry.name);
+    found |= eraseByName(mds.combinations,entry.name);
+    (found ? replaced : added)++;
+    names.push_back(entry.name);
+    list.push_back(std::move(entry));
+    };
+  for(auto& i:ext.animations)
+    put(mds.animations,i);
+  for(auto& i:ext.aliases)
+    put(mds.aliases,i);
+  for(auto& i:ext.combinations)
+    put(mds.combinations,i);
+  for(auto& b:ext.blends) {
+    auto it = std::remove_if(mds.blends.begin(),mds.blends.end(),[&b](const zenkit::MdsAnimationBlend& i){
+      return zenkit::iequals(i.name,b.name) && zenkit::iequals(i.next,b.next);
+      });
+    (it!=mds.blends.end() ? replaced : added)++;
+    mds.blends.erase(it,mds.blends.end());
+    mds.blends.push_back(std::move(b));
+    }
+  for(auto& i:ext.disabled_animations) {
+    mds.disabled_animations.push_back(std::move(i));
+    added++;
+    }
+  for(auto& i:ext.model_tags) {
+    mds.model_tags.push_back(std::move(i));
+    added++;
+    }
+  }
+
+// A mod adds animation definitions to a model or an overlay with <model>.EXT.MDS, a model script with
+// only its own entries. Without the file the model script stays as it is.
+static void loadExtension(zenkit::ModelScript& mds, std::string_view model, std::vector<std::string>& names) {
+  const auto  fname = std::string(model) + ".EXT.MDS";
+  const auto* entry = Resources::vdfsIndex().find(fname);
+  if(entry==nullptr)
+    return;
+
+  zenkit::ModelScript ext;
+  try {
+    auto reader = entry->open_read();
+    ext.load(reader.get());
+    }
+  catch(const std::exception& e) {
+    Log::e("unable to load model script extension \"",fname,"\": ",e.what());
+    return;
+    }
+
+  uint32_t added = 0, replaced = 0;
+  mergeExtension(mds,ext,names,added,replaced);
+  Log::i("model script extension \"",fname,"\": ",added," added, ",replaced," replaced");
+  }
+
 std::unique_ptr<Animation> Resources::implLoadAnimation(std::string name) {
   if(name.size()<4)
     return nullptr;
@@ -679,7 +749,11 @@ std::unique_ptr<Animation> Resources::implLoadAnimation(std::string name) {
     zenkit::ModelScript mds;
     auto reader = entry->open_read();
     mds.load(reader.get());
-    return std::unique_ptr<Animation>{new Animation(mds,name.substr(0,name.size()-4),false)};
+
+    const auto model = name.substr(0,name.size()-4);
+    std::vector<std::string> extension;
+    loadExtension(mds,model,extension);
+    return std::unique_ptr<Animation>{new Animation(mds,model,false,extension)};
     }
 
   return nullptr;

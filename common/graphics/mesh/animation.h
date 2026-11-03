@@ -108,6 +108,7 @@ class Animation final {
       uint64_t                               blendOut  = 0;
       AnimClass                              animCls   = Transition;
       bool                                   reverse   = false;
+      bool                                   extension = false; // defined by <model>.EXT.MDS of a mod
 
       std::string                            next;
       const Sequence*                        nextPtr = nullptr;
@@ -122,7 +123,8 @@ class Animation final {
       };
 
 
-    Animation(zenkit::ModelScript &p, std::string_view name, bool ignoreErrChunks);
+    Animation(zenkit::ModelScript &p, std::string_view name, bool ignoreErrChunks,
+              const std::vector<std::string>& extension = {});
 
     const Sequence*    sequence(std::string_view name) const;
     const Sequence*    sequenceAsc(std::string_view name) const;
@@ -131,7 +133,7 @@ class Animation final {
 
   private:
     Sequence&          loadMAN(const zenkit::MdsAnimation& hdr, std::string_view name);
-    void               setupIndex();
+    void               setupIndex(const std::vector<std::string>& extension);
 
     mutable const Sequence*                  sqHot = nullptr;
     std::vector<Sequence>                    sequences;
