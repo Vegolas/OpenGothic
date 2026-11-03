@@ -266,6 +266,21 @@ def write_man(a: Man) -> bytes:
     return bytes(out)
 
 
+def quant_covers(quant: tuple, samples: list) -> bool:
+    lo, scale = quant
+    hi = lo + 65535 * scale
+    return all(lo - scale <= c <= hi + scale for row in samples for s in row for c in s[4:7])
+
+
+def snap(a: Man) -> Man:
+    """Replaces every sample with the value its MAN code decodes to, so the text is canonical: an
+    unchanged animation gives the same .anim as to-text of its MAN, without float noise."""
+    if a.quant is None or not quant_covers(a.quant, a.samples):
+        a.quant = fit_quant(a.samples)
+    a.samples = parse_man(write_man(a), a.model).samples
+    return a
+
+
 # --- .anim text --------------------------------------------------------------------------------------
 
 def pos_digits(quant: tuple | None) -> int:

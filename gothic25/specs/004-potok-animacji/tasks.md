@@ -46,7 +46,7 @@ nie kopiujemy w całości.
         odwzorowuje. `extract HUMANS` bierze `HUMANS.MSB` i `HUM_BODY_NAKED0.MDM` z `Anims_Addon.vdf`.
 
       (W2, W3, K1 bez Blendera)
-- [ ] **Z3** Skrypty Blendera i `tools/anim.ps1`.
+- [x] **Z3** Skrypty Blendera i `tools/anim.ps1`.
       - `tools/blender/rig.py`:
         - import MDH+MDM przez KrxImpExp (jawne `addon_utils.enable(..., default_set=True)`);
         - MAN -> akcja, ze wzoru `s7_apply_man.py`; sloty `ZS_*` z kluczami transformacji lokalnej;
@@ -63,6 +63,19 @@ nie kopiujemy w całości.
         - `anim.ps1 import HUMANS S_FISTATTACK` daje `.blend` bez siatek z gry, a `open` dokłada ciało;
         - zła ścieżka do Blendera i inny commit KrxImpExp kończą się komunikatem (K10, część
           o ustawieniach).
+
+      - Wynik (2026-11-03):
+        - `roundtrip-blender`: 1038 animacji, 1038 identycznych bajt w bajt (także 199 jednoklatkowych,
+          skala pozycji 0, w ≈ 0);
+        - eksport niezmienionego `S_FISTATTACK` daje ten sam tekst co `anim.py to-text`, bo eksport
+          przyciąga próbki do siatki kwantyzacji MAN (`anim.snap`). Zmieniony oryginał, który wychodzi
+          poza zakres kwantyzacji, dostaje nowy zakres;
+        - lekki `.blend`: szkielet i sloty KrxImpExp, bez `ZM_SKIN`, `DUMMY_HEAD` i tekstur z gry;
+        - `check` wykrywa rozjechany `.anim`;
+        - kopia akcji pod nową nazwą eksportuje się jako nowa animacja (bez `raw`, `layout`, `quant`
+          oryginału);
+        - błędy: zła ścieżka do Blendera, Blender 3.6 („Blender 5.2.x is required”) i inny commit
+          KrxImpExp kończą się komunikatem.
 
       Po Z1 i Z2. (W1, W2, W3, W10, K1)
 
@@ -166,6 +179,8 @@ nie kopiujemy w całości.
 - [ ] **Z12** [P] Miara kierunku ciosów w raporcie walki.
       - `tools/fightlog.py`: `attacks.dir.<fwd|left|right|run|finish>` dla oczekiwań. Opis w
         `tests/README.md` (oczekiwania).
+      - Poprawka: `techniques_section` dzieli przez zero, gdy przebieg nie ma ciosów bohatera
+        (`ZeroDivisionError` po ręcznym przebiegu w Khorinis 2026-11-03, `fightlog.py:418`).
       - Sprawdzenie: raport z istniejącego przebiegu 002 (ataki boczne paladyna) pokazuje
         `attacks.dir.left` > 0.
 
