@@ -19,9 +19,10 @@ Zmiany w silniku zależą od danych moda:
 - ataki boczne pięściami bohatera i NPC (gdy model ma ich animacje);
 - polecenia konsoli, które odtwarzają animację i wypisują jej definicję.
 
-Pierwszą treścią są sierpowe z własnymi kluczami: lewy zrobiony w Blenderze i prawy jako jego
-odbicie. Zasady wspólne dla kolejnych funkcji z animacjami są w [ADR 0007](../../decisions/0007-zrodla-i-budowanie-animacji-moda.md)
-i ADR 0008.
+Pierwszą treścią są sierpowe: lewy zrobiony w Blenderze i prawy jako jego odbicie. Od 2026-11-04
+mogą zaczynać się od oryginalnej postawy i przerabiać oryginalne ruchy (spec. P9, ADR 0009). Zasady
+wspólne dla kolejnych funkcji z animacjami są w [ADR 0007](../../decisions/0007-zrodla-i-budowanie-animacji-moda.md),
+ADR 0008 i ADR 0009.
 
 ## Warstwa
 
@@ -167,8 +168,9 @@ gothic25/anims/
 
 - **Sierpowy z lewej** zakładamy poleceniem `anim.ps1 new` na czystym szkielecie i kluczujemy sami
   w Blenderze przez MCP w oknie właściciela, który ogląda i ocenia.
-  - Oryginalny `S_FISTATTACK` można obejrzeć obok (`anim.ps1 import`) jako wzorzec, ale bez
-    kopiowania kluczy (spec. P9).
+  - Oryginalny `S_FISTATTACK` można obejrzeć obok (`anim.ps1 import`) jako wzorzec. Od 2026-11-04
+    sierpowy może zaczynać się od oryginalnej postawy i przerabiać oryginalny ruch (spec. P9,
+    ADR 0009).
   - Ok. 20-30 klatek przy 25 fps: postawa bojowa, obrót tułowia, łuk lewej ręki w poziomie, powrót.
 - **Definicja w `HUMANS.EXT.MDS`**, wzorem budowy ataku bocznego broni:
   - `ani ("t_FistAttackL" 1 "" 0.0 0.2 M. "t_FistAttackL.anim" F 1 N)` z `DEF_HIT_LIMB "BIP01 L HAND"`,
@@ -297,9 +299,9 @@ postaci (K9). Oryginalne definicje się nie zmieniają, więc stare zapisy wskaz
 - [x] 5. **Kryteria sprawdzalne w grze.** K4, K6, K8, K11, K12 i K13 to scenariusze automatyczne. K5
   to scenariusz ręczny. K1, K3, K7 i K14 sprawdzają narzędzia z kodem wyjścia.
 - [x] 6. **Prawa do zasobów.** Z4 ustaliło, że definicje z MDK i animacje z gry są na licencji gry.
-  - W repozytorium i paczce są tylko animacje z własnymi kluczami i własne wpisy definicji (W7,
-    W16, K7, K14).
-  - Oryginały i dane testowe z nich zostają w `build/`.
+  - W repozytorium i paczce są animacje moda (nowe albo zmienione oryginały, ADR 0009) i własne
+    wpisy definicji. Niezmienione pliki z gry nie trafiają tam (W7, W16, K7, K14).
+  - Niezmienione oryginały i dane testowe z nich zostają w `build/`.
   - `.blend` nie zawiera siatek z gry. Szkielet i `skeleton.json` opisują budowę modelu, do której
     animacja musi pasować.
   - Narzędzia (Blender, KrxImpExp, GPL) nie trafiają do paczki.
@@ -341,7 +343,8 @@ i uzasadniają ADR 0007, pkt 5, i ADR 0008.
   (001 K12). Regresja 001 po zmianach w silniku, a oczekiwania poprawiamy jawnie (K13).
 - **R7: sierpowy od zera.** Bez kopiowania kluczy oryginału pierwsza animacja zajmie więcej czasu
   i może wyjść sztywna. Spec. dopuszcza zgrubną. Właściciel ocenia ją na podglądzie MCP przed
-  buildem i w K5. Pozę bojową `S_FIST` ustawiamy własnymi kluczami.
+  buildem i w K5. **Zaszło 2026-11-04:** sierpowy od zera odstawał stylem, więc P9 zmieniono
+  (ADR 0009) i kolejne wersje zaczynają się od oryginalnej postawy `S_FISTRUN`.
 - **R8: `play ani` a AI postaci.** AI NPC może od razu przerwać odtwarzanie. Do zrzutów używamy
   bohatera albo NPC bez planu dnia.
 - **R9: dostępność GitLab.** `get-krx.ps1` pobiera przez git. Archiwa www są za weryfikacją
@@ -358,7 +361,8 @@ i uzasadniają ADR 0007, pkt 5, i ADR 0008.
   licencyjna MDK na to nie pozwala (Z4, ADR 0008).
 - **Własna nakładka nakładana przez skrypty:** musiałaby trafić do każdej postaci i starych zapisów,
   a o wyniku decydowałaby kolejność względem nakładek stylów walki (ADR 0008, spec. P2).
-- **Przeróbki oryginalnych animacji w paczce:** umowa licencyjna gry, spec. P9.
+- **Przeróbki oryginalnych animacji w paczce:** odrzucone 2026-11-03 przez umowę licencyjną gry
+  (spec. P9), przyjęte 2026-11-04 (ADR 0009).
 - **Symbol skryptu włączający ataki boczne pięściami (ADR 0003):** konfiguracja w dwóch miejscach,
   bez korzyści, bo animacja i tak jest warunkiem (ADR 0007, pkt 5).
 - **Instalacja KrxImpExp w profilu Blendera użytkownika:** niepowtarzalna i miesza się z ręczną pracą

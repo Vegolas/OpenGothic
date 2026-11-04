@@ -192,7 +192,7 @@ def assign_action(arm, act):
 # --- MAN <-> action ----------------------------------------------------------------------------------------
 
 def header_of(a, origin: str) -> dict:
-    # origin "game": imported from an original (local reference only, spec 004 W16); "mod": our own keys
+    # origin "game": imported from an original (goes to the mod once changed, ADR 0009); "mod": made with new
     return {"origin": origin, "model": a.model, "name": a.name, "next": a.next, "version": a.version,
             "layer": a.layer, "fps": a.fps, "fps_source": a.fps_source, "checksum": a.checksum,
             "bbox": list(a.bbox), "quant": list(a.quant) if a.quant is not None else None, "layout": a.layout,

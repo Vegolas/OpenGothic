@@ -15,7 +15,8 @@ o animacje moda. Zadanie Z4 planu 004 sprawdziło licencję MDK (ADR 0007, „Ko
 Właściciel projektu zdecydował 2026-11-03 (spec. 004, P2 i P9):
 - definicje moda łączy z oryginałem silnik;
 - w paczce są tylko animacje z własnymi kluczami, a oryginały służą lokalnie jako wzorzec i do
-  testów.
+  testów. **Zmienione 2026-11-04 przez [ADR 0009](0009-zmienione-oryginalne-animacje-w-paczce.md):**
+  zmienione oryginalne animacje mogą trafić do paczki, niezmienione nie.
 
 Fakty z kodu:
 
@@ -61,9 +62,10 @@ Fakty z kodu:
 
 ## Konsekwencje
 
-- W repozytorium i w paczce są tylko nasze definicje (zasada 6). Definicje z MDK i oryginalne
-  animacje służą lokalnie jako wzorzec i do testów.
+- W repozytorium i w paczce są tylko nasze wpisy definicji (zasada 6). Definicje z MDK służą
+  lokalnie jako wzorzec i do testów. Animacje: zob. ADR 0009.
 - Silnik zyskuje ogólny mechanizm, który da się zgłosić do Try/OpenGothic.
-- Podmiana oryginalnej animacji to wpis w rozszerzeniu (opcjonalnie) i MAN z kluczami moda.
+- Podmiana oryginalnej animacji to wpis w rozszerzeniu (opcjonalnie) i MAN moda, nowy albo
+  zmieniony z oryginału (ADR 0009).
 - Reguła „wpis wygrywa według nazwy” nie pozwala usunąć oryginalnej animacji. Jeśli kiedyś będzie
   potrzebne, dojdzie jawna składnia usuwania.

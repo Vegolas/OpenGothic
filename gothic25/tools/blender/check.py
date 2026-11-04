@@ -36,10 +36,11 @@ def main():
         if act is None:
             problems.append(f"{f}: no action {stem}")
             continue
-        if rig.origin_of(act) == "game" and not export.inside(srcdir, export.BUILD_DIR):
-            problems.append(f"{f}: the action comes from an imported original (spec 004 W16)")
+        a = rig.action_to_man(rig.RigMap(export.find_armature(), mdh), act)
+        if export.unchanged_original(act, a, workdir) and not export.inside(srcdir, export.BUILD_DIR):
+            problems.append(f"{f}: the action is an unchanged copy of an original (spec 004 W16)")
             continue
-        text = rig.anim.to_text(rig.action_to_man(rig.RigMap(export.find_armature(), mdh), act))
+        text = rig.anim.to_text(a)
         with open(anim_path, encoding="utf-8") as fin:
             stored = fin.read()
         if text != stored:

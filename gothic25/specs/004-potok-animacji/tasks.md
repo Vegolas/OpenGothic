@@ -212,6 +212,14 @@ nie kopiujemy w całości.
         - `new -Anim T_G25NEW -Frames 12` + `export`: 12 klatek, 25 węzłów (kości modelu), bez `raw`,
           `layout` i slotów. Linia `quant` jest dopasowana do własnych próbek (`snap`), nie z oryginału;
         - `check` dla nowej animacji przechodzi, a z dołożoną pochodną `.blend` poza `build/` daje błąd W16.
+      - Zmiana po nowej odpowiedzi na P9 (2026-11-04, ADR 0009): blokada pilnuje już tylko
+        niezmienionych oryginałów. `export.py` porównuje klatki akcji z importu z oryginalnym MAN
+        z katalogu roboczego (z tolerancją kwantyzacji formatu), `check.py` tak samo. Sprawdzenie:
+        - niezmieniona kopia `S_FISTATTACK` jako `T_G25COPY` i sam `S_FISTATTACK` do źródeł: błąd W16
+          („change it first”);
+        - z `-AllowDerived` poza `build/`: błąd, do `build/`: zapis;
+        - kopia po zmianie (głowa obrócona o 15° w klatce 10) eksportuje się, a `check` przechodzi;
+        - `check` z niezmienioną kopią poza `build/`: błąd W16; `check` źródeł moda: 1 z 1 zgodny.
 
       Po Z3. (W2, W16, K14)
 
@@ -353,7 +361,8 @@ nie kopiujemy w całości.
 - [ ] **Z15** Sierpowy z lewej.
       - Start: `anim.ps1 new -Anim T_FISTATTACKL`. Animację kluczujemy sami w Blenderze przez MCP
         w oknie właściciela, który ogląda podgląd i ją akceptuje. Oryginalny `S_FISTATTACK` można
-        obejrzeć obok (`anim.ps1 import`), bez kopiowania kluczy (spec. P9).
+        obejrzeć obok (`anim.ps1 import`). Od 2026-11-04 wolno zaczynać od oryginalnej postawy
+        i przerabiać oryginały (spec. P9, ADR 0009).
       - Ok. 20-30 klatek przy 25 fps: postawa bojowa, obrót tułowia, łuk lewej ręki w poziomie,
         powrót. Stopy na ziemi, korzeń bez dryfu.
       - `anims/HUMANS/T_FISTATTACKL.blend` (bez siatek z gry) i `T_FISTATTACKL.anim`.
@@ -368,6 +377,31 @@ nie kopiujemy w całości.
         - `ani info hero T_FISTATTACKL` pokazuje pochodzenie z moda;
         - scenariusz z `play ani hero T_FISTATTACKL` i zrzutami;
         - w trybie ręcznym (za zgodą właściciela) atak z lewej pięściami.
+      - Ponownie otwarte 2026-11-04: wersja 1 działa, ale według właściciela odstaje stylem od
+        reszty animacji. P9 zmienione (ADR 0009). Właściciel robi sierpowe ręcznie w Blenderze od
+        postawy `S_FISTRUN` (wstawionej w klatkach 0 i 24 akcji `T_FISTATTACKL`). Wersja 1 zostaje
+        w pliku roboczym jako akcja `T_FISTATTACKL_v1_claude`.
+      - Wynik wersji 1 (2026-11-04):
+        - `T_FISTATTACKL`: 25 klatek (1 s), same nasze klucze. Pozy to obroty kości wokół osi ciała
+          w skrypcie prototypu w scratchpadzie sesji (`z15/hook.py`). Nogi rozwiązuje proste IK, więc
+          kostki stoją w miejscu w trzech osiach (zmierzone: najwyżej 0,2 mm), a korzeń tylko przysiada
+          o 1,5 cm w pionie. Pierwsza wersja dryfowała w bok (właściciel: „jakby płynął”), bo IK
+          pilnowało tylko dwóch osi, a korzeń przesuwał się w bok;
+        - przebieg: klatka 0 garda (lewa noga z przodu), 4 zamach, 9 trafienie (łokieć na wysokości barku,
+          tułów skręcony w prawo), 12 dociągnięcie, 18-24 powrót do gardy. Właściciel obejrzał w Blenderze
+          i zaakceptował;
+        - wpis `t_FistAttackL` w bloku `// G25 004`: przejścia 0,1/0,2 s, flaga `M`, zakres 1-25,
+          `DEF_OPT_FRAME` 10 (klatka MAN 9), `DEF_HIT_END` 18, `DEF_WINDOW` 10 18, `WHOOSH` w klatce 6
+          z `R:2500`;
+        - `anim.ps1 check`: 1 z 1 zgodny, `anim.py build` daje `HUMANS-T_FISTATTACKL.MAN` (7691 B),
+          `check-pack`: 2 pliki animacji moda, bez błędów;
+        - w grze (przebieg `20261104-011530-Z15-hook`): `ani info hero T_FISTATTACKL` to samo co `defs`
+          (pochodzenie `mod`), zrzuty z `play ani` pokazują gardę, łuk lewej ręki i powrót;
+        - K12 z sierpowym (przebieg `20261104-011609-Z15-K12-hook`): kopacz bije 48 razy w lewo,
+          0 w prawo (prawy cios pięścią zostaje ciosem do przodu, Z13), K12 dalej przechodzi;
+        - ręcznie (właściciel, przebieg `20261104-012025-Z15-manual`): „Działa”. Bohater wyprowadził
+          27 sierpowych (12 jako pierwszy cios, 15 połączonych w serii przez `side`) i 38 ciosów do
+          przodu, w prawo żadnego. Sierpowe: 11 trafień, 5 odskoków, 11 pudeł.
 
       Po Z9, Z10, Z11 i Z12. (W1, W6, W8)
 - [ ] **Z16** [P] `anim.py mirror`.
@@ -409,14 +443,16 @@ nie kopiujemy w całości.
       - `anims/README.md` (W11):
         - kroki od `new` przez edycję, eksport i build do podglądu w grze, a także import oryginału
           jako wzorca;
-        - zasada: tylko własne klucze (spec. P9);
+        - zasada: animacje moda mogą powstawać z oryginałów, niezmienione oryginały nie trafiają do
+          repozytorium ani paczki (spec. P9, ADR 0009);
         - format `.anim`, plik `*.EXT.MDS` i reguły łączenia (ADR 0008), bloki `// G25 NNN`,
           reguły odbić;
         - lista danych, które włączają zachowania silnika: `T_FISTATTACKL/R`, `*.EXT.MDS`.
       - `content/README.md`: wiersz `Anims/` wskazuje na `anims/` i build.
       - `content/Scripts/README.md`: zdanie w sekcji „Symbole dla silnika” o atakach bocznych pięściami
         i plikach `*.EXT.MDS`.
-      - `NOTICE.txt`: animacje i definicje moda jako nowe dane na licencji GothicMOD. Mod nie zawiera
+      - `NOTICE.txt`: nowe animacje i wpisy definicji moda na licencji GothicMOD. Animacje zmienione
+        z oryginałów „na podstawie dzieła Piranha Bytes” (ADR 0009). Mod nie zawiera niezmienionych
         animacji ani definicji z gry.
       - `gothic25/CLAUDE.md`: zasoby animacji i narzędzia `anim.py` / `anim.ps1`.
       - `specs/001-combosy-npc-w-walce-wrecz/spec.md` (W1): odwołanie do 004 W15 przy ciosach

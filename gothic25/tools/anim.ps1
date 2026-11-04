@@ -11,8 +11,9 @@
     new        new animation of the mod on the bare skeleton (rest pose, -Frames, default 30)
     open       source .blend from anims/<MODEL>/ -> working .blend with the body
     export     action of a working .blend -> anims/<MODEL>/<ACTION>.anim and <ACTION>.blend (no game meshes)
-               Actions imported from originals are refused (spec 004 W16); -AllowDerived exports them
-               into gothic25/build only, for local test data.
+               An action imported from an original goes out once changed (ADR 0009); an unchanged
+               copy is refused (spec 004 W16), -AllowDerived exports it into gothic25/build only,
+               for local test data.
     check      every anims/<MODEL>/*.blend matches its .anim
     roundtrip  every original animation of the model: MAN -> Blender -> MAN, byte compare (spec 004 K1)
 
