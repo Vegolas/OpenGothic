@@ -41,6 +41,7 @@ def save_light(act, outdir):
             bpy.data.actions.remove(other)
     bpy.data.orphans_purge(do_recursive=True)
     path = os.path.join(outdir, act.name + ".blend")
+    bpy.context.preferences.filepaths.save_version = 0  # no <name>.blend1 next to the source on a re-export
     bpy.ops.wm.save_as_mainfile(filepath=path, copy=True, compress=True)
     return path
 

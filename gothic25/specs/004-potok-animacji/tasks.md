@@ -358,7 +358,7 @@ nie kopiujemy w całości.
 
 ## Faza 4: Sierpowe
 
-- [ ] **Z15** Sierpowy z lewej.
+- [x] **Z15** Sierpowy z lewej.
       - Start: `anim.ps1 new -Anim T_FISTATTACKL`. Animację kluczujemy sami w Blenderze przez MCP
         w oknie właściciela, który ogląda podgląd i ją akceptuje. Oryginalny `S_FISTATTACK` można
         obejrzeć obok (`anim.ps1 import`). Od 2026-11-04 wolno zaczynać od oryginalnej postawy
@@ -378,9 +378,37 @@ nie kopiujemy w całości.
         - scenariusz z `play ani hero T_FISTATTACKL` i zrzutami;
         - w trybie ręcznym (za zgodą właściciela) atak z lewej pięściami.
       - Ponownie otwarte 2026-11-04: wersja 1 działa, ale według właściciela odstaje stylem od
-        reszty animacji. P9 zmienione (ADR 0009). Właściciel robi sierpowe ręcznie w Blenderze od
-        postawy `S_FISTRUN` (wstawionej w klatkach 0 i 24 akcji `T_FISTATTACKL`). Wersja 1 zostaje
-        w pliku roboczym jako akcja `T_FISTATTACKL_v1_claude`.
+        reszty animacji. P9 zmienione (ADR 0009). Właściciel miał zrobić sierpowe ręcznie od postawy
+        `S_FISTRUN`, ale zabrakło mu czasu, więc wersja 2 powstała z oryginałów (niżej). Wersja 1
+        zostaje w pliku roboczym jako akcja `T_FISTATTACKL_v1_claude`, a sama postawa jako
+        `T_FISTATTACKL_stance`.
+      - Wynik wersji 2 (2026-11-04), zaakceptowanej przez właściciela:
+        - źródło: lewy sierpowy z drugiej połowy oryginalnego `S_FISTATTACK` (klatki 17-28; pierwsza
+          połowa to prawy prosty z krokiem), wpięty w postawę `S_FISTRUN` (klatka 0). Robi to skrypt
+          `z15/hook2.py` w scratchpadzie sesji:
+          - tułów, głowa, lewa ręka i obrót bioder pochodzą z oryginału. Przejście z postawy trwa
+            4 klatki, a powrót do niej 7;
+          - prawa ręka zostaje w gardzie z postawy;
+          - bez kroku: korzeń bierze 15% poziomego i 50% pionowego ruchu oryginału, nogi rozwiązuje IK,
+            kostki stoją w miejscu (odchyłka 0), a stopy mają ułożenie z postawy;
+          - po trafieniu oryginał unosi pięść nad głowę, bo z krokiem przechodzi w zamach od dołu.
+            W sierpowym lewa ręka zostaje przez dwie klatki w ułożeniu z klatki trafienia, tułów niesie
+            ją w poziomie, a w klatkach 26-27 oryginału ruch wraca do oryginalnego;
+        - `T_FISTATTACKL`: 23 klatki (0,92 s): 0 garda, 4 zamach (pięść z tyłu przy biodrze),
+          10 trafienie (pięść przed twarzą na wysokości głowy), 11-14 dociągnięcie tułowiem, 15-22 powrót
+          do gardy;
+        - wpis `t_FistAttackL`: zakres 1-23, `DEF_OPT_FRAME` 11 (klatka MAN 10), `DEF_HIT_END` 16
+          i `DEF_WINDOW` 11 16 (atak kończy się 6 klatek po trafieniu, jak ciosy oryginału), `WHOOSH`
+          w klatce 9;
+        - eksport: w pliku roboczym jest postać-wzorzec (`REF_*`), więc eksport szedł z jego kopii bez
+          niej (`build/anims-work/HUMANS/blend/T_FISTATTACKL-export.blend`). Poprawka w `export.py`:
+          ponowny eksport zostawiał w `anims/` kopię `T_FISTATTACKL.blend1`, a teraz zapisuje bez kopii.
+          Sprawdzone: po ponownym eksporcie nie ma `.blend1`, a `.anim` jest identyczny;
+        - `anim.ps1 check`: 1 z 1 zgodny, `HUMANS-T_FISTATTACKL.MAN` ma 7091 B, `check-pack` przechodzi;
+        - w grze (przebieg `20261104-220247-Z15-hook`): `ani info hero T_FISTATTACKL` daje to samo co
+          `defs` (pochodzenie `mod`, 23 klatki MAN), są zrzuty z `play ani`;
+        - K12 z sierpowym (przebieg `20261104-220307-Z15-K12-hook`): kopacz bije 61 razy w lewo,
+          0 w prawo i 187 do przodu, K12 przechodzi.
       - Wynik wersji 1 (2026-11-04):
         - `T_FISTATTACKL`: 25 klatek (1 s), same nasze klucze. Pozy to obroty kości wokół osi ciała
           w skrypcie prototypu w scratchpadzie sesji (`z15/hook.py`). Nogi rozwiązuje proste IK, więc
