@@ -305,12 +305,24 @@ nie kopiujemy w całości.
           K5 (Z18, scenariusz ręczny) z sierpowymi z Z15-Z17.
 
       (W8, W12)
-- [ ] **Z13** Ataki boczne pięściami NPC.
+- [x] **Z13** Ataki boczne pięściami NPC.
       - `npc.cpp:1729` i `npc.cpp:1982`: cios boczny pięścią zostaje `AttackL/R`, gdy model ma taką
         animację, a w przeciwnym razie `Attack` jak dotąd.
       - `dropForwardAttacks(fist && !sideAttacks)` w `implComboLink`. Komentarz w `fightalgo.cpp:254`
         poprawiony.
       - Sprawdzenie: build, `-Spec 001` i `-Spec 002` bez sierpowych w modzie przechodzą bez zmian.
+      - Wynik (2026-11-04):
+        - `Npc::implAttack` i `Npc::implComboLink`: cios boczny pięścią zostaje `AttackL/R`, gdy
+          `hasFistSideAttack` dla tego kierunku, w przeciwnym razie `Attack`;
+        - `FightAlgo::dropForwardAttacks(leftForward, rightForward)`: osobno dla każdej strony, bo
+          między Z15 a Z17 model ma tylko lewy sierpowy, a prawy cios pięścią jest wtedy dalej ciosem do
+          przodu (plan zakładał jedną flagę);
+        - build bez nowych ostrzeżeń;
+        - lokalne dane `build/anims-fixtures/k13` (`T_FISTATTACKL/R` jako `aniAlias` do `S_FISTATTACK`)
+          i `001\K12-kopacz-piesci` (przebieg `20261104-001424`): kopacz bije pięściami 46 razy w lewo
+          i 49 w prawo, a serie łączą się przez `side`. Bez aliasów (przebieg `20261104-004430`)
+          wszystkie ciosy kopacza idą do przodu, także w seriach bocznych;
+        - `-Spec 001` 17 z 17, `-Spec 002` 12 z 12 (przebiegi `20261104-001627` do `20261104-005904`).
 
       Po Z12 (wspólna metoda). (W15, W12)
 - [ ] **Z14** [P] Miara kierunku ciosów w raporcie walki.
