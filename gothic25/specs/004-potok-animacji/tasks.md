@@ -325,13 +325,26 @@ nie kopiujemy w całości.
         - `-Spec 001` 17 z 17, `-Spec 002` 12 z 12 (przebiegi `20261104-001627` do `20261104-005904`).
 
       Po Z12 (wspólna metoda). (W15, W12)
-- [ ] **Z14** [P] Miara kierunku ciosów w raporcie walki.
+- [x] **Z14** [P] Miara kierunku ciosów w raporcie walki.
       - `tools/fightlog.py`: `attacks.dir.<fwd|left|right|run|finish>` dla oczekiwań. Opis w
         `tests/README.md` (oczekiwania).
       - Poprawka: `techniques_section` dzieli przez zero, gdy przebieg nie ma ciosów bohatera
         (`ZeroDivisionError` po ręcznym przebiegu w Khorinis 2026-11-03, `fightlog.py:418`).
       - Sprawdzenie: raport z istniejącego przebiegu 002 (ataki boczne paladyna) pokazuje
         `attacks.dir.left` > 0. Raport przebiegu bez ciosów bohatera nie kończy się błędem.
+      - Wynik (2026-11-04):
+        - `attacks.dir.<dir>` to licznik (0, gdy nie było ciosów danego rodzaju). Opis w `tests/README.md`;
+        - dzielenie przez zero było w porównaniu technik: odcinki bohatera bez trafień (ciosy w powietrze)
+          dają 0 obrażeń na sekundę. Porównanie pomija wtedy przewagę combo, a obrażenia na sekundę są
+          liczone tylko przy dodatnim czasie odcinków;
+        - stara wersja wywracała się na jednym z 207 przebiegów (`20261103-184235-idle-khorinis`). Nowa
+          tworzy raport dla wszystkich 207, a raporty pozostałych 206 są identyczne jak w starej;
+        - `fightlog.py check` z dopisanymi oczekiwaniami na istniejących przebiegach (bez uruchamiania
+          gry):
+          - `002-K01a` (przebieg `20261104-004637`): `Pal_230_Ritter attacks.dir.left` 18,
+            `attacks.dir.right` 21;
+          - K12 z aliasami z Z13 (przebieg `20261104-001424`): kopacz `left` 46, `right` 49;
+          - K12 bez sierpowych (przebieg `20261104-004430`): `left` 0, `right` 0, `fwd` 219.
 
       (K13)
 

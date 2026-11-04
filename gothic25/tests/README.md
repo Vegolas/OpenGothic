@@ -320,6 +320,7 @@ Miary liczą się z całego dziennika przebiegu:
 |---|---|
 | `attacks` | liczba ciosów (`attack`) |
 | `attacks.tgt_down` | ciosy w leżący cel |
+| `attacks.dir.<dir>` | ciosy danego rodzaju: `fwd`, `left`, `right`, `run` (w biegu), `finish` (dobicie), pole `dir` ataku; np. `attacks.dir.left > 0` sprawdza, że postać bije sierpowym z lewej |
 | `res.<hit\|block\|jumpback\|miss>` | wyniki ciosów postaci |
 | `res.miss.<why>` | pudła z daną przyczyną (`no_target`, `range`, `angle`, `down`) |
 | `taken.<hit\|block\|jumpback>` | wyniki ciosów wymierzonych w postać |

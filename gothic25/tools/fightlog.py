@@ -33,7 +33,7 @@ DOWN_STATES = ["stumble", "fly", "lie", "unconscious", "dead"]
 
 # metric names of tests/README.md; counters are 0 when nothing happened, statistics have no data then
 KNOWN_METRIC = re.compile(
-    r"^(attacks|attacks\.tgt_down|res\.(hit|block|jumpback|miss)|res\.miss\.\w+|taken\.(hit|block|jumpback)"
+    r"^(attacks|attacks\.tgt_down|attacks\.dir\.\w+|res\.(hit|block|jumpback|miss)|res\.miss\.\w+|taken\.(hit|block|jumpback)"
     r"|combo\.max|combo\.count\.\d+|series\.(attack|side|front|triple|whirl|master|combo|multi)|break\.\w+"
     r"|skip\.(max_ms|avg_ms)|link\.(min_pct|avg_pct)|damage\.stage\.\d+\.(avg|count|max)|damage\.(min|max)"
     r"|state\.\w+|bonus\.stage\.\d+\.(min|max)|bonus\.dir\.\w+\.max)$")
@@ -150,6 +150,7 @@ def metrics(events: list[dict], ids: set[int]) -> dict[str, float]:
             attacks_by_char[ev["who_id"]].append(ev)
             attack_dir[(ev["who_id"], ev["n"])] = ev["dir"]
             m["attacks"] += 1
+            m[f"attacks.dir.{ev['dir']}"] += 1
             if ev["tgt_down"]:
                 m["attacks.tgt_down"] += 1
             if ev["series"] == "combo":
@@ -403,7 +404,7 @@ def techniques_section(events: list[dict], bonus: list[int] | None) -> list[str]
     for key in sorted(groups, key=lambda k: (k[0], k[1], order.index(k[2]))):
         weapon, talent, technique = key
         g = groups[key]
-        rate = g["dmg"] / (g["ms"] / 1000)
+        rate = g["dmg"] / (g["ms"] / 1000) if g["ms"] > 0 else 0.0
         dps[key] = rate
         level = "pięści" if weapon == "fist" else f"{TALENT_LEVELS.get(talent, talent)} ({g['pct']}%)"
         out.append(f"| {weapon} | {level} | {TECHNIQUES[technique]} | {g['runs']} | {g['attacks']} "
@@ -414,7 +415,7 @@ def techniques_section(events: list[dict], bonus: list[int] | None) -> list[str]
     for weapon, talent in sorted({(w, t) for w, t, _ in dps}):
         combo = dps.get((weapon, talent, "combo"))
         others = [dps[(weapon, talent, t)] for t in ("side", "first") if (weapon, talent, t) in dps]
-        if combo is not None and others:
+        if combo is not None and others and max(others) > 0:  # a run without hits has no rate to compare
             gain = (combo / max(others) - 1) * 100
             level = "pięści" if weapon == "fist" else TALENT_LEVELS.get(talent, talent)
             out.append(f"- {weapon}, {level}: przewaga pełnego combo nad lepszą z pozostałych technik "
