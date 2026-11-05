@@ -5,7 +5,8 @@
 - **Zmieniona:** 2026-11-03 po sprawdzeniu licencji MDK (zadanie Z4): P2 rozstrzygnięte od nowa,
   doszło P9, zmienione W2, W5-W7, W9, W13, W16, K4, K7, K11 i K14. Ponownie 2026-11-04: P9
   rozstrzygnięte od nowa (zmienione oryginalne animacje mogą trafić do paczki, ADR 0009), zmienione
-  „Problem”, „Cel”, scenariusz 1, W2, W7, W16, K7, K14 i „Zasoby i prawa”.
+  „Problem”, „Cel”, scenariusz 1, W2, W7, W16, K7, K14 i „Zasoby i prawa”. 2026-11-05: dopisek
+  do W14 (odbicie wpięte w niesymetryczną postawę, decyzja właściciela przy Z17).
 - **Warstwa (wstępnie):** narzędzia, zasoby i silnik <!-- zasoby / skrypty / silnik -->
 
 - **Powiązane:** [001: Combosy NPC w walce wręcz](../001-combosy-npc-w-walce-wrecz/spec.md)
@@ -181,6 +182,11 @@ ktoś, kto gra w moda.
   strony, odbija ruch względem płaszczyzny symetrii postaci i zamienia strony w zdarzeniach
   (np. kończyna trafiająca). Odbicie jest częścią buildu, więc odbita animacja nie ma osobnego źródła.
   Podwójne odbicie daje animację wyjściową.
+  - Dopisane 2026-11-05 (decyzja właściciela przy Z17): animację, która zaczyna się i kończy
+    w niesymetrycznej postawie, odbicie wpina w tę postawę. Sierpowe startują z postawy `S_FISTRUN`
+    z lewą nogą z przodu. Odbity sierpowy wchodzi z tej postawy i do niej wraca, a stopy zostają tam,
+    gdzie ma je postawa. Bez tego przy każdym prawym sierpowym nogi zamieniałyby się miejscami.
+    Podwójne odbicie dotyczy wtedy samego odbicia, przed wpięciem w postawę.
 - **W15:** NPC walczący pięściami wyprowadza sierpowy tam, gdzie jego styl walki zleca cios boczny
   (pojedynczy albo w serii).
   - Dziś silnik zamienia taki cios na cios do przodu (001 W1). Bez animacji sierpowych, w tym bez

@@ -1203,15 +1203,39 @@ def default_ext(model: str) -> Path | None:
     return p if p.exists() else None
 
 
-def load_merged(gothic: Path, model: str, ext: Path | None) -> tuple:
+def mirror_rules(script: str) -> list:
+    """(target, rule) of the mirrors in gothic25/anims/anims.json that go into this model script."""
+    path = Path(__file__).resolve().parent.parent / "anims" / "anims.json"
+    if not path.exists():
+        return []
+    out = []
+    for model, cfg in json.loads(path.read_text(encoding="utf-8")).get("models", {}).items():
+        for target, rule in sorted(cfg.get("mirrors", {}).items(), key=lambda t: t[0].upper()):
+            if rule.get("script", model).upper() == script.upper():
+                out.append((target, rule))
+    return out
+
+
+def load_merged(gothic: Path, model: str, ext: Path | None, mirrors: bool = False) -> tuple:
+    """The game's script of `model` merged with the extension `ext`; with `mirrors` also the definitions
+    the build makes from the mirror rules of anims.json (as the built <MODEL>.EXT.MDS has them)."""
     files = game_files(gothic, [f"{model}.MSB", f"{model}-*.MAN"])
     msb = files.get(f"{model}.MSB")
     if msb is None:
         raise ValueError(f"no {model}.MSB in the game archives of {gothic}")
     script = parse_msb(read_entry(msb))
     added = replaced = 0
-    if ext is not None:
-        mod = parse_mds(ext.read_text(encoding=ENCODING), str(ext), origin="mod")
+    mod = parse_mds(ext.read_text(encoding=ENCODING), str(ext), origin="mod") if ext is not None else None
+    for target, rule in mirror_rules(model) if mirrors else []:
+        mod = mod or ModelScript()
+        source = rule.get("mirror", "")
+        d = find_ani(mod, source) or find_ani(script, source)
+        if d is None:
+            raise ValueError(f"anims.json (mirror {target}): no definition {source} in {model}")
+        after = next((k + 1 for k, x in enumerate(mod.animations) if x.name.upper() == source.upper()),
+                     len(mod.animations))
+        mod.animations.insert(after, mirror_ani(d, target))
+    if mod is not None:
         script, added, replaced = merge_scripts(script, mod)
     return script, files, added, replaced
 
@@ -1242,7 +1266,8 @@ def cmd_defs(args) -> int:
     """Definitions of a model as the engine sees them: original MSB plus the mod extension (ADR 0008)."""
     model = args.model.upper()
     ext = Path(args.ext) if args.ext else (None if args.no_ext else default_ext(model))
-    script, files, added, replaced = load_merged(Path(args.gothic), model, ext)
+    # the source extension gets the mirrors of anims.json like the build; a built file has them already
+    script, files, added, replaced = load_merged(Path(args.gothic), model, ext, mirrors=not args.ext and not args.no_ext)
     mans = Path(args.mans) if args.mans else None
     wanted = {a.upper() for a in args.ani}
     found = 0
@@ -1404,7 +1429,7 @@ def build(src: Path, extras: list, gothic: Path | None) -> tuple:
                 if b.endswith(".MSB"):
                     game_defs[b[:-4]] = parse_msb(read_entry(files[b]))
 
-        built = {}
+        built, sources = {}, {}
         for d in dirs:
             for p in sorted(d.glob("*.anim"), key=lambda p: p.name.upper()):
                 try:
@@ -1430,8 +1455,13 @@ def build(src: Path, extras: list, gothic: Path | None) -> tuple:
                 a.name = name
                 try:
                     built[f"{script}-{name}.MAN"] = write_man(a)
+                    sources[(script, name)] = a
                 except ValueError as e:
                     errors.append(f"{where}: {e}")
+
+        for target, rule in sorted(cfg.get("mirrors", {}).items(), key=lambda t: t[0].upper()):
+            errors += build_mirror(model, target, rule, sources, built, mod_defs, game_defs,
+                                   files if gothic is not None else None, notes)
 
         for script, defs in sorted(mod_defs.items()):
             merged_names = {x.name.upper() for x in defs.animations}
@@ -1457,6 +1487,70 @@ def build(src: Path, extras: list, gothic: Path | None) -> tuple:
             ).encode(ENCODING)
         outputs.update(built)
     return outputs, errors, notes
+
+
+def build_mirror(model: str, target: str, rule: dict, sources: dict, built: dict, mod_defs: dict,
+                 game_defs: dict, files: dict | None, notes: list) -> list:
+    """One mirror rule of anims.json (spec 004 W14, Z17):
+
+      "<TARGET>": {"mirror": "<SOURCE>", "script": "<SCRIPT>", "stance": "<ANI>", "blend": [IN, OUT]}
+
+    SOURCE is an animation of the mod or the game in SCRIPT (default: the model). Without "stance" the
+    animation is mirrored as it is; with it, the mirror is blended in from and back to the first frame
+    of ANI over IN and OUT frames, the ankles held where the stance has them (stance_mirror). The
+    definition of SOURCE is mirrored too (mirror_ani) and goes into SCRIPT.EXT.MDS right after it.
+    Adds the MAN to `built` and returns the errors."""
+    where = f"anims.json (mirror {target})"
+    script = rule.get("script", model).upper()
+    source = rule.get("mirror", "")
+    tname = target.upper()
+    if files is None:
+        return [f"{where}: a mirror needs the model hierarchy of the game (pass --gothic)"]
+    if f"{script}-{tname}.MAN" in built or find_ani(mod_defs.get(script), target):
+        return [f"{where}: {tname} is also an animation or a definition of the mod; a mirror has no source"]
+
+    def animation(name: str) -> Man | None:
+        if (script, name.upper()) in sources:
+            return sources[(script, name.upper())]
+        base = f"{script}-{name.upper()}.MAN"
+        return parse_man(read_entry(files[base]), script) if base in files else None
+
+    src = animation(source)
+    d = find_ani(mod_defs.get(script), source) or find_ani(game_defs.get(script), source)
+    if src is None or d is None:
+        return [f"{where}: no animation or no definition {source} in {script}"]
+    mdh = parse_mdh(read_entry(files[f"{model}.MDH"]))
+    twice = double_mirror(src, mdh)
+    if twice["share"] > 1.0:
+        return [f"{where}: the double mirror of {source} is not the input ({twice['share']:.2f} of the format's "
+                "precision); the mirror formula does not fit this model"]
+    if "stance" in rule:
+        stance = animation(rule["stance"])
+        blend = rule.get("blend", [0, 0])
+        if stance is None:
+            return [f"{where}: no stance animation {rule['stance']} in {script}"]
+        if not (isinstance(blend, list) and len(blend) == 2 and all(isinstance(b, int) and b >= 0 for b in blend)):
+            return [f"{where}: blend must be [frames in, frames out], got {blend!r}"]
+        m, report = stance_mirror(src, stance, mdh, target, tuple(blend))
+        if report["ankle_cm"] > 0.01:
+            return [f"{where}: the legs cannot keep the stance of {rule['stance']} "
+                    f"(ankles {report['ankle_cm']:.2f} cm away)"]
+        how = f"in the stance {rule['stance'].upper()} (blend {blend[0]}/{blend[1]} frames)"
+    else:
+        m, report = mirror_man(src, mdh, target)
+        report = {"dropped": report}
+        how = "as it is"
+    md = mirror_ani(d, target)
+    m.layer, m.next = md.layer, md.next.upper()
+    errors = check_definition(f"{where}, {md.name}", md, m.frame_count)
+    built[f"{script}-{tname}.MAN"] = write_man(m)
+    defs = mod_defs.setdefault(script, ModelScript())
+    after = next((k + 1 for k, x in enumerate(defs.animations) if x.name.upper() == source.upper()),
+                 len(defs.animations))
+    defs.animations.insert(after, md)
+    notes.append(f"{where}: {script}-{tname}.MAN mirrored from {source.upper()} {how}"
+                 + (f", left out: {', '.join(report['dropped'])}" if report["dropped"] else ""))
+    return errors
 
 
 def cmd_build(args) -> int:
@@ -1624,6 +1718,166 @@ def mirror_ani(d: MdsAni, name: str) -> MdsAni:
     m.pfx = [(f, i, n, other_side(pos), at) for f, i, n, pos, at in m.pfx]
     m.morph = [(f, n, other_side(node)) for f, n, node in m.morph]
     return m
+
+
+# A mirror of an animation that starts and ends in an asymmetric stance (the fist stance has the left foot
+# in front) stands in the mirrored stance, so going to it from the stance would swap the feet. In a stance
+# mirror (anims.json: "stance" and "blend") the mirror is blended in from the stance and back to it, like
+# the source was made (spec 004 Z17): weight 0 in the first and last frame, rising over blend[0] frames and
+# falling over blend[1]. The root moves by the mirrored movement of the source from its first frame, and
+# the legs are solved so the ankles stay where the stance has them, feet in the stance orientation.
+
+LEGS = ("L", "R")
+
+
+def smoothstep(x: float) -> float:
+    x = min(max(x, 0.0), 1.0)
+    return x * x * (3.0 - 2.0 * x)
+
+
+def stance_weights(frames: int, blend_in: int, blend_out: int) -> list:
+    last = frames - 1
+    out = []
+    for t in range(frames):
+        w = 1.0
+        if t < blend_in:
+            w = smoothstep(t / blend_in)
+        if t > last - blend_out:
+            w = min(w, smoothstep((last - t) / blend_out))
+        out.append(w)
+    return out
+
+
+def quat_slerp(a: tuple, b: tuple, t: float) -> tuple:
+    dot = sum(x * y for x, y in zip(a, b))
+    if dot < 0:
+        b, dot = tuple(-x for x in b), -dot
+    if dot > 0.9995:
+        q = tuple(x + (y - x) * t for x, y in zip(a, b))
+    else:
+        th = math.acos(dot)
+        sa, sb = math.sin((1 - t) * th) / math.sin(th), math.sin(t * th) / math.sin(th)
+        q = tuple(sa * x + sb * y for x, y in zip(a, b))
+    n = math.sqrt(sum(x * x for x in q))
+    return tuple(x / n for x in q)
+
+
+def axis_rotation(axis: int, angle: float):
+    c, s = math.cos(angle), math.sin(angle)
+    i, j = [(1, 2), (2, 0), (0, 1)][axis]
+    m = [list(r) for r in IDENTITY]
+    m[i][i], m[i][j], m[j][i], m[j][j] = c, -s, s, c
+    return tuple(tuple(r) for r in m)
+
+
+def chain_world(locals_: dict, mdh: Mdh, node: int):
+    chain, p = [], node
+    while p >= 0:
+        chain.append(p)
+        p = mdh.nodes[p].parent
+    w = IDENTITY
+    for i in reversed(chain):
+        w = mat_mul(w, locals_[i] if i in locals_ else mdh_matrix(mdh.nodes[i]))
+    return w
+
+
+def solve_leg(locals_: dict, mdh: Mdh, thigh: int, calf: int, foot: int, target: tuple, foot_world) -> float:
+    """Bends the thigh (two axes of its own frame) and the calf (two axes) on top of their current local
+    matrices so the foot origin reaches `target` (model space, damped least squares), then turns the foot
+    to the rotation of `foot_world`. Returns the distance left, in cm."""
+    base_t, base_c = locals_[thigh], locals_[calf]
+    parent = chain_world(locals_, mdh, mdh.nodes[thigh].parent)
+    foot_pos = tuple(locals_[foot][r][3] for r in range(3))
+
+    def place(a):
+        lt = mat_mul(mat_mul(base_t, axis_rotation(1, a[0])), axis_rotation(2, a[1]))
+        lc = mat_mul(mat_mul(base_c, axis_rotation(1, a[2])), axis_rotation(2, a[3]))
+        cw = mat_mul(mat_mul(parent, lt), lc)
+        return lt, lc, cw, tuple(sum(cw[r][k] * foot_pos[k] for k in range(3)) + cw[r][3] for r in range(3))
+
+    a = [0.0, 0.0, 0.0, 0.0]
+    for _ in range(40):
+        _, _, _, p = place(a)
+        err = [target[r] - p[r] for r in range(3)]
+        if math.sqrt(sum(e * e for e in err)) < 1e-4:
+            break
+        jac = []
+        for k in range(4):
+            b = list(a)
+            b[k] += 1e-4
+            q = place(b)[3]
+            jac.append([(q[r] - p[r]) / 1e-4 for r in range(3)])  # column k
+        # (J J^T + l I) y = err, step = J^T y
+        jjt = [[sum(jac[k][r] * jac[k][c] for k in range(4)) + (1e-2 if r == c else 0.0) for c in range(3)]
+               for r in range(3)]
+        y = solve3(jjt, err)
+        a = [a[k] + sum(jac[k][r] * y[r] for r in range(3)) for k in range(4)]
+    lt, lc, cw, p = place(a)
+    locals_[thigh], locals_[calf] = lt, lc
+    rot = [[sum(cw[k][r] * foot_world[k][c] for k in range(3)) for c in range(3)] for r in range(3)]  # cw^T @ fw
+    locals_[foot] = tuple(tuple(rot[r]) + (foot_pos[r],) for r in range(3)) + ((0.0, 0.0, 0.0, 1.0),)
+    return math.sqrt(sum((target[r] - p[r]) ** 2 for r in range(3)))
+
+
+def solve3(m, v):
+    """Solution of a 3x3 linear system (Cramer's rule)."""
+    def det(a):
+        return (a[0][0] * (a[1][1] * a[2][2] - a[1][2] * a[2][1]) - a[0][1] * (a[1][0] * a[2][2] - a[1][2] * a[2][0])
+                + a[0][2] * (a[1][0] * a[2][1] - a[1][1] * a[2][0]))
+    d = det(m)
+    out = []
+    for c in range(3):
+        a = [list(r) for r in m]
+        for r in range(3):
+            a[r][c] = v[r]
+        out.append(det(a) / d)
+    return out
+
+
+def stance_mirror(src: Man, stance: Man, mdh: Mdh, name: str, blend: tuple) -> tuple:
+    """(mirror of `src` blended in from and back to the first frame of `stance`, with the ankles kept where
+    the stance has them; report dict: dropped slots, worst ankle distance in cm)."""
+    m, dropped = mirror_man(src, mdh, name)
+    names = [n.name.upper() for n in mdh.nodes]
+    pose = dict(zip(stance.node_indices, stance.samples[0]))
+    missing = [mdh.nodes[i].name for i in m.node_indices if i not in pose]
+    if missing:
+        raise ValueError(f"stance {stance.name} has no samples of {', '.join(missing)}")
+    root = next(i for i, n in enumerate(mdh.nodes) if n.parent < 0)
+    legs = []
+    for side in LEGS:
+        idx = [names.index(f"BIP01 {side} {b}") for b in ("THIGH", "CALF", "FOOT")]
+        if any(i not in m.node_indices for i in idx):
+            raise ValueError(f"{src.name}: the {side} leg has no samples, the stance cannot hold it")
+        legs.append(idx)
+    stance_locals = {i: sample_matrix(s) for i, s in pose.items()}
+    feet = [chain_world(stance_locals, mdh, foot) for _, _, foot in legs]
+    leg_nodes = {i for idx in legs for i in idx} | {names.index(f"BIP01 {s} TOE0") for s in LEGS
+                                                      if f"BIP01 {s} TOE0" in names}
+    k_root = m.node_indices.index(root)
+    start = m.samples[0][k_root]
+    weights = stance_weights(m.frame_count, *blend)
+    worst = 0.0
+    rows = []
+    for t, row in enumerate(m.samples):
+        w = weights[t]
+        locals_ = {}
+        for k, i in enumerate(m.node_indices):
+            s = pose[i]
+            if i in leg_nodes:
+                rot = s[:4]
+            else:
+                rot = quat_slerp(s[:4], row[k][:4], w)
+            p = s[4:]
+            if i == root:
+                p = tuple(s[4 + r] + w * (row[k][4 + r] - start[4 + r]) for r in range(3))
+            locals_[i] = sample_matrix(rot + tuple(p))
+        for (thigh, calf, foot), fw in zip(legs, feet):
+            target = (fw[0][3], fw[1][3], fw[2][3])
+            worst = max(worst, solve_leg(locals_, mdh, thigh, calf, foot, target, fw))
+        rows.append([matrix_sample(locals_[i]) for i in m.node_indices])
+    m.samples = rows
+    return snap(m), {"dropped": dropped, "ankle_cm": worst}
 
 
 def ani_block(d: MdsAni, script: str) -> str:

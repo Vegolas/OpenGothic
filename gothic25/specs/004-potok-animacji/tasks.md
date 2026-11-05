@@ -486,12 +486,40 @@ nie kopiujemy w całości.
           zamiast -13,6). Przejście z `S_FISTRUN` przestawi więc nogi.
 
       Po Z2 i Z6, równolegle z Z15. (W14, K12)
-- [ ] **Z17** Sierpowy z prawej przez odbicie.
+- [x] **Z17** Sierpowy z prawej przez odbicie.
       - Reguła `"T_FISTATTACKR": {"mirror": "T_FISTATTACKL"}` w `anims.json`.
       - Build dokłada `HUMANS-T_FISTATTACKR.MAN` i wygenerowany blok `t_FistAttackR` za blokiem lewego
         w `HUMANS.EXT.MDS`.
       - Sprawdzenie: build, `check-pack`, zrzuty obu sierpowych przez `play ani`, podwójne odbicie
         sierpowego równe źródłu.
+      - Decyzja właściciela (2026-11-05): odbicie wpięte w postawę. Czyste odbicie stało w postawie
+        z prawą nogą z przodu, więc nogi zamieniałyby się miejscami o ok. 27 cm w 0,1 s przy każdym
+        prawym sierpowym. Dopisek do W14 w spec., zmiana w planie.
+      - Wynik (2026-11-05):
+        - reguła w `anims.json`: `"t_FistAttackR": {"mirror": "t_FistAttackL", "stance": "S_FISTRUN",
+          "blend": [4, 7]}`. Build (`build_mirror` w `anim.py`) robi z niej
+          `HUMANS-T_FISTATTACKR.MAN` (7091 B) i blok `t_FistAttackR` zaraz za blokiem lewego, z
+          `DEF_HIT_LIMB "BIP01 R HAND"` i tymi samymi klatkami zdarzeń;
+        - wpięcie w postawę (`stance_mirror`) robi to samo co skrypt lewego sierpowego:
+          - waga odbicia rośnie przez 4 klatki od postawy i spada przez 7 do niej;
+          - korzeń przesuwa się o odbity ruch źródła;
+          - nogi rozwiązuje IK (udo i łydka, po dwie osie), stopy mają ułożenie z postawy;
+        - wynik wpięcia: klatki 0 i 22 równe postawie (0°), kostki najwyżej 0,0001 cm od postawy.
+          Prawa pięść idzie z tylnej gardy do trafienia w klatce 10 na wysokości głowy, 65 cm przed
+          postacią;
+        - podwójne odbicie samego lewego sierpowego build sprawdza przy każdej regule (0,90 granicy
+          formatu). Wpięty w postawę prawy sierpowy z definicji nie wraca do lewego po odbiciu;
+        - bez folderu gry build z regułą odbicia kończy się błędem, bo potrzebuje hierarchii z MDH;
+        - `anim.py defs` dokłada definicje z reguł odbić. Dla obu sierpowych daje to samo co zbudowany
+          `HUMANS.EXT.MDS` („2 added, 0 replaced”, jak log silnika);
+        - podgląd w Blenderze właściciela: w pliku roboczym `T_FISTATTACKL.blend` szkielet-wzorzec
+          (`REF_Armature`, 1 m w bok) gra prawy sierpowy (`T_FISTATTACKR_preview`) obok lewego.
+          Górna połowa ciała jest lustrzana, nogi stoją w tej samej postawie;
+        - w grze (przebieg `20261105-172854-Z17-hooks`): `ani info hero` dla obu sierpowych daje to
+          samo co `defs`, a zrzuty z `play ani` pokazują skręt tułowia w obie strony. Xardas nie
+          zaczyna `play ani` w swojej pętli AI („cannot start now”), więc zrzuty są z bohatera;
+        - K12 z oboma sierpowymi (przebieg `20261105-172638-Z17-K12-hooks`): kopacz bije 47 razy
+          w lewo, 46 w prawo i 101 do przodu. `check-pack`: 3 pliki animacji, bez błędów.
 
       Po Z15 i Z16. (W8, W14)
 - [ ] **Z18** [P] Scenariusze `tests/004/`.

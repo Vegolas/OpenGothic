@@ -1,7 +1,10 @@
 {
   "models": {
     "HUMANS": {
-      "skeleton": "HUMANS/HUMANS.skeleton.json"
+      "skeleton": "HUMANS/HUMANS.skeleton.json",
+      "mirrors": {
+        "t_FistAttackR": {"mirror": "t_FistAttackL", "stance": "S_FISTRUN", "blend": [4, 7]}
+      }
     }
   }
 }

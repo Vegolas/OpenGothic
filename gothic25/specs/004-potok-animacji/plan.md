@@ -179,6 +179,10 @@ gothic25/anims/
   - wartości klatek z naszej animacji.
 - **Sierpowy z prawej** nie ma źródła. Reguła `"T_FISTATTACKR": {"mirror": "T_FISTATTACKL"}`
   w `anims.json` sprawia, że build tworzy MAN i blok definicji z zamienionymi stronami (W14).
+  Od 2026-11-05 reguła ma też postawę: `"stance": "S_FISTRUN", "blend": [4, 7]`. Odbicie wchodzi
+  wtedy z pierwszej klatki postawy przez 4 klatki i wraca do niej przez 7, tak jak powstał lewy
+  sierpowy. Korzeń przesuwa się o odbity ruch źródła, a nogi rozwiązuje IK, więc kostki zostają tam,
+  gdzie ma je postawa (spec. W14, dopisek).
 - **Format `.anim`** (ADR 0007, pkt 2, bez zmian od Z2):
   - nagłówek `g25-anim 1`, `model`, `fps`, `checksum`, lista węzłów;
   - opcjonalnie `quant` i `raw`/`layout`, tylko dla oryginałów w lokalnych testach;
@@ -206,7 +210,8 @@ gothic25/anims/
     Opcja `--extra <katalog>` dokłada lokalne dane testowe;
   - `mirror`: odbicie W14 (`W'_i = S·W_m(i)·S·C_i`, `S = diag(-1, 1, 1)`, `m` zamienia węzły L/R,
     stała korekta `C_i` z pozy spoczynkowej), także samodzielnie dla K12. Odbija też blok definicji
-    (strony w `DEF_HIT_LIMB` i nazwach węzłów);
+    (strony w `DEF_HIT_LIMB` i nazwach węzłów). W buildzie reguła z postawą wpina odbicie w postawę
+    (od 2026-11-05). `defs` dokłada definicje z reguł odbić, więc pokazuje to samo co zbudowany plik;
   - `check-pack` (K7): paczka moda kontra archiwa gry. Błąd przy pliku o nazwie definicji modelu z gry
     (`*.MSB`, pełne `*.MDS`), przy pliku identycznym z oryginałem i przy MAN, którego próbki są równe
     oryginałowi o tej samej nazwie;
