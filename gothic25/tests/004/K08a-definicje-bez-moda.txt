@@ -1,0 +1,21 @@
+# criterion: 004 K8
+# criterion: 004 K11
+# timeout: 120
+# mod: off
+# K11 bez moda: silnik nie wczytuje rozszerzeń definicji, cios pięścią i stanie mają definicje z gry,
+# a animacji moda (sierpowych, danych testowych) nie ma.
+info told DIA_Xardas_Hello
+set time 12 0
+wait 1
+ani info hero S_FISTATTACK
+ani info hero S_RUN
+insert Skeleton
+wait 2
+ani info Skeleton T_1HATTACKL
+quit
+
+expect nolog model script extension
+expect log scenario: ani S_FISTATTACK origin game layer 1 next - blend 0 0.2 flags M dir F frames 1-29 fps 25 man 29
+expect log scenario:   tag 0 DEF_OPT_FRAME frames=9,24
+expect log scenario: ani S_RUN origin game
+expect log scenario: ani T_1HATTACKL origin game

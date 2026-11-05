@@ -1,0 +1,28 @@
+# criterion: 004 K13
+# timeout: 240
+# Kopacz walczący pięściami (styl silny) atakuje nieśmiertelnego bohatera. Ciosy boczne ze stylu są
+# sierpowymi z lewej i z prawej, także w seriach (podpięte bokiem), bez premii combo (002 W3).
+# Combo do przodu pięściami ma nadal 2 ciosy (001 K12).
+info told DIA_Xardas_Hello
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+cheat god
+set time 12 0
+insert BDT_10027_Addon_Buddler
+call B_Attack BDT_10027_Addon_Buddler hero 0 0
+ztimer multiplyer 2
+wait 120
+quit
+
+# Progi (przebieg Z17 z 2026-11-05, 180 s): left 47 (13 podpiętych bokiem), right 46 (41),
+# fwd 101, combo.max 2, premia ciosów bocznych 100.
+expect BDT_10027_Addon_Buddler attacks.dir.left >= 1
+expect BDT_10027_Addon_Buddler attacks.dir.right >= 1
+expect BDT_10027_Addon_Buddler attacks.dir.left.side >= 1
+expect BDT_10027_Addon_Buddler attacks.dir.right.side >= 1
+expect BDT_10027_Addon_Buddler bonus.dir.left.max == 100
+expect BDT_10027_Addon_Buddler bonus.dir.right.max == 100
+expect BDT_10027_Addon_Buddler combo.max == 2

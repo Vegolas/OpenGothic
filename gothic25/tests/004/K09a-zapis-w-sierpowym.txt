@@ -1,0 +1,13 @@
+# criterion: 004 K9
+# timeout: 120
+# Zapis z polecenia w trakcie sierpowego bohatera. Zapis wczytuje K09b.
+info told DIA_Xardas_Hello
+set time 12 0
+wait 1
+play ani hero T_FISTATTACKL
+wait 0.3
+screenshot w-sierpowym.png
+save game 1
+quit
+
+expect log scenario: save game: save_slot_1.sav

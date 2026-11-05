@@ -1,0 +1,28 @@
+# criterion: 004 K4
+# timeout: 120
+# anim-extra: build/anims-fixtures/k04
+# Podmiana istniejącej animacji: stanie ludzi (S_RUN) z obrotem głowy w lewo i w prawo, lokalne dane
+# testowe z tools/anim.py fixtures (nie trafiają do repozytorium). Definicja zostaje z gry, mod daje
+# tylko MAN. Seria zrzutów bohatera przez całą pętlę stania (50 klatek, 2 s).
+#
+# Sprawdzenie ręczne: na zrzutach stanie-1 do stanie-5 głowa bohatera obraca się w jedną i w drugą
+# stronę, a bohater stoi w miejscu.
+info told DIA_Xardas_Hello
+set time 12 0
+wait 1
+ani info hero S_RUN
+play ani hero S_RUN
+screenshot stanie-0.png
+wait 0.4
+screenshot stanie-1.png
+wait 0.4
+screenshot stanie-2.png
+wait 0.4
+screenshot stanie-3.png
+wait 0.4
+screenshot stanie-4.png
+wait 0.4
+screenshot stanie-5.png
+quit
+
+expect log scenario: ani S_RUN origin game layer 1 next S_RUN blend 0.1 0.1 flags MI dir F frames 1-50 fps 25 man 50

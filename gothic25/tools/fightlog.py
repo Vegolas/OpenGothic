@@ -4,8 +4,9 @@
 The log is JSON Lines (fightlog.jsonl). Script strings (names) keep their legacy codepage bytes
 as \\u00XX escapes; they are decoded here with --codepage (cp1250 by default).
 
-"check" also evaluates the "expect <who> <metric> <op> <value>" lines of the scenario, adds them to
-the report and exits with 1 when an expectation or the scenario itself failed.
+"check" also evaluates the "expect <who> <metric> <op> <value>" lines of the scenario, and the
+"expect log <text>" / "expect nolog <text>" lines against log.txt of the run (e.g. the output of
+"ani info"), adds them to the report and exits with 1 when an expectation or the scenario failed.
 
 Usage:
   fightlog.py report RUN_DIR|FIGHTLOG [--out REPORT] [--codepage CP] [--constants AI_CONSTANTS_D]
@@ -33,12 +34,14 @@ DOWN_STATES = ["stumble", "fly", "lie", "unconscious", "dead"]
 
 # metric names of tests/README.md; counters are 0 when nothing happened, statistics have no data then
 KNOWN_METRIC = re.compile(
-    r"^(attacks|attacks\.tgt_down|attacks\.dir\.\w+|res\.(hit|block|jumpback|miss)|res\.miss\.\w+|taken\.(hit|block|jumpback)"
+    r"^(attacks|attacks\.tgt_down|attacks\.dir\.\w+(\.(new|fwd|side))?|res\.(hit|block|jumpback|miss)|res\.miss\.\w+|taken\.(hit|block|jumpback)"
     r"|combo\.max|combo\.count\.\d+|series\.(attack|side|front|triple|whirl|master|combo|multi)|break\.\w+"
     r"|skip\.(max_ms|avg_ms)|link\.(min_pct|avg_pct)|damage\.stage\.\d+\.(avg|count|max)|damage\.(min|max)"
-    r"|state\.\w+|bonus\.stage\.\d+\.(min|max)|bonus\.dir\.\w+\.max)$")
+    r"|state\.\w+|bonus\.stage\.\d+\.(min|max)|bonus\.dir\.\w+\.max"
+    r"|hit\.\w+\.(min_ms|max_ms)|link\.after\.\w+\.(min_ms|max_ms))$")
 STATISTIC = re.compile(r"^(combo\.max|skip\.\w+|link\.\w+|damage\.stage\.\d+\.(avg|max)|damage\.(min|max)"
-                       r"|bonus\.\S+)$")
+                       r"|bonus\.\S+|hit\.\S+|link\.after\.\S+)$")
+LOG_KINDS = {"log": "jest", "nolog": "nie ma"}  # expect log <text>: a line of log.txt has the text
 OPS = {"==": operator.eq, "!=": operator.ne, "<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge}
 
 
@@ -142,6 +145,13 @@ def metrics(events: list[dict], ids: set[int]) -> dict[str, float]:
     bonus_stage: dict[int, list[int]] = defaultdict(list)
     bonus_dir: dict[str, list[int]] = defaultdict(list)
     attack_dir: dict[tuple[int, int], str] = {}
+    # spec 004 K6: when a hit comes after the start of its attack, and when the next attack links in the
+    # combo window of an attack that started its own animation (new or side link; a forward link skips
+    # into the animation, so its frames do not count from the attack)
+    attack_start: dict[tuple[int, int], dict] = {}
+    hit_ms: dict[str, list[int]] = defaultdict(list)
+    link_after_ms: dict[str, list[int]] = defaultdict(list)
+    previous: dict[int, dict] = {}
 
     for ev in events:
         kind = ev["ev"]
@@ -149,8 +159,14 @@ def metrics(events: list[dict], ids: set[int]) -> dict[str, float]:
         if kind == "attack" and mine:
             attacks_by_char[ev["who_id"]].append(ev)
             attack_dir[(ev["who_id"], ev["n"])] = ev["dir"]
+            attack_start[(ev["who_id"], ev["n"])] = ev
+            before = previous.get(ev["who_id"])
+            if before is not None and ev["link"] in ("fwd", "side") and before["link"] in ("new", "side"):
+                link_after_ms[before["dir"]].append(ev["t"] - before["t"])
+            previous[ev["who_id"]] = ev
             m["attacks"] += 1
             m[f"attacks.dir.{ev['dir']}"] += 1
+            m[f"attacks.dir.{ev['dir']}.{ev['link']}"] += 1
             if ev["tgt_down"]:
                 m["attacks.tgt_down"] += 1
             if ev["series"] == "combo":
@@ -169,6 +185,9 @@ def metrics(events: list[dict], ids: set[int]) -> dict[str, float]:
         elif kind == "result":
             if mine:
                 m[f"res.{ev['res']}"] += 1
+                start = attack_start.get((ev["who_id"], ev["n"]))
+                if start is not None and start["link"] in ("new", "side"):
+                    hit_ms[start["dir"]].append(ev["t"] - start["t"])
                 if ev["res"] == "miss" and ev["why"]:
                     m[f"res.miss.{ev['why']}"] += 1
                 if ev["res"] == "hit":
@@ -209,6 +228,10 @@ def metrics(events: list[dict], ids: set[int]) -> dict[str, float]:
         m[f"bonus.stage.{stage}.max"] = max(values)
     for direction, values in bonus_dir.items():
         m[f"bonus.dir.{direction}.max"] = max(values)
+    for name, table in (("hit", hit_ms), ("link.after", link_after_ms)):
+        for direction, values in table.items():
+            m[f"{name}.{direction}.min_ms"] = min(values)
+            m[f"{name}.{direction}.max_ms"] = max(values)
     return dict(m)
 
 
@@ -232,6 +255,12 @@ def parse_expectations(path: Path) -> list[Expectation]:
         if not parts or parts[0].lower() != "expect":
             continue
         exp = Expectation(num, line.strip())
+        if len(parts) >= 3 and parts[1].lower() in LOG_KINDS:
+            # expect log <text>: the text is the rest of the line, spaces kept
+            exp.who = parts[1].lower()
+            exp.metric = line.strip().split(None, 2)[2]
+            ret.append(exp)
+            continue
         try:
             _, exp.who, exp.metric, exp.op, value = parts
             exp.value = float(value)
@@ -243,8 +272,16 @@ def parse_expectations(path: Path) -> list[Expectation]:
     return ret
 
 
-def evaluate(exp: Expectation, events: list[dict], chars: dict[int, Character]) -> None:
+def evaluate(exp: Expectation, events: list[dict], chars: dict[int, Character],
+             log_lines: list[str] | None = None) -> None:
     if exp.note:
+        return
+    if exp.who in LOG_KINDS:
+        if log_lines is None:
+            exp.note = "brak log.txt"
+            return
+        exp.actual = sum(exp.metric in line for line in log_lines)
+        exp.ok = (exp.actual > 0) == (exp.who == "log")
         return
     if not KNOWN_METRIC.match(exp.metric):
         exp.note = "nieznana miara"
@@ -283,9 +320,12 @@ def expectations_section(exps: list[Expectation], status: dict | None, scenario:
         out.append("|---|---|---|---|---|---|")
         for e in exps:
             result   = "zaliczone" if e.ok else "**niezaliczone**"
-            expected = f"{e.op} {fmt(e.value)}" if e.op in OPS else "–"
+            expected = f"{e.op} {fmt(e.value)}" if e.op in OPS else LOG_KINDS.get(e.who, "–")
             actual   = fmt(e.actual) if e.actual is not None else e.note
-            out.append(f"| {e.line} | {e.who or '–'} | {e.metric or '–'} | {expected} | {actual} | {result} |")
+            if e.who in LOG_KINDS and e.actual is not None:
+                actual = f"{fmt(e.actual)} linii"
+            metric = f"`{e.metric}`" if e.who in LOG_KINDS else (e.metric or "–")
+            out.append(f"| {e.line} | {e.who or '–'} | {metric} | {expected} | {actual} | {result} |")
     else:
         out.append("- Scenariusz nie ma oczekiwań.")
     out.append("")
@@ -560,8 +600,10 @@ def cmd_check(args) -> int:
     scenario = find_scenario(args, log, events)
     exps = parse_expectations(scenario)
     chars = characters(events)
+    game_log = log.with_name("log.txt")
+    log_lines = game_log.read_text(encoding="utf-8", errors="replace").splitlines() if game_log.is_file() else None
     for e in exps:
-        evaluate(e, events, chars)
+        evaluate(e, events, chars, log_lines)
 
     section, ok = expectations_section(exps, status, scenario)
     text = report(events, load_tactics(Path(args.constants)), log, status)
@@ -570,6 +612,9 @@ def cmd_check(args) -> int:
 
     for e in exps:
         actual = fmt(e.actual) if e.actual is not None else e.note
+        if e.who in LOG_KINDS:
+            print(f"{'ok  ' if e.ok else 'FAIL'} line {e.line}: {e.who} \"{e.metric}\" (lines: {actual})")
+            continue
         print(f"{'ok  ' if e.ok else 'FAIL'} line {e.line}: {e.who} {e.metric} {e.op} {fmt(e.value)} (actual: {actual})")
     if status is not None and status.get("result") == "running":
         print("FAIL scenario: did not finish, the game ended or was closed during it")

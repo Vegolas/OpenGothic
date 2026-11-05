@@ -1,0 +1,16 @@
+# criterion: 004 K9
+# timeout: 120
+# save: build/testsaves/001-K9-v0.1.0-pal230.sav
+# Zapis z wersji 0.1.0 moda (Z1 w 001) wczytany w wersji z animacjami: bohater wyprowadza oba sierpowe.
+wait 1
+ani info hero T_FISTATTACKL
+play ani hero T_FISTATTACKL
+wait 1.2
+play ani hero T_FISTATTACKR
+wait 0.4
+screenshot zapis-0.1.0.png
+wait 1
+quit
+
+expect log model script extension "HUMANS.EXT.MDS": 2 added, 0 replaced
+expect log scenario: ani T_FISTATTACKL origin mod

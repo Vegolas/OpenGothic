@@ -1,0 +1,13 @@
+# criterion: 004 K9
+# timeout: 120
+# save: build/test/profile/save_slot_1.sav
+# Wczytanie zapisu z K09a z modem: gra się wczytuje, a bohater wyprowadza potem sierpowy z prawej.
+wait 1
+ani info hero T_FISTATTACKR
+play ani hero T_FISTATTACKR
+wait 0.4
+screenshot po-wczytaniu.png
+wait 1
+quit
+
+expect log scenario: ani T_FISTATTACKR origin mod

@@ -522,7 +522,7 @@ nie kopiujemy w całości.
           w lewo, 46 w prawo i 101 do przodu. `check-pack`: 3 pliki animacji, bez błędów.
 
       Po Z15 i Z16. (W8, W14)
-- [ ] **Z18** [P] Scenariusze `tests/004/`.
+- [x] **Z18** [P] Scenariusze `tests/004/`.
       - K04: podmiana stania z `anim.py fixtures` przez `-AnimExtra build/anims-fixtures`,
         `play ani hero S_RUN` i seria zrzutów.
       - K06: kopacz atakuje nieśmiertelnego bohatera. W raporcie czasy trafień sierpowych kontra
@@ -536,6 +536,46 @@ nie kopiujemy w całości.
         dla `right`, combo do przodu nadal 2 ciosy.
       - `reczne/K05-sierpowe.txt`: bohater z pięściami, `cheat god`, cel, który nie oddaje.
       - Sprawdzenie: każdy scenariusz uruchomiony raz. Raport z liczbami do opisu commitu.
+      - Wynik (2026-11-05):
+        - narzędzia do scenariuszy:
+          - nagłówek `# anim-extra: <katalog>`: `test.ps1` pakuje moda z danymi testowymi tylko dla
+            tego scenariusza, a przy zmianie katalogów pakuje od nowa. Brakujące
+            `build/anims-fixtures/*` robi `anim.py fixtures`;
+          - `expect log <tekst>` i `expect nolog <tekst>` w `fightlog.py` sprawdzają `log.txt`
+            przebiegu: wynik `ani info` i linię silnika „model script extension”;
+          - nowe miary: `hit.<dir>.min_ms/max_ms` (od początku ciosu do jego wyniku),
+            `link.after.<dir>.min_ms/max_ms` (od początku ciosu do ciosu podpiętego w jego oknie)
+            i `attacks.dir.<dir>.<link>`;
+          - wszystko opisane w `tests/README.md`;
+        - `-Spec 004` (12 scenariuszy, przebiegi `20261105-1745*` do `-1749*`): 11 przechodzi. Nie
+          przeszedł K09c: zapis z modem wczytany bez moda (świat się nie wczytał, „Cannot init
+          RTN_TOT_3”, numery symboli skryptów, ADR 0005). Na decyzję właściciela krok „bez moda”
+          usunięty z K9 w spec., scenariusz usunięty, a K09d przemianowany na K09c;
+        - K04: S_RUN z danych `k04`, definicja z gry. Na zrzutach głowa obraca się, a bohater stoi;
+        - K06 (120 s, ×2): trafienie sierpowych po 440-452 ms, czyli 11 klatkach (`DEF_OPT_FRAME 11`).
+          Oryginalny cios do przodu trafia po 360 ms (9 klatek, `DEF_OPT_FRAME 9`), więc klatki zdarzeń
+          sierpowych działają jak w oryginale. Ciosy podpięte po sierpowym padają po 592-608 ms,
+          w oknie `DEF_WINDOW 11 16` (440-640 ms); po ciosie do przodu po 552-568 ms (okno
+          360-600 ms). Ciosy: 31 z lewej, 27 z prawej i 63 do przodu. Dźwięku zamachu nie ma
+          w dzienniku, zostaje do K5;
+        - K08a (bez moda, K11): nie ma linii „model script extension”, cios pięścią, stanie
+          i `T_1HATTACKL` na szkielecie pochodzą z gry, a `DEF_OPT_FRAME` ma 9 i 24 (5 z 5).
+          Wersji bez moda dla K12 nie ma: bez moda sierpowych nie ma czego pokazać, a ich brak
+          sprawdza K08a;
+        - K08b (bez moda, K13): kopacz 106 ciosów do przodu, 0 w lewo i 0 w prawo;
+        - K09a/K09b: zapis w trakcie sierpowego, po wczytaniu z modem bohater wyprowadza prawy
+          sierpowy. K09c (zapis z 0.1.0): rozszerzenie wczytane („2 added, 0 replaced”), sierpowe
+          działają;
+        - K11a (dane `k11`): „HUMANS.EXT.MDS: 3 added, 1 replaced” i „HUMANS_1HST1.EXT.MDS: 1 added”.
+          `T_G25TEST` i podmieniony `S_FISTATTACK` (`DEF_OPT_FRAME` 10 i 25) pochodzą z moda, `S_RUN`
+          z gry, a `T_G25OVERLAYTEST` działa na szkielecie (7 z 7). K11b (bez danych): „2 added,
+          0 replaced”, nakładka bez rozszerzenia, wszystkie trzy z gry (6 z 6);
+        - K12: `ani info` dla obu sierpowych (pochodzenie `mod`, `BIP01 L/R HAND`) i zrzuty lewego
+          i prawego (4 z 4);
+        - K13 (120 s, ×2): kopacz 23 ciosy z lewej (4 podpięte bokiem), 27 z prawej (18 bokiem)
+          i 73 do przodu. Premia ciosów bocznych 100, combo do przodu nadal 2 (7 z 7);
+        - `reczne/K05-sierpowe.txt`: bohater z pięściami przy celu testowym, który nie oddaje.
+          Opisuje, co zagrać i co ocenić.
 
       Po Z11, Z13, Z14 i Z17. (K4, K6, K8, K9, K11, K12, K13)
 - [ ] **Z19** [P] Dokumentacja.

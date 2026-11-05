@@ -6,7 +6,8 @@
   doszło P9, zmienione W2, W5-W7, W9, W13, W16, K4, K7, K11 i K14. Ponownie 2026-11-04: P9
   rozstrzygnięte od nowa (zmienione oryginalne animacje mogą trafić do paczki, ADR 0009), zmienione
   „Problem”, „Cel”, scenariusz 1, W2, W7, W16, K7, K14 i „Zasoby i prawa”. 2026-11-05: dopisek
-  do W14 (odbicie wpięte w niesymetryczną postawę, decyzja właściciela przy Z17).
+  do W14 (odbicie wpięte w niesymetryczną postawę, decyzja właściciela przy Z17) i K9 bez kroku
+  „bez moda” (decyzja właściciela przy Z18).
 - **Warstwa (wstępnie):** narzędzia, zasoby i silnik <!-- zasoby / skrypty / silnik -->
 
 - **Powiązane:** [001: Combosy NPC w walce wręcz](../001-combosy-npc-w-walce-wrecz/spec.md)
@@ -260,9 +261,14 @@ w wersjach z W10 (Blender 5.2 LTS, KrxImpExp z przypiętego commitu gałęzi `de
     wyprowadza sierpowych, a jego ciosy boczne ze stylu są ciosami do przodu.
 - [ ] **K9** (W12): Zapisy.
   - Kroki: zapis z poprzedniej wersji moda wczytany w nowej. Potem zapis zrobiony w trakcie
-    sierpowego, wczytany ponownie z modem i bez moda.
+    sierpowego, wczytany ponownie z modem.
   - Oczekiwane: wszystkie zapisy się wczytują. Z modem bohater po wczytaniu może walczyć pięściami
-    i wyprowadzić sierpowy, a bez moda wraca do zwykłej pozy.
+    i wyprowadzić sierpowy.
+  - Zmienione 2026-11-05 (decyzja właściciela przy Z18): krok „wczytany bez moda” usunięty. Zapis
+    zrobiony z modem nie wczytuje się bez moda niezależnie od animacji („Cannot init RTN_TOT_3”),
+    bo skrypty moda mają inne numery symboli niż skrypty gry (ADR 0005). Animację, której nie zna,
+    silnik pomija przy wczytaniu zapisu: `Pose::load` usuwa jej warstwę, a postać wraca do zwykłej
+    pozy.
 - [ ] **K10** (W10, W11): Złe ustawienia i opis kroków.
   - Kroki: na czystym checkoucie pobierz dodatek importu narzędziem moda i wykonaj import oryginału.
     Potem uruchom import ze złą ścieżką do Blendera, a potem z innym commitem dodatku importu.
