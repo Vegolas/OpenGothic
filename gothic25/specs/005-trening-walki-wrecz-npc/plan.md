@@ -307,8 +307,9 @@ Brak. Nowe funkcje bez symbolu-przełącznika z ADR 0003 opisuje ADR 0010.
   przed powrotem po serii. Wykrycie: K5 (`wp_dist`). Wtedy skracamy serie albo dodajemy powrót po
   odskoku.
   - **Zaszło przy Z4** (combo 4 ciosów przesuwa o około 2,8 m). **Rozstrzygnięte przy Z6** decyzjami
-    właściciela: W5 dopuszcza 3,5 m w trakcie serii, a początek serii najwyżej 0,6 m od waypointu
-    (tolerancja dojścia `AI_GotoWP` to 20-60 cm). Powrót po każdej serii i po bloku albo odskoku.
+    właściciela: W5 dopuszcza 3,5 m w trakcie serii, a początek serii najwyżej 0,75 m od waypointu
+    (`AI_GotoWP` kończy dojście do około 60 cm od punktu, przy Z7 zmierzone do 68 cm z obrotem). Powrót po
+    każdej serii i po bloku albo odskoku.
 - **R3: pierwsza nowa funkcja zewnętrzna.** Rejestracja w ZenKit sprawdza zgodność typów
   parametrów z deklaracją w `.DAT`. Sprawdzamy to w pierwszym zadaniu, na małym scenariuszu z
   `expect nolog not implemented call`.

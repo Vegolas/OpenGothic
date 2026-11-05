@@ -1,0 +1,33 @@
+# criterion: 005 Z7
+# timeout: 300
+# Zadanie Z7 (spec. 005): postacie testowe na placu koszar: pięściami przy mieczu (CENTRE_01,
+# TA_Practice_Fist), bez broni (CENTRE_03), profil testowy 99 (CENTRE_04), a strażnik 329 po
+# TST_PracticeMilitia ćwiczy nowym treningiem na swoim CENTRE_02.
+# Uruchomienie: tools/test.ps1 -Scenario dev/005-z7-postacie-b
+info told DIA_Xardas_Hello
+set time 10 0
+goto waypoint NW_CITY_KASERN_BARRACK02_03
+wait 1
+call B_RemoveNpc Mil_330_Miliz
+call B_RemoveNpc Mil_331_Miliz
+insert TST_Practice_Fist1H
+insert TST_Practice_NoWeapon
+insert TST_Practice_Profile
+call TST_PracticeMilitia
+ztimer multiplyer 2
+wait 150
+call TST_IsFistMode TST_Practice_Fist1H
+call TST_IsFistMode TST_Practice_NoWeapon
+screenshot plac.png
+quit
+
+expect TST_Practice_Fist1H practice.series >= 5
+expect TST_Practice_Fist1H combo.max <= 2
+expect TST_Practice_NoWeapon practice.series >= 3
+expect TST_Practice_NoWeapon combo.max <= 2
+expect TST_Practice_Profile practice.move.left >= 5
+expect TST_Practice_Profile practice.move.right == 0
+expect Mil_329_Miliz practice.series >= 3
+expect log scenario: call: TST_ISFISTMODE = 1
+expect nolog not implemented call [AI_PRACTICEMOVE]
+expect nolog not implemented call [AI_READYFIST]

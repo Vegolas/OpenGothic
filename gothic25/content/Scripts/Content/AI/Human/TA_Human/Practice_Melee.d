@@ -207,6 +207,15 @@ func void B_PracticeMelee_Series ()
 	B_PracticeMelee_Mixed ();
 };
 
+// Back to the place and its direction (spec 005 W5). AI_GotoWP stops up to about 60 cm from the
+// waypoint; it also attaches the npc to the waypoint, which AI_AlignToWP needs, even when the npc
+// is close. A second AI_GotoWP to the same waypoint does nothing.
+func void B_PracticeMelee_Place ()
+{
+	AI_GotoWP (self, self.wp);
+	AI_AlignToWP (self);
+};
+
 // A block or a jump-back before every DefendMin-DefendMax series (spec 005 W2). A jump-back, and
 // a block with fists, move the npc: it goes back to its place before the series (spec 005 W5).
 func void B_PracticeMelee_Defend ()
@@ -222,8 +231,7 @@ func void B_PracticeMelee_Defend ()
 	};
 	self.aivar[AIV_PracticeDefend] = B_PracticeMelee_Random (PracticeMelee_DefendMin, PracticeMelee_DefendMax) - 1;
 	AI_PracticeMove (self, PRACTICE_BLOCK + Hlp_Random (2));
-	AI_GotoWP (self, self.wp);
-	AI_AlignToWP (self);
+	B_PracticeMelee_Place ();
 };
 
 // Pause after a series, a rest every RestEveryMin-RestEveryMax series (spec 005 W3).
@@ -247,8 +255,7 @@ func void B_PracticeMelee_Start (var int fist)
 	Perception_Set_Normal ();
 	B_ResetAll (self);
 	AI_SetWalkmode (self, NPC_WALK);
-	AI_GotoWP (self, self.wp);
-	AI_AlignToWP (self);
+	B_PracticeMelee_Place ();
 	self.aivar[AIV_TAPOSITION] = NOTINPOS;
 
 	B_PracticeMelee_Settings (B_PracticeMelee_Level (fist));
@@ -271,6 +278,8 @@ func void B_PracticeMelee_Loop (var int fist)
 		{
 			AI_ReadyMeleeWeapon (self);		// fists without a melee weapon
 		};
+		// the npc may come from far away: once more at the place before the first series
+		B_PracticeMelee_Place ();
 		self.aivar[AIV_TAPOSITION] = ISINPOS;
 	};
 
@@ -279,8 +288,7 @@ func void B_PracticeMelee_Loop (var int fist)
 	B_PracticeMelee_Series ();
 
 	// back to the place after every series (spec 005 W5)
-	AI_GotoWP (self, self.wp);
-	AI_AlignToWP (self);
+	B_PracticeMelee_Place ();
 	B_PracticeMelee_Pause ();
 };
 

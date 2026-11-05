@@ -101,3 +101,190 @@ func int TST_IsMeleeMode (var C_NPC slf)
 {
 	return Npc_IsInFightMode (slf, FMODE_MELEE);
 };
+
+// ------------------------------------------------------------------
+// Characters of the practice scenarios (spec 005 Z7). They train at
+// the yard of the city barracks; scenarios remove the militia 330 and
+// 331, who practice at CENTRE_03 and CENTRE_04 from 7:00.
+// ------------------------------------------------------------------
+
+const string TST_PRACTICE_WP_1 = "NW_CITY_HABOUR_KASERN_CENTRE_01";
+const string TST_PRACTICE_WP_3 = "NW_CITY_HABOUR_KASERN_CENTRE_03";
+const string TST_PRACTICE_WP_4 = "NW_CITY_HABOUR_KASERN_CENTRE_04";
+
+func void Rtn_Start_9910 ()
+{
+	TA_Practice_Melee	(00,00,12,00, TST_PRACTICE_WP_1);
+	TA_Practice_Melee	(12,00,00,00, TST_PRACTICE_WP_1);
+};
+
+func void Rtn_Start_9911 ()
+{
+	TA_Practice_Melee	(00,00,12,00, TST_PRACTICE_WP_3);
+	TA_Practice_Melee	(12,00,00,00, TST_PRACTICE_WP_3);
+};
+
+func void Rtn_Start_9912 ()
+{
+	TA_Practice_Melee	(00,00,12,00, TST_PRACTICE_WP_4);
+	TA_Practice_Melee	(12,00,00,00, TST_PRACTICE_WP_4);
+};
+
+func void Rtn_Start_9913 ()
+{
+	TA_Practice_Fist	(00,00,12,00, TST_PRACTICE_WP_1);
+	TA_Practice_Fist	(12,00,00,00, TST_PRACTICE_WP_1);
+};
+
+func void Rtn_Start_9914 ()
+{
+	TA_Practice_Melee	(00,00,12,00, TST_PRACTICE_WP_3);
+	TA_Practice_Melee	(12,00,00,00, TST_PRACTICE_WP_3);
+};
+
+func void Rtn_Start_9915 ()
+{
+	TA_Practice_Melee	(00,00,12,00, TST_PRACTICE_WP_4);
+	TA_Practice_Melee	(12,00,00,00, TST_PRACTICE_WP_4);
+};
+
+// spec 005 K8: practice from 8:00 to 9:00, then standing at another place
+func void Rtn_Start_9916 ()
+{
+	TA_Practice_Melee		(08,00,09,00, TST_PRACTICE_WP_1);
+	TA_Stand_ArmsCrossed	(09,00,08,00, TST_PRACTICE_WP_3);
+};
+
+// militia 329 practices the new way at its own place, for its dialogs (spec 005 K7)
+func void Rtn_TST_Practice_329 ()
+{
+	TA_Practice_Melee	(00,00,12,00, "NW_CITY_HABOUR_KASERN_CENTRE_02");
+	TA_Practice_Melee	(12,00,00,00, "NW_CITY_HABOUR_KASERN_CENTRE_02");
+};
+
+// B_StartOtherRoutine also ends the current state (AI_ContinueRoutine): Npc_ExchangeRoutine alone
+// keeps the old practice until the end of its time.
+func void TST_PracticeMilitia ()
+{
+	var C_NPC mil;
+	mil = Hlp_GetNpc (Mil_329_Miliz);
+	B_StartOtherRoutine (mil, "TST_Practice");
+};
+
+// 1H master (K1, K5, K6, K10)
+instance TST_Practice_Master1H (Npc_Default)
+{
+	name 		= "Ćwiczący mistrz 1H";
+	guild 		= GIL_MIL;
+	id 			= 9910;
+	voice 		= 6;
+	flags       = 0;
+	npctype		= NPCTYPE_AMBIENT;
+	B_SetAttributesToChapter (self, 3);
+	fight_tactic		= FAI_HUMAN_MASTER;
+	EquipItem			(self, ItMw_1h_Pal_Sword);
+	B_SetNpcVisual 		(self, MALE, "Hum_Head_Bald", Face_N_NormalBart10, BodyTex_N, ITAR_MIL_L);
+	B_SetFightSkills 	(self, 80);
+	daily_routine 		= Rtn_Start_9910;
+};
+
+// 2H novice and 2H master side by side (K2)
+instance TST_Practice_Novice2H (Npc_Default)
+{
+	name 		= "Ćwiczący nowicjusz 2H";
+	guild 		= GIL_MIL;
+	id 			= 9911;
+	voice 		= 6;
+	flags       = 0;
+	npctype		= NPCTYPE_AMBIENT;
+	B_SetAttributesToChapter (self, 3);
+	fight_tactic		= FAI_HUMAN_COWARD;
+	EquipItem			(self, ItMw_2h_Pal_Sword);
+	B_SetNpcVisual 		(self, MALE, "Hum_Head_Fighter", Face_N_Normal03, BodyTex_N, ITAR_MIL_L);
+	B_SetFightSkills 	(self, 20);
+	daily_routine 		= Rtn_Start_9911;
+};
+
+instance TST_Practice_Master2H (Npc_Default)
+{
+	name 		= "Ćwiczący mistrz 2H";
+	guild 		= GIL_MIL;
+	id 			= 9912;
+	voice 		= 6;
+	flags       = 0;
+	npctype		= NPCTYPE_AMBIENT;
+	B_SetAttributesToChapter (self, 3);
+	fight_tactic		= FAI_HUMAN_MASTER;
+	EquipItem			(self, ItMw_2h_Pal_Sword);
+	B_SetNpcVisual 		(self, MALE, "Hum_Head_Pony", Face_N_Normal03, BodyTex_N, ITAR_MIL_L);
+	B_SetFightSkills 	(self, 80);
+	daily_routine 		= Rtn_Start_9912;
+};
+
+// fists with a 1H sword equipped (K3)
+instance TST_Practice_Fist1H (Npc_Default)
+{
+	name 		= "Ćwiczący pięściami";
+	guild 		= GIL_MIL;
+	id 			= 9913;
+	voice 		= 6;
+	flags       = 0;
+	npctype		= NPCTYPE_AMBIENT;
+	B_SetAttributesToChapter (self, 3);
+	fight_tactic		= FAI_HUMAN_STRONG;
+	EquipItem			(self, ItMw_1h_Pal_Sword);
+	B_SetNpcVisual 		(self, MALE, "Hum_Head_Bald", Face_N_Normal03, BodyTex_N, ITAR_MIL_L);
+	B_SetFightSkills 	(self, 80);
+	daily_routine 		= Rtn_Start_9913;
+};
+
+// no melee weapon, practice with the weapon: fists (K3)
+instance TST_Practice_NoWeapon (Npc_Default)
+{
+	name 		= "Ćwiczący bez broni";
+	guild 		= GIL_MIL;
+	id 			= 9914;
+	voice 		= 6;
+	flags       = 0;
+	npctype		= NPCTYPE_AMBIENT;
+	B_SetAttributesToChapter (self, 3);
+	fight_tactic		= FAI_HUMAN_STRONG;
+	B_SetNpcVisual 		(self, MALE, "Hum_Head_Fighter", Face_N_NormalBart10, BodyTex_N, ITAR_MIL_L);
+	B_SetFightSkills 	(self, 40);
+	daily_routine 		= Rtn_Start_9914;
+};
+
+// test profile 99: attacks from the left only, a pause of 2 s (K4)
+instance TST_Practice_Profile (Npc_Default)
+{
+	name 		= "Ćwiczący profil testowy";
+	guild 		= GIL_MIL;
+	id 			= 9915;
+	voice 		= 6;
+	flags       = 0;
+	npctype		= NPCTYPE_AMBIENT;
+	B_SetAttributesToChapter (self, 3);
+	fight_tactic		= FAI_HUMAN_STRONG;
+	EquipItem			(self, ItMw_1h_Pal_Sword);
+	B_SetNpcVisual 		(self, MALE, "Hum_Head_Pony", Face_N_NormalBart10, BodyTex_N, ITAR_MIL_L);
+	B_SetFightSkills 	(self, 80);
+	aivar[AIV_PracticeProfile] = PRACTICE_PROFILE_TEST;
+	daily_routine 		= Rtn_Start_9915;
+};
+
+// practice until 9:00, then standing at CENTRE_03 (K8)
+instance TST_Practice_Shift (Npc_Default)
+{
+	name 		= "Ćwiczący do 9:00";
+	guild 		= GIL_MIL;
+	id 			= 9916;
+	voice 		= 6;
+	flags       = 0;
+	npctype		= NPCTYPE_AMBIENT;
+	B_SetAttributesToChapter (self, 3);
+	fight_tactic		= FAI_HUMAN_STRONG;
+	EquipItem			(self, ItMw_1h_Pal_Sword);
+	B_SetNpcVisual 		(self, MALE, "Hum_Head_Bald", Face_N_Normal03, BodyTex_N, ITAR_MIL_L);
+	B_SetFightSkills 	(self, 80);
+	daily_routine 		= Rtn_Start_9916;
+};

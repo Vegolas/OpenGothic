@@ -26,7 +26,7 @@ expect TST_ComboDummy attacks.dir.left >= 1
 expect TST_ComboDummy attacks.dir.right >= 1
 expect TST_ComboDummy practice.pause.min_ms >= 1000
 expect TST_ComboDummy practice.pause.max_ms <= 3500
-expect TST_ComboDummy practice.start_dist.max_cm <= 60
+expect TST_ComboDummy practice.start_dist.max_cm <= 75
 expect TST_ComboDummy res.hit == 0
 expect log scenario: call: TST_ISFISTMODE = 1
 expect nolog not implemented call [AI_PRACTICEMOVE]

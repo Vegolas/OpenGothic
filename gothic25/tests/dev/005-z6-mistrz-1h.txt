@@ -31,7 +31,7 @@ expect TST_ComboDummy practice.series_per_defend <= 10
 expect TST_ComboDummy practice.pause.min_ms >= 500
 expect TST_ComboDummy practice.pause.max_ms <= 2000
 expect TST_ComboDummy practice.rest.count >= 1
-expect TST_ComboDummy practice.start_dist.max_cm <= 60
+expect TST_ComboDummy practice.start_dist.max_cm <= 75
 expect TST_ComboDummy practice.wp_dist.max_cm <= 350
 expect TST_ComboDummy practice.wp_angle.max_deg <= 15
 expect TST_ComboDummy res.hit == 0

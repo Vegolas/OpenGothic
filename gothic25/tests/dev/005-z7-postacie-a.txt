@@ -1,0 +1,29 @@
+# criterion: 005 Z7
+# timeout: 300
+# Zadanie Z7 (spec. 005): postacie testowe z planem dnia TA_Practice_Melee dochodzą na swoje
+# waypointy na placu koszar i ćwiczą: mistrz 1H (CENTRE_01), nowicjusz 2H (CENTRE_03), mistrz 2H
+# (CENTRE_04). Strażnicy 330 i 331, którzy ćwiczą na CENTRE_03 i CENTRE_04, są usuwani.
+# Uruchomienie: tools/test.ps1 -Scenario dev/005-z7-postacie-a
+info told DIA_Xardas_Hello
+set time 10 0
+goto waypoint NW_CITY_KASERN_BARRACK02_03
+wait 1
+call B_RemoveNpc Mil_330_Miliz
+call B_RemoveNpc Mil_331_Miliz
+insert TST_Practice_Master1H
+insert TST_Practice_Novice2H
+insert TST_Practice_Master2H
+ztimer multiplyer 2
+wait 150
+screenshot plac.png
+quit
+
+expect TST_Practice_Master1H practice.series >= 5
+expect TST_Practice_Master1H practice.start_dist.max_cm <= 75
+expect TST_Practice_Novice2H practice.series >= 3
+expect TST_Practice_Novice2H combo.max <= 2
+expect TST_Practice_Novice2H practice.start_dist.max_cm <= 75
+expect TST_Practice_Master2H practice.series >= 5
+expect TST_Practice_Master2H practice.start_dist.max_cm <= 75
+expect nolog not implemented call [AI_PRACTICEMOVE]
+expect nolog not implemented call [AI_READYFIST]

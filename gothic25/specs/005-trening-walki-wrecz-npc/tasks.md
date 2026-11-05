@@ -247,7 +247,7 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
         - `dat.py prefix`: kod 0.
 
       (W1, W2, W3, W4, W5, W7, W8, W11)
-- [ ] **Z7** Dane testowe treningu w pliku testowym (plan, „Skrypty”).
+- [x] **Z7** Dane testowe treningu w pliku testowym (plan, „Skrypty”).
       - Postacie testowe od id 9910, gildia `GIL_MIL`, z planami dnia na waypointach placu koszar
         (`NW_CITY_HABOUR_KASERN_CENTRE_01` do `_04`):
         - mistrz 1H;
@@ -262,6 +262,31 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
         `call B_RemoveNpc`, tak jak w 001.
       - Sprawdzenie: scenariusz roboczy wstawia każdą postać. Każda dochodzi na swój waypoint i ćwiczy,
         co widać w dzienniku i na zrzucie.
+      - Wynik (2026-11-05):
+        - Postacie `TST_Practice_Master1H`, `Novice2H`, `Master2H`, `Fist1H`, `NoWeapon`, `Profile`,
+          `Shift` (id 9910-9916, gildia straży, plany dnia `Rtn_Start_99xx`). Imiona po polsku, plik
+          testowy w cp1250.
+        - `TST_PracticeMilitia` używa `B_StartOtherRoutine`. Samo `Npc_ExchangeRoutine` zostawiało
+          strażnika 329 w starym treningu do końca jego pory (20:58), bo stan nie kończył się sam.
+        - Poprawki skryptu treningu znalezione w Z7:
+          - przed pierwszą serią NPC jeszcze raz staje na miejscu (`B_PracticeMelee_Place`), bo po
+            marszu z daleka pierwsza seria startowała odwrócona o 74-127° od kierunku waypointu;
+          - drugie `AI_GotoWP` do tego samego waypointu nic nie robi (silnik nie liczy nowej trasy do
+            tego samego celu), więc zostaje jedno.
+        - **Decyzja właściciela przy Z7:** początek serii najwyżej 0,75 m od waypointu (W5, K5).
+          Postacie 2H po powrocie zaczynały serię do 68 cm od niego, bo silnik kończy dojście około
+          60 cm od punktu, a dochodzi obrót.
+        - Scenariusze robocze (10:00, strażnicy 330 i 331 usunięci, czas ×2, 150 s gry):
+          - `dev/005-z7-postacie-a` (`20261105-234857`): mistrz 1H 24 serie, nowicjusz 2H 16 (combo
+            najwyżej 2), mistrz 2H 19, odchylenie 0°. Początek serii do 52, 64 i 68 cm. Zaliczony po
+            zmianie progu na 0,75 m (`fightlog.py check` tego samego dziennika);
+          - `dev/005-z7-postacie-b` (`20261105-235042`), zaliczony: pięściami przy mieczu 23 serie
+            (tryb pięści), bez broni 23 (pięści, combo 2), profil 99 36 lewych i 0 prawych, strażnik
+            329 po `TST_PracticeMilitia` 20 serii nowego treningu, odchylenie 0°.
+          - Przebiegi poszły jeszcze z drugim `AI_GotoWP`, które nic nie robiło. Jego usunięcie nie
+            zmienia zachowania.
+        - `TST_Practice_Shift` (K8) sprawdzi dopiero Z10.
+        - `dat.py prefix`: kod 0.
 
       (W1, K1-K8, K10)
 - [ ] **Z8** [P] Dokumentacja skryptów i changelog.
