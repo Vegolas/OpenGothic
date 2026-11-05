@@ -390,7 +390,7 @@ nie kopiujemy w całości.
             4 klatki, a powrót do niej 7;
           - prawa ręka zostaje w gardzie z postawy;
           - bez kroku: korzeń bierze 15% poziomego i 50% pionowego ruchu oryginału, nogi rozwiązuje IK,
-            kostki stoją w miejscu (odchyłka 0), a stopy mają ułożenie z postawy;
+            kostki stoją w miejscu z postawy (odchyłka 0), a stopy mają ułożenie z postawy;
           - po trafieniu oryginał unosi pięść nad głowę, bo z krokiem przechodzi w zamach od dołu.
             W sierpowym lewa ręka zostaje przez dwie klatki w ułożeniu z klatki trafienia, tułów niesie
             ją w poziomie, a w klatkach 26-27 oryginału ruch wraca do oryginalnego;
@@ -409,6 +409,16 @@ nie kopiujemy w całości.
           `defs` (pochodzenie `mod`, 23 klatki MAN), są zrzuty z `play ani`;
         - K12 z sierpowym (przebieg `20261104-220307-Z15-K12-hook`): kopacz bije 61 razy w lewo,
           0 w prawo i 187 do przodu, K12 przechodzi.
+      - Poprawka wersji 2 (2026-11-04, wykryta przy Z16): w zacommitowanym eksporcie kostki stały
+        ok. 3,8 cm niżej niż w postawie, stopy były więc lekko w ziemi. Skrypt brał je z klatki 0
+        poprzednich kluczy akcji: Blender nadpisywał nimi ustawioną postawę, a błąd pierwszego
+        przebiegu przechodził na kolejne. Teraz skrypt najpierw usuwa stare klucze, a na końcu
+        sprawdza, że klatki 0 i 22 są postawą.
+        - wynik: klatki 0 i 22 równe `S_FISTRUN` (0°, 0,001 cm); stopy przez cały cios w miejscu
+          z postawy; ruch ręki bez zmian;
+        - `anim.ps1 check` zgodny, a `check-pack` przechodzi;
+        - w grze (przebiegi `20261104-223929-Z15-hook` i `20261104-223947-Z15-K12-hook`) kopacz bije
+          70 razy w lewo, 0 w prawo i 195 do przodu.
       - Wynik wersji 1 (2026-11-04):
         - `T_FISTATTACKL`: 25 klatek (1 s), same nasze klucze. Pozy to obroty kości wokół osi ciała
           w skrypcie prototypu w scratchpadzie sesji (`z15/hook.py`). Nogi rozwiązuje proste IK, więc
