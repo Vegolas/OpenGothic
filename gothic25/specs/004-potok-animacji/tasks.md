@@ -578,7 +578,7 @@ nie kopiujemy w całości.
           Opisuje, co zagrać i co ocenić.
 
       Po Z11, Z13, Z14 i Z17. (K4, K6, K8, K9, K11, K12, K13)
-- [ ] **Z19** [P] Dokumentacja.
+- [x] **Z19** [P] Dokumentacja.
       - `anims/README.md` (W11):
         - kroki od `new` przez edycję, eksport i build do podglądu w grze, a także import oryginału
           jako wzorca;
@@ -596,6 +596,27 @@ nie kopiujemy w całości.
       - `gothic25/CLAUDE.md`: zasoby animacji i narzędzia `anim.py` / `anim.ps1`.
       - `specs/001-combosy-npc-w-walce-wrecz/spec.md` (W1): odwołanie do 004 W15 przy ciosach
         bocznych pięściami.
+      - Wynik (2026-11-05):
+        - `anims/README.md` (nowy):
+          - pliki i zasady;
+          - przygotowanie (Blender w `local.json`, `get-krx.ps1`);
+          - nowa animacja krok po kroku: `new`, pozy w Blenderze (zakres klatek akcji), `export`,
+            definicja w `HUMANS.EXT.MDS` z regułami klatek zdarzeń, podgląd przez scenariusz
+            z `ani info` i `play ani` albo `run.ps1 -Pack -Dev`, `check` i `check-pack`, commit;
+          - oryginał jako wzorzec albo punkt wyjścia;
+          - łączenie definicji (ADR 0008), format `.anim`, odbicia z postawą;
+          - dane, które włączają zachowania silnika, i tabela poleceń.
+
+          Kroki `new` i `export` sprawdzone na sucho na animacji `T_G25PROBA` w scratchpadzie (24
+          klatki, 25 węzłów). Przejście całej drogi przez nową sesję to K10 w Z20;
+        - `content/README.md`: `Anims/` wskazuje `anims/` i build;
+        - `content/Scripts/README.md`, „Symbole dla silnika”: ataki boczne pięściami włącza
+          animacja, a definicje plik `*.EXT.MDS`;
+        - `NOTICE.txt`: animacje i wpisy definicji moda na licencji GothicMOD. Sierpowe zmienione
+          z oryginałów „na podstawie dzieła Piranha Bytes”, bez niezmienionych animacji i definicji
+          z gry;
+        - `CLAUDE.md`: zasoby animacji i narzędzia;
+        - 001: dopisek przy W1 i odwołanie do 004 w „Powiązane”.
 
       Po Z17. (W7, W11, W15)
 

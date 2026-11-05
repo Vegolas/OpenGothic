@@ -6,7 +6,8 @@
 
 - **Powiązane:** [002: Skalowanie obrażeń w kombo](../002-skalowanie-obrazen-w-kombo/spec.md)
   (balans obu funkcji trzeba ustalać razem: premia za kolejne ciosy combo dotknie także NPC,
-  jeśli 002 tak zdecyduje).
+  jeśli 002 tak zdecyduje), [004: Potok animacji](../004-potok-animacji/spec.md) (W15 zmienia
+  zdanie z W1 o ciosach bocznych pięściami).
 
 ## Problem
 
@@ -73,6 +74,9 @@ walki NPC, więc mistrza da się rozpoznać po samym sposobie walki.
 
   Walka na pięści podlega tym samym zasadom co walka bronią. Pięści nie mają ataków bocznych,
   więc ciosy boczne z serii są zwykłymi ciosami do przodu, jak dotąd.
+  - Zmienione przez [004](../004-potok-animacji/spec.md) W15 (2026-11-04): od kiedy model ma
+    animacje sierpowych (`T_FISTATTACKL/R`), ciosy boczne z serii są sierpowymi z tej strony. Combo
+    do przodu pięściami ma nadal 2 ciosy (K12).
 
 - **W2:** NPC używa wszystkich rodzajów serii przewidzianych w grze: boczna (lewo, prawo),
   frontalna (bok, potem przód), potrójna (przód, prawo, lewo albo lewo, prawo, przód),

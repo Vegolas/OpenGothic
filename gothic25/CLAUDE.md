@@ -14,6 +14,11 @@ Try/OpenGothic), a katalog `gothic25/` zawiera mod i jego proces.
 - Kod silnika: `common/` (gra: `common/game`, świat i NPC: `common/world`, skrypty i funkcje
   zewnętrzne: `common/game/gamescript.cpp`, zgodność z Ikarus/LeGo: `common/game/compatibility`).
 - Zasoby moda: `content/` w układzie `_work/Data`. Pakowanie: `tools/pack.ps1` (używa `tools/vdf.py`).
+- Animacje moda: źródła w `anims/` (`.anim`, lekki `.blend`, `<MODEL>.EXT.MDS`, reguły odbić
+  w `anims.json`), kroki w `anims/README.md`. Blender przez `tools/anim.ps1` (KrxImpExp z
+  `tools/get-krx.ps1`), build, definicje, odbicia i kontrola paczki przez `tools/anim.py`. Pliki
+  robocze i oryginały z gry tylko w `build/`. Niezmienione oryginały nie trafiają do repozytorium
+  ani paczki (ADR 0009).
 - Skrypty: `content/Scripts` (baza Unified-PL, cp1250 na dysku). Przed zmianą przeczytaj
   `content/Scripts/README.md`. Kompilator `gdc` nie toleruje form feed ani `slf.` w ciele instancji
   i inaczej niż oryginał traktuje brakujące `;` po `if`. Wpływ zmian na bajtkod sprawdzaj przez
