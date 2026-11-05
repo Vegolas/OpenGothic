@@ -57,6 +57,18 @@ func int TST_HpLost (var C_NPC slf)
 	return slf.attribute[ATR_HITPOINTS_MAX] - slf.attribute[ATR_HITPOINTS];
 };
 
+// Sets the waypoint of the daily routine (self.wp), the place of the practice (Z4).
+func void TST_SetWp (var C_NPC slf, var string wp)
+{
+	slf.wp = wp;
+};
+
+// Starts an ordinary ai state, for the "ai" event of the fight log (Z4).
+func void TST_StartStand (var C_NPC slf)
+{
+	AI_StartState (slf, ZS_Stand_ArmsCrossed, 0, "");
+};
+
 func int TST_IsFistMode (var C_NPC slf)
 {
 	return Npc_IsInFightMode (slf, FMODE_FIST);

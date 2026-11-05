@@ -1,0 +1,30 @@
+# criterion: 005 Z4
+# timeout: 180
+# Zadanie Z4 (spec. 005): dziennik walki dla treningu. Manekin z mieczem 1H stoi na placu koszar
+# z waypointem planu dnia ustawionym na NW_CITY_HABOUR_KASERN_CENTRE_01. Zdarzenia practice
+# mają pola wp, wp_dist i wp_angle. Zmiana stanu AI postaci z dziennika daje zdarzenie ai.
+# Uruchomienie: tools/test.ps1 -Scenario dev/005-z4-dziennik
+info told DIA_Xardas_Hello
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_01
+wait 1
+insert TST_ComboDummy
+wait 1
+call TST_SetWp TST_ComboDummy NW_CITY_HABOUR_KASERN_CENTRE_01
+call TST_Arm TST_ComboDummy 1 80
+call TST_ReadyMelee TST_ComboDummy
+wait 3
+call TST_PracticeMove TST_ComboDummy 0
+call TST_PracticeMove TST_ComboDummy 0
+wait 4
+call TST_PracticeMove TST_ComboDummy 3
+wait 2
+call TST_PracticeMove TST_ComboDummy 4
+wait 2
+call TST_PracticeMove TST_ComboDummy 1
+wait 3
+call TST_StartStand TST_ComboDummy
+wait 2
+quit
+
+expect TST_ComboDummy attacks == 3
+expect TST_ComboDummy res.miss.practice == 3

@@ -127,7 +127,7 @@ z innymi `[P]` w tej samej fazie. W nawiasie: wymagania (W) i kryteria (K), któ
 
 Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
 
-- [ ] **Z4** Dziennik walki dla treningu (plan E3).
+- [x] **Z4** Dziennik walki dla treningu (plan E3).
       - `common/game/fightlog.*`:
         - `src` `practice` w `attack`;
         - nowe zdarzenie `practice` z polami `move`, `link` (z `dropped`), `pseries`, `end_ms`,
@@ -138,6 +138,25 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
       - `tests/README.md`: opis nowych zdarzeń i pól w „Dzienniku walki”.
       - Sprawdzenie: scenariusze robocze z Z2 i Z3 mają zdarzenia `practice` z pełnymi polami, a cios
         przepadły przez talent ma `link` `dropped`. Obecne miary dają te same wartości co przed zmianą.
+      - Wynik (2026-11-05):
+        - `FightLog::practice` i `FightLog::aiState`. Licznik `pseries` siedzi w danych postaci
+          dziennika, nie w `Npc`. `Npc::isPracticeHit()` daje `src` `practice`.
+        - Waypoint: `wp` postaci z `World::findPoint`. `wp_angle` liczony jak `Npc::angleDir`, czyli
+          w konwencji `rotation()`.
+        - W pliku testowym `TST_SetWp` i `TST_StartStand`.
+        - `tests/dev/005-z4-dziennik`, przebieg `20261105-224716`, 2 z 2, na placu koszar
+          (`NW_CITY_HABOUR_KASERN_CENTRE_01`):
+          - zdarzenia `practice`: `fwd`/`new`, `fwd`/`fwd`, `block`, `jumpback`, `left`/`new`, z
+            `pseries` 1-4, `end_ms`, `wp_dist` 194-236 i `wp_angle` 30;
+          - po `TST_StartStand` zdarzenie `ai` `ZS_STAND_ARMSCROSSED`.
+        - Kontrola istniejących miar: `dev/005-z2-mistrz-1h` (`20261105-224801`, 8 z 8) i
+          `dev/005-z2-nowicjusz-2h` (`20261105-224848`, 6 z 6), te same wartości. W drugim
+          przepadłe ciosy mają `link` `dropped`.
+        - **Ryzyko R2 potwierdzone.** W `dev/005-z2-mistrz-1h` combo 4 ciosów mistrza 1H przesuwa
+          manekina z 77 do 356 cm od waypointu, czyli o około 2,8 m. Odskok cofa o około 1,2 m.
+          W5 dopuszcza 1,5 m jako wartość startową. Do decyzji przy Z6: próg W5 albo krótsze serie
+          do przodu.
+        - `dat.py prefix`: kod 0, 40 nazwanych symboli na końcu.
 
       (W5, W7, W9)
 - [ ] **Z5** [P] Miary treningu w `tools/fightlog.py` (plan, „Narzędzia i testy”).

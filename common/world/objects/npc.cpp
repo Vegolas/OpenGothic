@@ -2036,14 +2036,18 @@ bool Npc::implPracticeMove(int32_t move, bool linkNext) {
       if(!setAnim(Anim::MoveBack))
         return false;
       }
-    implAniWait(visual.pose().animationTotalTime());
+    const uint64_t len = visual.pose().animationTotalTime();
+    implAniWait(len);
+    FightLog::practice(*this,move==PM_Block ? "block" : "jumpback",{},int64_t(now+len));
     return true;
     }
 
-  static const Anim ani[3] = {Anim::Attack, Anim::AttackL, Anim::AttackR};
+  static const Anim             ani [3] = {Anim::Attack, Anim::AttackL, Anim::AttackR};
+  static const std::string_view name[3] = {"fwd", "left", "right"};
   auto anim = ani[move];
   if(ws==WeaponState::Fist && !hasFistSideAttack(anim))
-    anim = Anim::Attack;
+    move = PM_Attack;
+  anim = ani[move];
   if(!hasAnim(anim))
     return true;
 
@@ -2051,6 +2055,7 @@ bool Npc::implPracticeMove(int32_t move, bool linkNext) {
     if(anim==Anim::Attack && cmb.forward && cmb.last) {
       // talent limits length of forward combo, same as in a fight
       FightLog::seriesBreak(*this,FightAlgo::Series(),true,"talent");
+      FightLog::practice(*this,name[move],"dropped",-1);
       return true;
       }
     // link inside of the combo window, otherwise start from the stance after this hit
@@ -2064,7 +2069,10 @@ bool Npc::implPracticeMove(int32_t move, bool linkNext) {
   if(!doAttack(anim,BS_HIT,true))
     return false;
 
-  if(visual.pose().comboInfo(cmb)) {
+  const bool hasCmb = visual.pose().comboInfo(cmb);
+  FightLog::practice(*this,name[move],FightLog::linkName(visual.pose().lastComboStart().link),
+                     int64_t(hasCmb ? cmb.hitEnd : now+visual.pose().atkTotalTime()));
+  if(hasCmb) {
     // NOTE: combo shifts start of the animation, so atkTotalTime is not relative to 'now'
     uint64_t at = cmb.hitEnd+1;
     if(linkNext && cmb.window && cmb.winEnd>cmb.winBegin+1) {
@@ -3214,6 +3222,7 @@ bool Npc::startState(ScriptFn id, std::string_view wp, gtime endTime, bool noFin
   aiState.eTime        = endTime;
   aiState.loopNextTime = owner.tickCount();
   aiState.hint         = st.name();
+  FightLog::aiState(*this,st.name());
   return true;
   }
 

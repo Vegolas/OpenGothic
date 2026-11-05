@@ -211,7 +211,7 @@ jako `\u00XX`. `fightlog.py` odkodowuje je jako cp1250.
 | Pole | Typ | Znaczenie |
 |---|---|---|
 | `t` | int | czas gry w ms (`ztimer multiplyer` go skaluje) |
-| `ev` | string | rodzaj zdarzenia: `meta`, `attack`, `result`, `break`, `state`, `marker` |
+| `ev` | string | rodzaj zdarzenia: `meta`, `attack`, `result`, `break`, `state`, `practice`, `ai`, `marker` |
 | `who` | string | instancja postaci, której dotyczy zdarzenie (np. `PAL_230_RITTER`) |
 | `who_id` | int | numer postaci w tym dzienniku, od 1 w kolejności pojawienia się; odróżnia postacie tej samej instancji |
 | `player` | bool | czy to bohater |
@@ -246,8 +246,8 @@ a nie przy każdym żądaniu ataku.
 | `link` | string | `new` (cios od postawy), `fwd` (połączenie do przodu), `side` (połączenie w bok) |
 | `win_pct` | int | przy połączeniu: chwila w oknie combo poprzedniego ciosu, 0–100; inaczej `null` |
 | `skip_ms` | int | przy połączeniu do przodu: ile ms animacji poprzedniego ciosu pominięto; inaczej `0` |
-| `src` | string | `queue` (z serii FAI), `continue` (kontynuacja combo z `FA_MY_W_COMBO_<N>`), `player`, `other` (np. dobicie) |
-| `series` | string | rodzaj ruchu FAI: `attack`, `side`, `front`, `triple`, `whirl`, `master`; `combo` przy `src: continue`; `null` dla gracza i `other` |
+| `src` | string | `queue` (z serii FAI), `continue` (kontynuacja combo z `FA_MY_W_COMBO_<N>`), `player`, `practice` (ruch treningowy `AI_PracticeMove`, 005), `other` (np. dobicie) |
+| `series` | string | rodzaj ruchu FAI: `attack`, `side`, `front`, `triple`, `whirl`, `master`; `combo` przy `src: continue`; `null` dla gracza, `practice` i `other` (serie treningu są w zdarzeniu `practice`) |
 | `series_id` | int | numer serii tej postaci, od 1; `null` poza `src: queue` |
 | `series_pos` | int | który to cios serii, od 1; pozycja przeskakuje, gdy silnik pominie cios (np. cel poza zasięgiem), a wychodzi poza `series_len`, gdy w kolejce została reszta przerwanej serii |
 | `series_len` | int | ile ciosów ma ruch FAI |
@@ -261,7 +261,7 @@ Zapisywany w chwili, w której cios mógł trafić (ramka trafienia animacji).
 | `n` | int | numer ciosu atakującego (pole `n` z `attack`) |
 | `tgt`, `tgt_id` | string, int | cel; `null` przy pudle bez celu |
 | `res` | string | `hit`, `block`, `jumpback`, `miss` |
-| `why` | string | przy `miss`: `no_target`, `range`, `angle`, `down` (cel już leżał); inaczej `null` |
+| `why` | string | przy `miss`: `no_target`, `range`, `angle`, `down` (cel już leżał), `practice` (cios treningowy, nikogo nie rani, 005 W6); inaczej `null` |
 | `combo` | int | etap combo do przodu ciosu, od 1 |
 | `dmg` | int | przy `hit`: obrażenia wyliczone przez grę; inaczej `0` |
 | `bonus` | int | przy `hit`: premia za cios combo do przodu w procentach, już wliczona w `dmg` (002); `100` bez premii, inaczej `0` |
@@ -289,7 +289,7 @@ Przyczyny:
 | `target_lost` | cel poza zasięgiem albo kątem przy `break_on_lost` (001 W6); po ciosie, który trafił, poza zasięgiem G |
 | `defend` | mistrz przerywa serię, żeby się bronić (001 W5) |
 | `block` | postać zaczyna blok w trakcie combo |
-| `talent` | ostatni etap combo do przodu, dalsze ciosy do przodu usunięte (001 W4) |
+| `talent` | ostatni etap combo do przodu, dalsze ciosy do przodu usunięte (001 W4); w treningu każdy przepadły cios do przodu osobno, z `series` `combo` |
 | `no_window` | kolejny cios poza oknem combo albo animacja nie ma dalszego okna |
 
 ### `state`: stan postaci
@@ -298,6 +298,30 @@ Przyczyny:
 |---|---|
 | `state` | `stumble` (zachwianie), `fly` (odrzut), `lie` (upadek po odrzucie), `unconscious`, `dead` |
 | `by`, `by_id` | kto spowodował, jeśli wiadomo; inaczej `null` |
+
+### `practice`: ruch treningowy (005)
+
+Każdy ruch z `AI_PracticeMove`, który się wykonał albo przepadł. Cios ma też zwykłe zdarzenie
+`attack` (`src: practice`) i `result` (`miss`, `why: practice`).
+
+| Pole | Typ | Znaczenie |
+|---|---|---|
+| `move` | string | `fwd`, `left`, `right`, `block`, `jumpback`; cios pięścią bez sierpowych z boku to `fwd` |
+| `link` | string | cios: `new` (od postawy), `fwd`, `side` jak w `attack`, albo `dropped` (cios do przodu przepadł przez limit talentu); `null` przy bloku i odskoku |
+| `pseries` | int | numer serii treningowej tej postaci, od 1; nową serię zaczyna cios od postawy (`link: new`), blok i odskok |
+| `end_ms` | int | przewidywany czas gry końca ruchu (ms, jak `t`): koniec trafienia ciosu albo animacji bloku i odskoku; `null` przy `dropped` |
+| `wp` | string | waypoint planu dnia postaci (`wp` w skryptach); `null`, gdy go nie ma w świecie |
+| `wp_dist` | int | odległość od waypointu w poziomie, w cm, w chwili ruchu; `null` bez waypointu |
+| `wp_angle` | int | odchylenie kierunku postaci od kierunku waypointu, 0–180°; `null` bez waypointu albo gdy waypoint nie ma kierunku |
+
+### `ai`: stan AI postaci (005)
+
+Postać zaczyna stan AI (`ZS_*`, np. zmiana pory planu dnia, rozmowa, walka). Zapisywany tylko dla
+postaci, które już są w dzienniku, żeby dziennik nie wypisywał AI całego świata.
+
+| Pole | Znaczenie |
+|---|---|
+| `state` | nazwa stanu ze skryptów, np. `ZS_PRACTICE_MELEE`, `ZS_TALK` |
 
 ### `marker`: znacznik
 
