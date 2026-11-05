@@ -1,0 +1,23 @@
+# criterion: 004 K8
+# mod: off
+# Do trybu ręcznego: tools/test.ps1 -Scenario 004/reczne/K08-bohater-bez-moda -Manual
+# Bohater z pięściami bez moda. Bez celu testowego, bo TST_ComboDummy jest w skryptach moda;
+# ciosy w powietrze wystarczą. Dziennik walki jest włączony, liczby wylicza raport.
+#
+# Co grać:
+# 1. Wyjmij pięści.
+# 2. Kilka razy atak z lewej, potem kilka razy z prawej.
+# 3. Kilka razy zwykły atak, potem kilka razy combo pięściami.
+# 4. F2, quit.
+#
+# Sprawdzenie ręczne:
+# - atak z lewej i z prawej nie odtwarza sierpowego (jak w grze bez moda);
+# - zwykły atak i combo pięściami są jak w oryginale; w raporcie bohater ma tylko ciosy `fwd`.
+info told DIA_Xardas_Hello
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+cheat god
+set time 12 0

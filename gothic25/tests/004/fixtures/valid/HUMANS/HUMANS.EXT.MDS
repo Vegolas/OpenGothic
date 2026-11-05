@@ -1,0 +1,15 @@
+// Test definitions for gothic25/tests/004 (spec 004 K3): own entries only.
+Model ("HUMANS")
+{
+	aniEnum
+	{
+		ani ("t_G25Test" 1 "" 0.0 0.2 M. "t_G25Test.anim" F 1 10)
+		{
+			*eventTag (0 "DEF_HIT_LIMB" "BIP01 L HAND")
+			*eventTag (0 "DEF_OPT_FRAME" "5")
+			*eventTag (0 "DEF_HIT_END" "10")
+			*eventTag (0 "DEF_WINDOW" "4 10")
+			*eventSFX (4 "WHOOSH" R:2500)
+		}
+	}
+}

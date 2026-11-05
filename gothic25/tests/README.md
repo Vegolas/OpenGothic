@@ -54,6 +54,10 @@ Nagłówek w komentarzach na początku pliku:
   (np. `build/testsaves/001-K9-v0.1.0-pal230.sav` albo `build/test/profile/save_slot_1.sav`,
   zapis zrobiony przez wcześniejszy scenariusz zestawu).
 - `mod: off`: scenariusz uruchamia się bez moda (np. „bez moda bez zmian”).
+- `anim-extra`: katalog ze źródłami animacji, z którym `test.ps1` pakuje moda na ten scenariusz,
+  ścieżka względem `gothic25/` (np. `build/anims-fixtures/k04`, lokalne dane testowe 004).
+  Katalogi w `build/anims-fixtures/` powstają przez `tools/anim.py fixtures`, gdy ich brakuje.
+  Gdy kolejny scenariusz ma inne katalogi, `test.ps1` pakuje moda od nowa.
 
 Inne linie `#`, także w postaci `# słowo: ...`, to zwykłe komentarze. Komentarze w scenariuszach
 piszemy po polsku.
@@ -89,6 +93,8 @@ Nowe polecenia konsoli (działają też ręcznie po `F2`):
 | `remove npc <instancja> <promień>` | usuwa ze świata wszystkie postacie tej instancji w promieniu (w metrach) od bohatera, np. potwory, które dołączyłyby do walki; gdy żadnej tam nie ma, zgłasza błąd |
 | `immortal <instancja>` | postać nie traci życia (flaga `NPC_FLAG_IMMORTAL`); walka NPC z NPC trwa wtedy do końca scenariusza |
 | `info told <kwestia>` | kwestia dialogowa (instancja `C_INFO`) liczy się jako przegadana z bohaterem; `info told DIA_Xardas_Hello` na początku scenariusza zatrzymuje powitanie Xardasa w nowej grze |
+| `play ani <postać> <animacja>` | postać (`hero` albo instancja) odtwarza animację po nazwie; gdy postaci albo animacji nie ma, zgłasza błąd. Bez postaci (`play ani <animacja>`) działa jak dotąd na bohatera |
+| `ani info <postać> <animacja>` | wypisuje definicję animacji z modelu postaci tak, jak ją trzyma gra (nakładki przed modelem): pochodzenie (`game` albo `mod`, z `<MODEL>.EXT.MDS`), warstwę, `next`, przejścia, flagi, kierunek, zakres klatek, fps i liczbę klatek MAN, a pod spodem zdarzenia. Format jak w `tools/anim.py defs <MODEL> <animacja> --mans build/anims/_COMPILED` (spec. 004 W9); w scenariuszu linie trafiają do `log.txt` z przedrostkiem `scenario: `. Gdy postaci albo animacji nie ma, zgłasza błąd |
 | `quit` | kończy grę (w scenariuszu: kończy scenariusz, zob. polecenia sterujące) |
 
 Argumenty `call` dobierane są według typu parametru funkcji:
@@ -318,6 +324,8 @@ Miary liczą się z całego dziennika przebiegu:
 |---|---|
 | `attacks` | liczba ciosów (`attack`) |
 | `attacks.tgt_down` | ciosy w leżący cel |
+| `attacks.dir.<dir>` | ciosy danego rodzaju: `fwd`, `left`, `right`, `run` (w biegu), `finish` (dobicie), pole `dir` ataku; np. `attacks.dir.left > 0` sprawdza, że postać bije sierpowym z lewej |
+| `attacks.dir.<dir>.<link>` | ciosy danego rodzaju z danym połączeniem (`new`, `fwd`, `side`, pole `link`); np. `attacks.dir.right.side >= 1` sprawdza, że sierpowy z prawej pada też w serii, podpięty bokiem |
 | `res.<hit\|block\|jumpback\|miss>` | wyniki ciosów postaci |
 | `res.miss.<why>` | pudła z daną przyczyną (`no_target`, `range`, `angle`, `down`) |
 | `taken.<hit\|block\|jumpback>` | wyniki ciosów wymierzonych w postać |
@@ -334,12 +342,25 @@ Miary liczą się z całego dziennika przebiegu:
 | `bonus.stage.<N>.min`, `bonus.stage.<N>.max` | najmniejsza i największa premia trafień na etapie combo `N`, w % (pole `bonus`, 002) |
 | `bonus.dir.<dir>.max` | największa premia trafień ciosów danego rodzaju (`fwd`, `left`, `right`, `run`, `finish`, pole `dir` ataku), w % |
 | `state.<stan>` | liczba zdarzeń `state` postaci |
+| `hit.<dir>.min_ms`, `hit.<dir>.max_ms` | ile ms po początku ciosu danego rodzaju przychodzi jego wynik (klatka trafienia); liczą się ciosy z własną animacją (`link` `new` albo `side`), bo połączenie do przodu wskakuje w środek animacji. Porównanie z `DEF_OPT_FRAME` definicji (004 K6) |
+| `link.after.<dir>.min_ms`, `link.after.<dir>.max_ms` | ile ms po początku ciosu danego rodzaju z własną animacją pada następny cios podpięty w jego oknie combo; porównanie z `DEF_WINDOW` (004 K6) |
 
 Gdy miara nie ma danych (np. `skip.avg_ms` bez połączeń albo `bonus.*` w dzienniku bez pola `bonus`),
 oczekiwanie jest niezaliczone z wartością „brak danych”. Liczniki (np. `series.triple`, `break.hit`)
 mają wtedy wartość 0.
 Oczekiwanie wobec postaci, której nie ma w dzienniku, jest niezaliczone, tak samo jak nieznana
 miara albo operator. Wychwytuje to literówki w scenariuszu.
+
+To, czego nie ma w dzienniku walki, a gra wypisuje do `log.txt`, sprawdzają oczekiwania wobec logu:
+
+```
+expect log <tekst>      # któraś linia log.txt przebiegu zawiera tekst
+expect nolog <tekst>    # żadna linia go nie zawiera
+```
+
+Tekst to reszta linii, ze spacjami i cudzysłowami, porównywany dosłownie (wielkość liter ma
+znaczenie). Przykłady: `expect log scenario: ani T_FISTATTACKL origin mod` (wynik `ani info`) albo
+`expect nolog model script extension` (bez moda silnik nie wczytuje rozszerzeń definicji, 004 K8).
 
 Oczekiwania sprawdza `tools/fightlog.py check <katalog przebiegu>`. Dopisuje je do `report.md`
 i kończy się kodem 1, gdy któreś jest niezaliczone albo scenariusz nie zakończył się wynikiem `ok`.

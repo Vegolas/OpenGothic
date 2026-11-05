@@ -30,6 +30,13 @@ musi wynikać ze specyfikacji w `specs/`.
 ## Pierwsze uruchomienie
 
 1. Skopiuj `local.example.json` jako `local.json` i ustaw `gothicDir` (folder z `System/Gothic2.exe`).
+   Pozostałe klucze:
+   - `engineBuildDir`: katalog buildu CMake, w którym leży `opengothic/` z silnikiem. Domyślnie
+     `build/` w korzeniu repozytorium, a ścieżka względna liczy się od korzenia;
+   - `engineBuildType`: typ buildu dla `build-engine.ps1`;
+   - `python`: polecenie Pythona;
+   - `blender`: Blender 5.2, tylko do animacji (`anims/README.md`);
+   - `scriptCompiler`: zastępuje `gdc` innym kompilatorem skryptów.
 2. Zbuduj silnik: `tools/build-engine.ps1`.
 3. Pobierz kompilator skryptów (`gdc`, wymaga środowiska .NET 8): `tools/get-gdc.ps1`.
 4. Skompiluj skrypty, spakuj moda i zainstaluj go w grze: `tools/build-scripts.ps1`,
@@ -42,13 +49,19 @@ Pakowanie wymaga Pythona 3.10 lub nowszego (tylko biblioteka standardowa).
 
 Ścieżkę do gry można też podać parametrem `-GothicDir` albo zmienną środowiskową `G25_GOTHIC_DIR`.
 
+Do pracy nad modem bez grania (testy, animacje) kroki 4 i 5 nie są potrzebne: `tools/test.ps1` sam
+kompiluje skrypty i pakuje moda do `build/game`, a gra startuje z niego bez instalacji
+([tests/README.md](tests/README.md)).
+
 ## CI
 
 Fork ma własne workflow. Upstreamowy `Build` (`.github/workflows/build.yml`) jest w forku wyłączony
 poleceniem `gh workflow disable`, a nie edytowany, żeby aktualizacje z Try/OpenGothic nie dawały konfliktów.
 
 - `gothic25-mod.yml`: przy zmianach w `gothic25/` pobiera `gdc`, kompiluje skrypty i buduje
-  paczkę moda (`publish.ps1 -SkipEngine`). Paczka trafia do artefaktów.
+  paczkę moda (`publish.ps1 -SkipEngine -NoMirrors`). Paczka trafia do artefaktów. CI nie ma kopii
+  gry, więc paczka nie ma animacji odbitych z `anims/anims.json` (np. prawego sierpowego) i nie jest
+  wydaniem. Wydanie buduje się lokalnie z folderem gry.
 - `gothic25-engine.yml`: przy zmianach poza `gothic25/` buduje silnik na Windowsie i Linuksie
   (te same kroki co upstream).
 

@@ -8,9 +8,12 @@
     SHA256SUMS.txt
   The release engine is built in <repo>/build-release (Release), separate from the dev build.
   The archive timestamp is the last commit time, so the same commit gives the same .mod.
+  The mirrored animations need the Gothic folder (G25_GOTHIC_DIR or local.json, see pack.ps1).
+  -NoMirrors leaves them out for a check build without the game (CI); that package is not a release.
 .EXAMPLE
   tools/publish.ps1
   tools/publish.ps1 -SkipEngine -AllowDirty -Force
+  tools/publish.ps1 -SkipEngine -NoMirrors
 #>
 param(
   [string]$BuildDir,
@@ -19,7 +22,8 @@ param(
   [switch]$SkipEngine,
   [switch]$AllowDirty,
   [switch]$Force,
-  [switch]$Tag
+  [switch]$Tag,
+  [switch]$NoMirrors
 )
 
 . (Join-Path $PSScriptRoot 'lib/common.ps1')
@@ -70,7 +74,7 @@ if(-not $SkipEngine) {
 & (Join-Path $PSScriptRoot 'build-scripts.ps1')
 $env:SOURCE_DATE_EPOCH = (& git -C $RepoRoot log -1 --format=%ct).Trim()
 try {
-  & (Join-Path $PSScriptRoot 'pack.ps1')
+  & (Join-Path $PSScriptRoot 'pack.ps1') -NoMirrors:$NoMirrors
 }
 finally {
   Remove-Item Env:SOURCE_DATE_EPOCH -ErrorAction SilentlyContinue

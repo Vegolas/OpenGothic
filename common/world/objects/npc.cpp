@@ -1044,10 +1044,20 @@ bool Npc::hasAnim(std::string_view scheme) const {
   return visual.hasAnim(scheme);
   }
 
+const Animation::Sequence* Npc::animSequence(std::string_view name) const {
+  return visual.animSequence(name);
+  }
+
 bool Npc::hasAnim(Anim a) const {
   auto st  = weaponState();
   auto wlk = walkMode();
   return visual.hasAnim(a,st,wlk);
+  }
+
+bool Npc::hasFistSideAttack(Anim a) const {
+  if(a!=Anim::AttackL && a!=Anim::AttackR)
+    return false;
+  return visual.hasAnim(a,WeaponState::Fist,walkMode());
   }
 
 bool Npc::hasSwimAnimations() const {
@@ -1726,8 +1736,11 @@ bool Npc::implAttack(uint64_t dt) {
         fghAlgo.consumeAction();
         return true;
         }
-      const auto atkType = (ws==WeaponState::Fist) ? Anim::Attack : ani[act-FightAlgo::MV_ATTACK];
-      const bool atk     = doAttack(atkType, BS_HIT);
+      // fists attack to the side only with the model's animation (a mod), otherwise forward
+      auto atkType = ani[act-FightAlgo::MV_ATTACK];
+      if(ws==WeaponState::Fist && !hasFistSideAttack(atkType))
+        atkType = Anim::Attack;
+      const bool atk = doAttack(atkType, BS_HIT);
 
       if(atk || mvAlgo.isSwim() || mvAlgo.isDive()) {
         uint64_t aniTime = visual.pose().atkTotalTime()+1;
@@ -1910,7 +1923,7 @@ bool Npc::implComboLink() {
   if(cmb.forward && cmb.last) {
     // talent limits length of forward combo: drop the rest of forward attacks in series
     const auto ser = fghAlgo.series();
-    fghAlgo.dropForwardAttacks(fist);
+    fghAlgo.dropForwardAttacks(fist && !hasFistSideAttack(Anim::AttackL), fist && !hasFistSideAttack(Anim::AttackR));
     if(fghAlgo.series().done!=ser.done)
       FightLog::seriesBreak(*this,ser,true,"talent");
     }
@@ -1979,7 +1992,9 @@ bool Npc::implComboLink() {
     }
 
   static const Anim ani[3] = {Anim::Attack, Anim::AttackL, Anim::AttackR};
-  const auto atkType = fist ? Anim::Attack : ani[act-FightAlgo::MV_ATTACK];
+  auto atkType = ani[act-FightAlgo::MV_ATTACK];
+  if(fist && !hasFistSideAttack(atkType))
+    atkType = Anim::Attack;
   if(!doAttack(atkType,BS_HIT))
     return false;
 
@@ -3999,14 +4014,14 @@ void Npc::swingSword() {
 
 bool Npc::swingSwordL() {
   auto active=invent.activeWeapon();
-  if(active==nullptr)
+  if(active==nullptr && weaponState()!=WeaponState::Fist)
     return false;
   return doAttack(Anim::AttackL,BS_HIT);
   }
 
 bool Npc::swingSwordR() {
   auto active=invent.activeWeapon();
-  if(active==nullptr)
+  if(active==nullptr && weaponState()!=WeaponState::Fist)
     return false;
   return doAttack(Anim::AttackR,BS_HIT);
   }

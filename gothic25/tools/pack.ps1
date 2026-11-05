@@ -5,20 +5,54 @@
   Output (game folder layout, ready for install.ps1 and publish.ps1):
     gothic25/build/game/Data/ModVDF/<archive>
     gothic25/build/game/System/<ini>
-  content/            -> _WORK/DATA
-  build/scripts/      -> _WORK/DATA/SCRIPTS   (overrides content/ on name clashes)
+  content/                -> _WORK/DATA
+  build/scripts/          -> _WORK/DATA/SCRIPTS            (overrides content/ on name clashes)
+  build/anims/_COMPILED/  -> _WORK/DATA/ANIMS/_COMPILED    (tools/anim.py build from anims/)
+
+  The animations are built first. With a Gothic folder (-GothicDir, G25_GOTHIC_DIR or local.json)
+  their definitions are also checked against the game; without one those checks are skipped.
+  The mirrors of anims/anims.json need the game; -NoMirrors leaves them out, so a build without the
+  game (CI) still runs, but such a package is not a release.
+  -AnimExtra adds source folders, e.g. local test data that never goes into the repository.
+.EXAMPLE
+  tools/pack.ps1
+  tools/pack.ps1 -AnimExtra build/anims-fixtures
+  tools/pack.ps1 -NoMirrors
 #>
-param()
+param(
+  [string]$GothicDir,
+  [string[]]$AnimExtra,
+  [switch]$NoMirrors
+)
 
 . (Join-Path $PSScriptRoot 'lib/common.ps1')
 
 $manifest = Get-ModManifest
 $output   = Get-ModOutput
 
+$animArgs = @((Join-Path $PSScriptRoot 'anim.py'), 'build')
+try {
+  $animArgs += @('--gothic', (Resolve-GothicDir $GothicDir))
+} catch {
+  Write-Warning "No Gothic folder: animation definitions are not checked against the game."
+}
+if($NoMirrors) {
+  Write-Warning "-NoMirrors: the mirrored animations of anims.json are left out; this package is not a release."
+  $animArgs += '--no-mirrors'
+}
+foreach($extra in $AnimExtra) {
+  if(-not $extra) { continue }
+  if(-not [System.IO.Path]::IsPathRooted($extra)) { $extra = Join-Path (Get-Location).Path $extra }
+  $animArgs += @('--extra', $extra)
+}
+Write-Step "Building animations"
+Invoke-Python $animArgs
+
 $arguments = @(
   (Join-Path $PSScriptRoot 'vdf.py'), 'pack', $output.Archive,
   '--map', "$(Join-Path $ModRoot 'content')=_WORK/DATA",
   '--map', "$(Join-Path $ModBuild 'scripts')=_WORK/DATA/SCRIPTS",
+  '--map', "$(Join-Path $ModBuild 'anims\_COMPILED')=_WORK/DATA/ANIMS/_COMPILED",
   '--comment', "$($manifest.title) $($manifest.version)"
 )
 foreach($pattern in $manifest.pack.exclude) {

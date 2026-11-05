@@ -5,7 +5,7 @@ do `Gothic25.mod` pod ścieżką `_WORK/DATA/`. Nazwy w archiwum są zamieniane 
 
 | Katalog | Co trzymamy | Ścieżka w grze |
 |---|---|---|
-| `Anims/` | animacje: skompilowane `.MSB` i `.MAN` (silnik w trybie G2 nie czyta tekstowego `.MDS`) | `_work/Data/Anims` |
+| `Anims/` | nie używamy: animacje moda mają źródła w [`anims/`](../anims/README.md), a `MAN` i `<MODEL>.EXT.MDS` robi z nich build (`tools/anim.py build`, woła go `pack.ps1`) | `_work/Data/Anims/_COMPILED` |
 | `Meshes/` | modele | `_work/Data/Meshes` |
 | `Music/` | muzyka DirectMusic | `_work/Data/Music` |
 | `Presets/` | presety obiektów | `_work/Data/Presets` |

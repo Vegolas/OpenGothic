@@ -29,8 +29,11 @@ jobs:
       - name: Fetch the Daedalus compiler
         run: powershell -NoProfile -ExecutionPolicy Bypass -File gothic25/tools/get-gdc.ps1
 
+      # CI has no copy of the game, and the mirrored animations of gothic25/anims/anims.json are built
+      # from the game's model hierarchy and stance, so they are left out: the artifact checks the build
+      # but is not a release (a release is built with the game, gothic25/tools/publish.ps1).
       - name: Compile scripts and build the mod package
-        run: powershell -NoProfile -ExecutionPolicy Bypass -File gothic25/tools/publish.ps1 -SkipEngine
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File gothic25/tools/publish.ps1 -SkipEngine -NoMirrors
 
       - name: Upload artifact
         uses: actions/upload-artifact@v6

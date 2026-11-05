@@ -1,0 +1,54 @@
+# criterion: 004 K12
+# timeout: 150
+# Oba sierpowe w grze: definicje z modelu bohatera, potem bohater wyprowadza lewy i prawy, a zrzuty
+# łapią zamach, trafienie (klatka 10, ok. 0,4 s) i powrót. Prawy sierpowy build robi z lewego przez
+# odbicie wpięte w postawę (anims.json, spec. W14).
+#
+# Sprawdzenie ręczne: na zrzutach hookR-* tułów skręca się w drugą stronę niż na hookL-*, stopy
+# stoją na ziemi, a pięść idzie na tę samą wysokość. Kamera jest za bohaterem, z przodu oba ciosy
+# widać w Blenderze (anim.ps1 open, prawy sierpowy na szkielecie obok).
+info told DIA_Xardas_Hello
+cheat god
+set time 12 0
+wait 1
+ani info hero T_FISTATTACKL
+ani info hero T_FISTATTACKR
+screenshot hooks-0.png
+play ani hero T_FISTATTACKL
+wait 0.12
+screenshot hookL-1.png
+wait 0.12
+screenshot hookL-2.png
+wait 0.12
+screenshot hookL-3.png
+wait 0.08
+screenshot hookL-4.png
+wait 0.08
+screenshot hookL-5.png
+wait 0.08
+screenshot hookL-6.png
+wait 0.16
+screenshot hookL-7.png
+wait 1.5
+play ani hero T_FISTATTACKR
+wait 0.12
+screenshot hookR-1.png
+wait 0.12
+screenshot hookR-2.png
+wait 0.12
+screenshot hookR-3.png
+wait 0.08
+screenshot hookR-4.png
+wait 0.08
+screenshot hookR-5.png
+wait 0.08
+screenshot hookR-6.png
+wait 0.16
+screenshot hookR-7.png
+wait 1
+quit
+
+expect log scenario: ani T_FISTATTACKL origin mod layer 1 next - blend 0.1 0.2 flags M dir F frames 1-23 fps 25 man 23
+expect log scenario:   tag 0 DEF_HIT_LIMB slot=BIP01 L HAND
+expect log scenario: ani T_FISTATTACKR origin mod layer 1 next - blend 0.1 0.2 flags M dir F frames 1-23 fps 25 man 23
+expect log scenario:   tag 0 DEF_HIT_LIMB slot=BIP01 R HAND

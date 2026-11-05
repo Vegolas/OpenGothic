@@ -9,10 +9,16 @@
 
   -Scenario runs one scenario, -Spec NNN runs every gothic25/tests/NNN/*.txt in name order and
   prints a summary. Scenario headers: "# timeout: <s>" (real time limit, 600 s otherwise),
-  "# save: <file>" (load this save, path relative to gothic25/), "# mod: off" (run without the mod).
+  "# save: <file>" (load this save, path relative to gothic25/), "# mod: off" (run without the mod),
+  "# anim-extra: <dir>" (pack the mod with this animation source folder too, path relative to
+  gothic25/; folders under build/anims-fixtures are made with tools/anim.py fixtures when missing).
+  The mod is packed again when a scenario needs other animation folders than the one before.
 
   Automatic mode (default): 800x600 window, the game quits after the scenario. -Manual (with
   -Scenario only) keeps the game open with the usual window and waits until it is closed.
+
+  -AnimExtra adds animation source folders to the packed mod (tools/anim.py build --extra), e.g. local
+  test data from tools/anim.py fixtures (spec 004).
 
   Exit code 0 when every scenario ended with ok and all its expectations passed.
 .EXAMPLE
@@ -30,7 +36,8 @@ param(
   [switch]$Window,
   [int]$TimeoutSec = 0,
   [string]$GothicDir,
-  [string]$BuildDir
+  [string]$BuildDir,
+  [string[]]$AnimExtra
 )
 
 . (Join-Path $PSScriptRoot 'lib/common.ps1')
@@ -67,11 +74,37 @@ function Get-RunName([string]$Path) {
 function Get-Headers([string]$Path) {
   $ret = @{}
   foreach($line in [System.IO.File]::ReadAllLines($Path)) {
-    if($line -match '^\s*#\s*(timeout|save|mod)\s*:\s*(.+?)\s*$') {
+    if($line -match '^\s*#\s*(timeout|save|mod|anim-extra)\s*:\s*(.+?)\s*$') {
       $ret[$Matches[1].ToLower()] = $Matches[2]
     }
   }
   return $ret
+}
+
+# animation source folders the mod is packed with for a scenario: -AnimExtra and "# anim-extra:"
+function Get-AnimExtra([hashtable]$Headers) {
+  $extra = @($AnimExtra | Where-Object { $_ } | ForEach-Object { [System.IO.Path]::GetFullPath($_) })
+  if($Headers['anim-extra']) {
+    $dir = $Headers['anim-extra']
+    if(-not [System.IO.Path]::IsPathRooted($dir)) { $dir = Join-Path $ModRoot $dir }
+    $extra += [System.IO.Path]::GetFullPath($dir)
+  }
+  return ,$extra
+}
+
+# local test data of tools/anim.py fixtures (spec 004) is made from the game when its folder is missing
+function Initialize-AnimExtra([string[]]$Extra) {
+  $fixtures = [System.IO.Path]::GetFullPath((Join-Path $ModBuild 'anims-fixtures')).TrimEnd('\') + '\'
+  foreach($dir in $Extra) {
+    if(Test-Path $dir -PathType Container) { continue }
+    if($dir.StartsWith($fixtures, [System.StringComparison]::OrdinalIgnoreCase)) {
+      Write-Step "Making local animation test data (tools/anim.py fixtures)"
+      Invoke-Python @((Join-Path $PSScriptRoot 'anim.py'), 'fixtures', '--gothic', $gothic)
+    }
+    if(-not (Test-Path $dir -PathType Container)) {
+      throw "Animation source folder not found: $dir"
+    }
+  }
 }
 
 # Sets Key=Value in [Section] of ini lines, adding the key or the section when missing.
@@ -189,6 +222,7 @@ function Invoke-Scenario([string]$ScenarioPath) {
     scenario  = $ScenarioPath
     spec      = $(if($Spec) { $Spec } else { $null })
     mod       = $useMod
+    anim_extra = $(if($useMod) { Get-AnimExtra $headers } else { @() })
     save      = $savePath
     manual    = [bool]$Manual
     commit    = $git.Commit
@@ -262,7 +296,7 @@ if($Spec -and ($Manual -or $Save)) {
 $gothic = Resolve-GothicDir $GothicDir
 $exe    = Get-EngineExe (Resolve-EngineBuildDir $BuildDir)
 if(-not (Test-Path $exe)) {
-  throw "Engine not found: $exe. Run tools/build-engine.ps1 first."
+  throw "Engine not found: $exe. Run tools/build-engine.ps1 first, or set engineBuildDir in gothic25/local.json to the CMake build folder that holds opengothic/."
 }
 if($Save -and -not (Test-Path $Save -PathType Leaf)) {
   throw "Save file not found: $Save"
@@ -281,17 +315,27 @@ if($Spec) {
   $scenarios = @(Resolve-Scenario $Scenario)
 }
 
-# mod from the repository, including uncommitted changes, packed once; compiler warnings stay out
-# of the test output, errors still stop the script
+# mod from the repository, including uncommitted changes: scripts compiled once, the archive packed
+# before the first scenario with the mod and again when the animation folders change; compiler
+# warnings stay out of the test output, errors still stop the script
 $needMod = (-not $NoMod) -and @($scenarios | Where-Object { (Get-Headers $_)['mod'] -ne 'off' }).Count -gt 0
 if($needMod) {
   & (Join-Path $PSScriptRoot 'build-scripts.ps1') -GothicDir $gothic | Out-Null
-  & (Join-Path $PSScriptRoot 'pack.ps1') | Out-Null
 }
 $output = Get-ModOutput
+$packedWith = $null
 
 $results = @()
 foreach($path in $scenarios) {
+  $headers = Get-Headers $path
+  if((-not $NoMod) -and $headers['mod'] -ne 'off') {
+    $extra = Get-AnimExtra $headers
+    if(($extra -join '|') -ne $packedWith) {
+      Initialize-AnimExtra $extra
+      & (Join-Path $PSScriptRoot 'pack.ps1') -GothicDir $gothic -AnimExtra $extra | Out-Null
+      $packedWith = ($extra -join '|')
+    }
+  }
   $r = Invoke-Scenario $path
   $results += $r
   if($r.Passed) {

@@ -88,7 +88,9 @@ Marvin::Marvin() {
     {"call %v %*",                 C_Call},
 
     // animation
+    {"play ani %c %s",             C_PlayAniNpc},
     {"play ani %s",                C_PlayAni},
+    {"ani info %c %s",             C_AniInfo},
     {"play faceani %s",            C_Invalid},
     {"remove overlaymds %s",       C_Invalid},
     {"toggle aniinfo",             C_Invalid},
@@ -575,6 +577,18 @@ bool Marvin::exec(std::string_view v) {
         return false;
       return player->playAnimByName(ret.argv[0], BS_NONE) != nullptr;
       }
+    case C_PlayAniNpc: {
+      World* world = Gothic::inst().world();
+      if(world==nullptr)
+        return false;
+      return playAni(*world, ret.argv[0], ret.argv[1]);
+      }
+    case C_AniInfo: {
+      World* world = Gothic::inst().world();
+      if(world==nullptr)
+        return false;
+      return aniInfo(*world, ret.argv[0], ret.argv[1]);
+      }
 
     case C_ToggleGI:
       Gothic::inst().toggleGi();
@@ -875,6 +889,153 @@ bool Marvin::intArgument(World& world, std::string_view arg, int32_t& v) {
     return true;
     }
   return false;
+  }
+
+static std::string toUpper(std::string_view s) {
+  std::string ret(s);
+  for(auto& c:ret)
+    c = char(std::toupper(uint8_t(c)));
+  return ret;
+  }
+
+static std::string number(double v) {
+  char buf[32] = {};
+  std::snprintf(buf,sizeof(buf),"%g",v);
+  return buf;
+  }
+
+// one line of 'ani info': the tokens that are not empty, separated by a space
+static std::string join(std::initializer_list<std::string> tokens) {
+  std::string ret;
+  for(auto& t:tokens) {
+    if(t.empty())
+      continue;
+    if(!ret.empty())
+      ret += ' ';
+    ret += t;
+    }
+  return ret;
+  }
+
+static const char* eventName(zenkit::MdsEventType t) {
+  using E = zenkit::MdsEventType;
+  switch(t) {
+    case E::ITEM_CREATE:       return "DEF_CREATE_ITEM";
+    case E::ITEM_INSERT:       return "DEF_INSERT_ITEM";
+    case E::ITEM_REMOVE:       return "DEF_REMOVE_ITEM";
+    case E::ITEM_DESTROY:      return "DEF_DESTROY_ITEM";
+    case E::ITEM_PLACE:        return "DEF_PLACE_ITEM";
+    case E::ITEM_EXCHANGE:     return "DEF_EXCHANGE_ITEM";
+    case E::SET_FIGHT_MODE:    return "DEF_FIGHTMODE";
+    case E::MUNITION_PLACE:    return "DEF_PLACE_MUNITION";
+    case E::MUNITION_REMOVE:   return "DEF_REMOVE_MUNITION";
+    case E::SOUND_DRAW:        return "DEF_DRAWSOUND";
+    case E::SOUND_UNDRAW:      return "DEF_UNDRAWSOUND";
+    case E::MESH_SWAP:         return "DEF_SWAPMESH";
+    case E::TORCH_DRAW:        return "DEF_DRAWTORCH";
+    case E::TORCH_INVENTORY:   return "DEF_INV_TORCH";
+    case E::TORCH_DROP:        return "DEF_DROP_TORCH";
+    case E::HIT_LIMB:          return "DEF_HIT_LIMB";
+    case E::HIT_DIRECTION:     return "DEF_DIR";
+    case E::DAMAGE_MULTIPLIER: return "DEF_DAM_MULTIPLY";
+    case E::PARRY_FRAME:       return "DEF_PAR_FRAME";
+    case E::OPTIMAL_FRAME:     return "DEF_OPT_FRAME";
+    case E::HIT_END:           return "DEF_HIT_END";
+    case E::COMBO_WINDOW:      return "DEF_WINDOW";
+    case E::UNKNOWN:           break;
+    }
+  return "UNKNOWN";
+  }
+
+static const char* fightModeName(zenkit::MdsFightMode m) {
+  using M = zenkit::MdsFightMode;
+  switch(m) {
+    case M::FIST:          return "FIST";
+    case M::SINGLE_HANDED: return "1H";
+    case M::DUAL_HANDED:   return "2H";
+    case M::BOW:           return "BOW";
+    case M::CROSSBOW:      return "CBOW";
+    case M::MAGIC:         return "MAG";
+    case M::NONE:          return "NONE";
+    case M::INVALID:       break;
+    }
+  return "";
+  }
+
+bool Marvin::playAni(World& world, std::string_view who, std::string_view name) {
+  Npc* npc = findNpc(world, who);
+  if(npc==nullptr) {
+    print(string_frm("play ani: no npc \"",who,"\""));
+    return false;
+    }
+  const auto ani = toUpper(name);
+  if(npc->animSequence(ani)==nullptr) {
+    print(string_frm("play ani: \"",who,"\" has no animation \"",name,"\""));
+    return false;
+    }
+  if(npc->playAnimByName(ani, BS_NONE)==nullptr) {
+    print(string_frm("play ani: \"",who,"\" cannot start \"",name,"\" now"));
+    return false;
+    }
+  return true;
+  }
+
+// The definition of an animation as the model of the npc holds it after loading (overlays first),
+// in the format of tools/anim.py defs (spec 004 W9): origin, layer, flags, frame range, MAN frames,
+// next and events.
+bool Marvin::aniInfo(World& world, std::string_view who, std::string_view name) {
+  Npc* npc = findNpc(world, who);
+  if(npc==nullptr) {
+    print(string_frm("ani info: no npc \"",who,"\""));
+    return false;
+    }
+  auto sq = npc->animSequence(toUpper(name));
+  if(sq==nullptr || sq->data==nullptr) {
+    print(string_frm("ani info: \"",who,"\" has no animation \"",name,"\""));
+    return false;
+    }
+
+  using F = zenkit::AnimationFlags;
+  const std::pair<F,char> letters[] = {{F::MOVE,'M'},{F::ROTATE,'R'},{F::QUEUE,'E'},{F::FLY,'F'},{F::IDLE,'I'},{F::INPLACE,'P'}};
+  std::string flags;
+  for(auto& [f,c]:letters)
+    if(sq->flags & f)
+      flags.push_back(c);
+
+  const auto& d = *sq->data;
+  print(join({"ani", sq->name, "origin", sq->extension ? "mod" : "game", "layer", std::to_string(sq->layer),
+              "next", sq->next.empty() ? "-" : sq->next,
+              "blend", number(double(sq->blendIn)/1000.0), number(double(sq->blendOut)/1000.0),
+              "flags", flags.empty() ? "-" : flags, "dir", sq->reverse ? "R" : "F",
+              "frames", std::to_string(d.firstFrame)+"-"+std::to_string(d.lastFrame),
+              "fps", number(d.fpsRate), "man", std::to_string(d.numFrames)}));
+
+  for(auto& e:d.events) {
+    std::string frames;
+    for(auto f:e.frames)
+      frames += (frames.empty() ? "frames=" : ",") + std::to_string(f);
+    const bool mode = e.type==zenkit::MdsEventType::SET_FIGHT_MODE && e.fight_mode!=zenkit::MdsFightMode::INVALID;
+    print("  " + join({"tag", std::to_string(e.frame), eventName(e.type),
+                       e.slot .empty() ? "" : "slot=" +toUpper(e.slot),
+                       e.slot2.empty() ? "" : "slot2="+toUpper(e.slot2),
+                       e.item .empty() ? "" : "item=" +toUpper(e.item),
+                       mode ? std::string("mode=")+fightModeName(e.fight_mode) : "",
+                       frames}));
+    }
+  for(auto& s:d.sfx)
+    print("  " + join({"sfx", std::to_string(s.frame), toUpper(s.name), "range="+number(s.range), s.empty_slot ? "empty" : ""}));
+  for(auto& s:d.gfx)
+    print("  " + join({"sfxground", std::to_string(s.frame), toUpper(s.name)}));
+  for(auto& p:d.pfx)
+    if(!p.pfxStop)
+      print("  " + join({"pfx", std::to_string(p.frame), std::to_string(p.index), toUpper(p.name), toUpper(p.position),
+                         p.attached ? "attach" : ""}));
+  for(auto& p:d.pfx)
+    if(p.pfxStop)
+      print("  " + join({"pfxstop", std::to_string(p.frame), std::to_string(p.index)}));
+  for(auto& m:d.mmStartAni)
+    print("  " + join({"morph", std::to_string(m.frame), toUpper(m.animation), toUpper(m.node)}));
+  return true;
   }
 
 Npc* Marvin::findNpc(World& world, std::string_view name) {

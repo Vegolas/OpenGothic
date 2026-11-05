@@ -14,6 +14,11 @@ Licencje
 - Data/ModVDF/Gothic25.mod: skompilowane skrypty i zasoby moda. Skrypty są opracowaniem
   materiałów Piranha Bytes i podlegają licencji GothicMOD Lizenz 1.0 (LICENSE-GothicMOD.txt):
   wolno ich używać i rozpowszechniać wyłącznie bezpłatnie i niekomercyjnie.
+- Animacje moda (_WORK/DATA/ANIMS/_COMPILED w Gothic25.mod) i wpisy definicji animacji moda
+  (*.EXT.MDS) podlegają tej samej licencji GothicMOD. Część animacji powstała przez zmianę
+  oryginalnych animacji gry, na podstawie dzieła Piranha Bytes (sierpowe pięściami z ciosu
+  s_FistAttack i postawy s_FistRun). Mod nie zawiera niezmienionych animacji ani definicji modeli
+  z gry: silnik dokłada definicje moda do definicji z zainstalowanej gry.
 - OpenGothic (paczka engine): silnik na licencji MIT (LICENSE-OpenGothic.txt).
 
 Gothic i Gothic II są znakami towarowymi ich właścicieli. Ten projekt nie jest z nimi powiązany.

@@ -62,6 +62,8 @@ class Marvin {
 
       C_Insert,
       C_PlayAni,
+      C_PlayAniNpc,
+      C_AniInfo,
 
       C_Give,
       C_Equip,
@@ -113,6 +115,8 @@ class Marvin {
     bool   giveItem                (World& world, Npc& player, std::string_view name, size_t count, bool equip);
     bool   saveGame                (World& world, int slot);
     bool   screenshot              (std::string_view name);
+    bool   playAni                 (World& world, std::string_view npc, std::string_view name);
+    bool   aniInfo                 (World& world, std::string_view npc, std::string_view name);
 
     std::vector<Cmd> cmd;
   };

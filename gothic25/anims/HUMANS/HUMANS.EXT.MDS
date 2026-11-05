@@ -1,0 +1,22 @@
+// Animation definitions of the Gothic 2.5 mod for the human model (HUMANS.MSB of the game).
+// Only entries of the mod: the engine merges them into the original model by name (ADR 0008).
+// ASCII only. Changes of a spec go into a block marked // G25 NNN.
+Model ("HUMANS")
+{
+	aniEnum
+	{
+		// G25 004: left hook with fists (T_FISTATTACKL.anim). Fist side attacks need it
+		// (AnimationSolver). Made from the left hook in the second half of the original s_FistAttack,
+		// in place, from and back to the stance s_FistRun (ADR 0009). The hit lands at MAN frame 10
+		// and the attack ends 6 frames later, as the original's hits do; DEF_OPT_FRAME and effects
+		// count from the first frame of the range, DEF_HIT_END and DEF_WINDOW from the start.
+		ani ("t_FistAttackL" 1 "" 0.1 0.2 M. "T_FISTATTACKL.ASC" F 1 23)
+		{
+			*eventTag (0 "DEF_HIT_LIMB" "BIP01 L HAND")
+			*eventTag (0 "DEF_OPT_FRAME" "11")
+			*eventTag (0 "DEF_HIT_END" "16")
+			*eventTag (0 "DEF_WINDOW" "11 16")
+			*eventSFX (9 "WHOOSH" R:2500)
+		}
+	}
+}

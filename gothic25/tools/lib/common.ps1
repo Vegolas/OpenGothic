@@ -12,6 +12,13 @@ $ModBuild = Join-Path $ModRoot 'build'
 # Pinned Daedalus compiler, installed by get-gdc.ps1 (decisions/0001-kompilator-daedalus.md)
 $GdcVersion = '0.9.5'
 $GdcDir = Join-Path $ModRoot ".tools\gdc-$GdcVersion"
+# Pinned KrxImpExp Blender add-on (dev branch), installed by get-krx.ps1 into an own scripts
+# directory that Blender gets through BLENDER_USER_SCRIPTS (decisions/0007-zrodla-i-budowanie-animacji-moda.md).
+# The hash covers the add-on files as stored in git (Get-TreeSha256, LF line endings).
+$KrxCommit  = '5be176c4e87f3a1db209009c06a0b6f1a2293796'
+$KrxTreeSha = 'cfb83ecb531ca9700d061bb460c39b9db2ec860dacdb80231ec94e8f297bc114'
+$BlenderScriptsDir = Join-Path $ModRoot '.tools\blender-scripts'
+$KrxDir = Join-Path $BlenderScriptsDir 'addons\krximpexp'
 $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
 function Write-Step([string]$Message) {
@@ -61,6 +68,40 @@ function Resolve-GothicDir([string]$Override) {
     throw "Not a Gothic directory (no System folder): $dir"
   }
   return (Resolve-Path $dir).Path
+}
+
+# Blender 5.2: -Blender first, then the G25_BLENDER variable, then "blender" in gothic25/local.json.
+function Resolve-Blender([string]$Override) {
+  $exe = $Override
+  $from = 'the -Blender parameter'
+  if(-not $exe) { $exe = $env:G25_BLENDER; $from = 'the G25_BLENDER variable' }
+  if(-not $exe) { $exe = Get-Prop (Get-LocalConfig) 'blender'; $from = '"blender" in gothic25/local.json' }
+  if(-not $exe) {
+    throw "Blender is not set. Pass -Blender, set G25_BLENDER, or set blender in gothic25/local.json (Blender 5.2)."
+  }
+  if(-not (Test-Path $exe -PathType Leaf)) {
+    throw "Blender not found: $exe (from $from). Fix it to the path of blender.exe of Blender 5.2."
+  }
+  return (Resolve-Path $exe).Path
+}
+
+# SHA-256 of a directory tree: one "<sha256> <relative/path>" line per file in ordinal order.
+# Python bytecode caches and KRX_COMMIT.txt are skipped, so a used add-on keeps its hash.
+function Get-TreeSha256([string]$Dir) {
+  $root  = (Resolve-Path $Dir).Path.TrimEnd('\')
+  $lines = New-Object System.Collections.Generic.List[string]
+  foreach($file in Get-ChildItem -LiteralPath $root -Recurse -File -Force) {
+    $rel = $file.FullName.Substring($root.Length + 1).Replace('\', '/')
+    if($rel -match '(^|/)__pycache__/' -or $rel -eq 'KRX_COMMIT.txt') {
+      continue
+    }
+    $lines.Add((Get-FileHash -Algorithm SHA256 -LiteralPath $file.FullName).Hash.ToLowerInvariant() + ' ' + $rel)
+  }
+  $sorted = $lines.ToArray()
+  [Array]::Sort($sorted, [System.StringComparer]::Ordinal)
+  $bytes = $Utf8NoBom.GetBytes(($sorted -join "`n") + "`n")
+  $sha   = [System.Security.Cryptography.SHA256]::Create()
+  return (($sha.ComputeHash($bytes) | ForEach-Object { $_.ToString('x2') }) -join '')
 }
 
 function Resolve-EngineBuildDir([string]$Override) {

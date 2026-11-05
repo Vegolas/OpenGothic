@@ -1,0 +1,142 @@
+{
+  "model": "HUMANS",
+  "checksum": "C63488C2",
+  "nodes": [
+    {
+      "name": "BIP01",
+      "parent": -1
+    },
+    {
+      "name": "BIP01 PELVIS",
+      "parent": 0
+    },
+    {
+      "name": "BIP01 SPINE",
+      "parent": 1
+    },
+    {
+      "name": "BIP01 SPINE1",
+      "parent": 2
+    },
+    {
+      "name": "BIP01 SPINE2",
+      "parent": 3
+    },
+    {
+      "name": "BIP01 NECK",
+      "parent": 4
+    },
+    {
+      "name": "BIP01 HEAD",
+      "parent": 5
+    },
+    {
+      "name": "ZS_HELMET",
+      "parent": 6
+    },
+    {
+      "name": "BIP01 L CLAVICLE",
+      "parent": 5
+    },
+    {
+      "name": "BIP01 L UPPERARM",
+      "parent": 8
+    },
+    {
+      "name": "BIP01 L FOREARM",
+      "parent": 9
+    },
+    {
+      "name": "BIP01 L HAND",
+      "parent": 10
+    },
+    {
+      "name": "BIP01 L FINGER0",
+      "parent": 11
+    },
+    {
+      "name": "ZS_LEFTHAND",
+      "parent": 11
+    },
+    {
+      "name": "ZS_LEFTARM",
+      "parent": 10
+    },
+    {
+      "name": "BIP01 R CLAVICLE",
+      "parent": 5
+    },
+    {
+      "name": "BIP01 R UPPERARM",
+      "parent": 15
+    },
+    {
+      "name": "BIP01 R FOREARM",
+      "parent": 16
+    },
+    {
+      "name": "BIP01 R HAND",
+      "parent": 17
+    },
+    {
+      "name": "BIP01 R FINGER0",
+      "parent": 18
+    },
+    {
+      "name": "ZS_RIGHTHAND",
+      "parent": 18
+    },
+    {
+      "name": "ZS_CROSSBOW",
+      "parent": 4
+    },
+    {
+      "name": "ZS_LONGSWORD",
+      "parent": 4
+    },
+    {
+      "name": "ZS_SHIELD",
+      "parent": 4
+    },
+    {
+      "name": "ZS_BOW",
+      "parent": 4
+    },
+    {
+      "name": "ZS_SWORD",
+      "parent": 2
+    },
+    {
+      "name": "BIP01 L THIGH",
+      "parent": 1
+    },
+    {
+      "name": "BIP01 L CALF",
+      "parent": 26
+    },
+    {
+      "name": "BIP01 L FOOT",
+      "parent": 27
+    },
+    {
+      "name": "BIP01 L TOE0",
+      "parent": 28
+    },
+    {
+      "name": "BIP01 R THIGH",
+      "parent": 1
+    },
+    {
+      "name": "BIP01 R CALF",
+      "parent": 30
+    },
+    {
+      "name": "BIP01 R FOOT",
+      "parent": 31
+    },
+    {
+      "name": "BIP01 R TOE0",
+      "parent": 32
+    }
+  ]
+}

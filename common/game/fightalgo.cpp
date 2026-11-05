@@ -250,9 +250,9 @@ void FightAlgo::consumeAction() {
   tr[MV_MAX-1]=MV_NULL;
   }
 
-void FightAlgo::dropForwardAttacks(bool fist) {
-  // NOTE: fist has no side attacks - every attack is a forward one
-  while(tr[0]==MV_ATTACK || (fist && (tr[0]==MV_ATTACKL || tr[0]==MV_ATTACKR)))
+void FightAlgo::dropForwardAttacks(bool leftForward, bool rightForward) {
+  // NOTE: a side attack with fists is a forward one, unless the model has its animation (a mod)
+  while(tr[0]==MV_ATTACK || (leftForward && tr[0]==MV_ATTACKL) || (rightForward && tr[0]==MV_ATTACKR))
     consumeAction();
   }
 

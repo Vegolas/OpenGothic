@@ -1,0 +1,30 @@
+# criterion: 004 K11
+# timeout: 120
+# anim-extra: build/anims-fixtures/k11
+# Definicje moda z lokalnym plikiem testowym (tools/anim.py fixtures): nowa animacja T_G25TEST,
+# podmieniona definicja ciosu pięścią (DEF_OPT_FRAME o klatkę później) i animacja dodana do nakładki
+# HUMANS_1HST1. Stanie zostaje niezmienione. Animacja z nakładki działa na szkielecie, który ją nosi.
+#
+# Sprawdzenie ręczne: na zrzucie nakladka szkielet stoi w pozie spoczynkowej modelu (animacja testowa
+# ma same obroty zerowe i unosi korzeń o 1 cm na klatkę).
+info told DIA_Xardas_Hello
+set time 12 0
+wait 1
+ani info hero T_G25TEST
+ani info hero S_FISTATTACK
+ani info hero S_RUN
+insert Skeleton
+wait 2
+ani info Skeleton T_G25OVERLAYTEST
+play ani Skeleton T_G25OVERLAYTEST
+wait 0.3
+screenshot nakladka.png
+quit
+
+expect log model script extension "HUMANS.EXT.MDS": 3 added, 1 replaced
+expect log model script extension "HUMANS_1HST1.EXT.MDS": 1 added, 0 replaced
+expect log scenario: ani T_G25TEST origin mod
+expect log scenario: ani S_FISTATTACK origin mod layer 1 next - blend 0 0.2 flags M dir F frames 1-29 fps 25 man 29
+expect log scenario:   tag 0 DEF_OPT_FRAME frames=10,25
+expect log scenario: ani S_RUN origin game
+expect log scenario: ani T_G25OVERLAYTEST origin mod

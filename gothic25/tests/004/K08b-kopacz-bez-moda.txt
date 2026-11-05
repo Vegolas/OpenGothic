@@ -1,0 +1,22 @@
+# criterion: 004 K8
+# timeout: 240
+# mod: off
+# K13 bez moda: kopacz walczący pięściami (styl silny) nie wyprowadza sierpowych, jego ciosy boczne
+# ze stylu są ciosami do przodu.
+info told DIA_Xardas_Hello
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+cheat god
+set time 12 0
+insert BDT_10027_Addon_Buddler
+call B_Attack BDT_10027_Addon_Buddler hero 0 0
+ztimer multiplyer 2
+wait 120
+quit
+
+expect BDT_10027_Addon_Buddler attacks.dir.left == 0
+expect BDT_10027_Addon_Buddler attacks.dir.right == 0
+expect BDT_10027_Addon_Buddler attacks.dir.fwd >= 10

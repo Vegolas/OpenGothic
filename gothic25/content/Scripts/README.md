@@ -39,6 +39,13 @@ Gdy ich nie ma, silnik działa jak upstream. Starszy silnik i oryginalna gra ign
 | `FA_MY_W_COMBO_<N>` | `Content/FAI/*.d` | Instancja z oryginału, dotąd pusta i nieużywana. Dla stylów z `FA_COMBO_<N>` silnik losuje z niej ruch raz na okno combo po ciosie do przodu, gdy NPC nie ma już zaplanowanej serii. `MOVE_ATTACK` przedłuża combo, każdy inny ruch je kończy. | [001](../../specs/001-combosy-npc-w-walce-wrecz/spec.md) |
 | `COMBO_DAMAGE_{1H,2H,FIST}_{PLAYER,NPC}` | `Content/AI/AI_Intern/ComboDamage.d` | Premia za kolejne ciosy combo do przodu w procentach obrażeń, osobno dla bohatera i NPC. Tablice 1H i 2H: wiersz 4 ciosów na poziom talentu (nowicjusz, wojownik, mistrz), FIST: jeden wiersz. Bez tych stałych każdy cios zadaje zwykłe obrażenia. | [002](../../specs/002-skalowanie-obrazen-w-kombo/spec.md) |
 
+Nie wszystko włączają symbole. Ataki boczne pięściami (sierpowe bohatera i NPC) włącza animacja:
+gdy model ma `T_FISTATTACKL` albo `T_FISTATTACKR`, cios boczny pięściami jest sierpowym z tej strony,
+a bez nich ciosem do przodu, jak w oryginale. Definicje animacji moda silnik dokłada z plików
+`<MODEL>.EXT.MDS` w paczce (ADR 0007, ADR 0008, [004](../../specs/004-potok-animacji/spec.md) W15;
+źródła w [`anims/`](../../anims/README.md)). Skrypty nic tu nie zmieniają: style walki zlecają ciosy
+boczne jak dotąd.
+
 Składowe `C_FightAI_Combo`:
 
 - `link_min`, `link_max`: kiedy NPC łączy kolejny cios serii albo combo, w procentach użytecznej

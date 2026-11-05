@@ -1,0 +1,30 @@
+# criterion: 004 K5
+# Do trybu ręcznego: tools/test.ps1 -Scenario 004/reczne/K05-sierpowe -Manual
+# Bohater walczy pięściami z celem testowym, który stoi, nie blokuje i nie oddaje. Dziennik walki jest
+# włączony, liczby wylicza raport.
+#
+# Co grać:
+# 1. Wyjmij pięści i stań przy celu.
+# 2. Kilka razy atak z lewej, potem kilka razy z prawej, każdy z miejsca, z przerwą.
+# 3. Kilka serii: cios do przodu, w jego oknie combo atak z lewej, w oknie sierpowego atak z prawej,
+#    na koniec cios do przodu.
+# 4. Samo zwykłe combo pięściami, kilka razy.
+# 5. F2, quit.
+#
+# Sprawdzenie ręczne:
+# - atak z lewej i z prawej odtwarza sierpowy z tej strony, czytelny jako cios z tej strony; słychać
+#   zamach;
+# - serie przechodzą płynnie z ciosu w cios; w raporcie bohater ma ciosy `left` i `right` z
+#   połączeniem `side` w jednej serii;
+# - trafienia sierpowych mają premię 100 (bez premii combo, 002 W3);
+# - zwykłe combo pięściami działa jak dotąd (2 ciosy).
+info told DIA_Xardas_Hello
+call B_RemoveNpc PAL_297_Ritter
+call B_RemoveNpc PAL_298_Ritter
+goto waypoint NW_PASS_06
+remove npc YWolf 30
+goto waypoint NW_PASS_05
+cheat god
+set time 12 0
+insert TST_ComboDummy
+immortal TST_ComboDummy

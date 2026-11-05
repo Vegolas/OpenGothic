@@ -821,12 +821,16 @@ void PlayerControl::implMove(uint64_t dt) {
 
   if(actrl[ActLeft] || actrl[ActRight] || actrl[ActBack]) {
     auto ws = pl.weaponState();
-    if(ws==WeaponState::Fist) {
+    // fists attack to the side like weapons, but only when the model has the animation (a mod)
+    const bool fistSide = ws==WeaponState::Fist &&
+                          ((actrl[ActLeft]  && pl.hasFistSideAttack(Npc::Anim::AttackL)) ||
+                           (actrl[ActRight] && pl.hasFistSideAttack(Npc::Anim::AttackR)));
+    if(ws==WeaponState::Fist && !fistSide) {
       if(actrl[ActBack])
         pl.blockFist();
       return;
       }
-    else if(ws==WeaponState::W1H || ws==WeaponState::W2H) {
+    else if(ws==WeaponState::Fist || ws==WeaponState::W1H || ws==WeaponState::W2H) {
       if(actrl[ActLeft] && pl.swingSwordL()) {
         movement.strafeRightLeft.reset();
         }

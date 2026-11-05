@@ -28,6 +28,17 @@ specyfikację (`/g25-specify`) i przenosimy tutaj tylko link.
   (`Npc::canSenseNpc` w `common/world/objects/npc.cpp`). Skradanie wyłącza jedynie hałas kroków.
 - Kierunek: widoczność zależna od światła i postawy, stopniowe wykrywanie, wskaźnik na ekranie.
 
+### Styl walki bez broni
+
+- **Warstwa:** zasoby (animacje), silnik i skrypty. Wymaga potoku animacji
+  ([004](specs/004-potok-animacji/spec.md)).
+- W Gothicu II pięści mają jeden cios do przodu (z niego dwa ciosy combo, zob. 001), atak z biegu,
+  jedną paradę i odskok. Nie mają ataków bocznych, kopnięć, uników ani talentu. Silnik obsługuje
+  pięści osobno (`AnimationSolver::implSolveAnim` w `common/graphics/mesh/animationsolver.cpp`),
+  bez ataków bocznych i z jednym wariantem parady.
+- Kierunek: sierpowe z lewej i prawej, combo z 3-4 ciosów, warianty parady, unik, użycie przez NPC
+  (`FIGHT.DAT`), balans z 002 i ewentualnie talent (nowe symbole tylko w nowych plikach, ADR 0005).
+
 ## Infrastruktura
 
 - Kompilator Daedalus i baza skryptów: [ADR 0001](decisions/0001-kompilator-daedalus.md).
@@ -124,8 +135,8 @@ Oba źródła zgadzają się dla wartości podstawowych. Nie sprawdzaliśmy ich 
 - Zachowanie oryginału: czy da się blokować potwory i czy zablokowany atakujący coś traci.
 - Czy osłabić odskok (ochrona tylko na początku albo chwila bezbronności na końcu), żeby blok był
   realnym wyborem także przeciw potworom.
-- Docelowo osobna animacja odrzutu (około 600 ms) zamiast zachwiania i postoju. Zależy od ADR
-  o narzędziach do animacji. Spowolnienie zachwiania przez nakładkę MDS odpada, bo wymagałoby
+- Docelowo osobna animacja odrzutu (około 600 ms) zamiast zachwiania i postoju. Zależy od potoku
+  animacji ([004](specs/004-potok-animacji/spec.md), [ADR 0007](decisions/0007-zrodla-i-budowanie-animacji-moda.md)). Spowolnienie zachwiania przez nakładkę MDS odpada, bo wymagałoby
   kopii oryginalnego `.MAN` (konstytucja, zasada 6).
 
 ## Pomysły do dyskusji
@@ -134,8 +145,9 @@ Luźne pomysły na zróżnicowanie rozgrywki, omówione 2026-10-28 pod kątem mo
 To nie są planowane funkcje: najpierw trzeba rozstrzygnąć, czy pasują do ducha oryginału.
 
 - Wszystkie trzy wymagają nowych animacji, a silnik czyta tylko skompilowane pliki `.MAN`
-  (`Animation::Animation` w `common/graphics/mesh/animation.cpp`). Przed specyfikacją któregoś
-  z nich potrzebny jest ADR o narzędziach do animacji.
+  (`Animation::Animation` w `common/graphics/mesh/animation.cpp`). Narzędzia do animacji ustala
+  [ADR 0007](decisions/0007-zrodla-i-budowanie-animacji-moda.md), a buduje je
+  [004](specs/004-potok-animacji/spec.md).
 - Wszystkie sięgają do silnika (sterowanie, cykl rzucania, okno uniku), więc działają pod flagą
   moda, domyślnie wyłączoną.
 
