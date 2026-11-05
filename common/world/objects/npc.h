@@ -417,7 +417,7 @@ class Npc final {
     bool      haveOutput() const;
     void      setAiOutputBarrier(uint64_t dt, bool overlay);
 
-    bool      doAttack(Anim anim, BodyState bs);
+    bool      doAttack(Anim anim, BodyState bs, bool practice = false);
     void      commitSpell();
     void      takeDamage(Npc& other, const Bullet* b);
     void      takeDamage(Npc& other, const Bullet* b, const VisualFx* vfx, int32_t splId);
@@ -643,6 +643,8 @@ class Npc final {
 
     MoveAlgo                       mvAlgo;
     FightAlgo                      fghAlgo;
+    // current hit comes from AI_PracticeMove and hurts nobody; not serialized
+    bool                           practiceHit = false;
     uint64_t                       lastEventTime=0;
 
     float                          angleY   = 0.f;

@@ -2013,6 +2013,8 @@ bool Npc::implPracticeMove(int32_t move, bool linkNext) {
     return true;
   if(move<PM_Attack || move>PM_JumpBack || isSwim() || isDive())
     return true;
+  // practice has no target: a target left from a fight would get the hit after a savegame load
+  setTarget(nullptr);
 
   const uint64_t  now = owner.tickCount();
   Pose::ComboInfo cmb;
@@ -2059,7 +2061,7 @@ bool Npc::implPracticeMove(int32_t move, bool linkNext) {
     return false;
     }
 
-  if(!doAttack(anim,BS_HIT))
+  if(!doAttack(anim,BS_HIT,true))
     return false;
 
   if(visual.pose().comboInfo(cmb)) {
@@ -2206,6 +2208,12 @@ bool Npc::setGoToLadder() {
 
 void Npc::commitDamage() {
   fghAlgo.onHitFrame();
+  if(practiceHit) {
+    // a practice hit hurts nobody: no damage, no perceptions
+    practiceHit = false;
+    FightLog::miss(*this,nullptr,"practice",visual.comboLength());
+    return;
+    }
   if(currentTarget==nullptr) {
     FightLog::miss(*this,nullptr,"no_target",visual.comboLength());
     return;
@@ -4045,7 +4053,7 @@ bool Npc::canFinish(Npc& oth) {
   return true;
   }
 
-bool Npc::doAttack(Anim anim, BodyState bs) {
+bool Npc::doAttack(Anim anim, BodyState bs, bool practice) {
   auto weaponSt = weaponState();
   if(weaponSt==WeaponState::NoWeapon || weaponSt==WeaponState::Mage)
     return false;
@@ -4060,6 +4068,7 @@ bool Npc::doAttack(Anim anim, BodyState bs) {
   visual.setAnimRotate(*this,0);
   if(auto sq = visual.continueCombo(*this,anim,bs,weaponSt,wlk)) {
     (void)sq;
+    practiceHit = practice;
     // implAniWait(uint64_t(sq->atkTotalTime(visual.comboLength())+1));
     if(FightLog::isEnabled())
       FightLog::attack(*this,anim,bs,visual.pose().lastComboStart(),visual.comboLength(),fghAlgo);

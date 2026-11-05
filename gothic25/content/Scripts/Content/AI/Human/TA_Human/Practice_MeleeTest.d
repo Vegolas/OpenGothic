@@ -41,6 +41,22 @@ func void TST_PracticeMove (var C_NPC slf, var int move)
 	AI_PracticeMove (slf, move);
 };
 
+// Sets a target, like one left over from a fight (Z3).
+func void TST_SetTarget (var C_NPC slf, var C_NPC oth)
+{
+	Npc_SetTarget (slf, oth);
+};
+
+func int TST_HasTarget (var C_NPC slf)
+{
+	return Npc_GetTarget (slf);
+};
+
+func int TST_HpLost (var C_NPC slf)
+{
+	return slf.attribute[ATR_HITPOINTS_MAX] - slf.attribute[ATR_HITPOINTS];
+};
+
 func int TST_IsFistMode (var C_NPC slf)
 {
 	return Npc_IsInFightMode (slf, FMODE_FIST);

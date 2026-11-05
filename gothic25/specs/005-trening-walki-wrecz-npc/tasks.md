@@ -95,7 +95,7 @@ z innymi `[P]` w tej samej fazie. W nawiasie: wymagania (W) i kryteria (K), któ
         - `dat.py prefix`: kod 0, 27 nazwanych symboli na końcu.
 
       (W2)
-- [ ] **Z3** Trening bez obrażeń (plan E2, pkt 1 i 6).
+- [x] **Z3** Trening bez obrażeń (plan E2, pkt 1 i 6).
       - `npc.h` / `npc.cpp`:
         - znacznik treningu w `Npc` (bez zapisu), ustawiany przez `doAttack` z czynności treningowej
           i kasowany przez każde inne `doAttack`;
@@ -105,6 +105,21 @@ z innymi `[P]` w tej samej fazie. W nawiasie: wymagania (W) i kryteria (K), któ
       - Sprawdzenie: scenariusz roboczy. Uzbrojony manekin ma cel ustawiony na bohatera. Bohater bez
         nieśmiertelności stoi pół metra przed nim, a manekin wykonuje serię ciosów treningowych.
         Oczekiwania: `expect hero taken.hit == 0`, `res.miss.practice > 0`, `res.hit == 0`.
+      - Wynik (2026-11-05):
+        - Znacznik `Npc::practiceHit` ustawia udane `doAttack(..., practice)`, a kasuje każde inne
+          `doAttack` i jego użycie w `commitDamage`. Dzięki temu animacja ataku zagrana później przez
+          `AI_PlayAni` nie straci obrażeń. Znacznik trafia do sprawdzenia przed testem celu, więc trening
+          nie rani nawet NPC w zasięgu.
+        - `expect hero taken.hit` odpada: bohatera, który nic nie robi, nie ma w dzienniku, a takie
+          oczekiwanie jest niezaliczone. Zamiast tego `TST_HpLost hero` zwraca 0. Do tego
+          `TST_HasTarget` przed treningiem (1) i po nim (0) oraz `TST_HpLost` w pliku testowym.
+        - `tests/dev/005-z3-bez-obrazen`, przebieg `20261105-223944`, 6 z 6: 6 ciosów, 6 pudeł
+          `practice`, 0 trafień, cel wyczyszczony, bohater bez strat.
+        - Zmiana dotyka `doAttack` i `commitDamage`, więc poszły też scenariusze kontrolne:
+          - `dev/005-z2-mistrz-1h` (`20261105-224023`, 8 z 8): combo treningu bez zmian;
+          - `002/K01a-pal230-cel` (`20261105-224110`, 10 z 10): zwykła walka zadaje obrażenia,
+            88 trafień z premiami 002 jak dotąd.
+        - `dat.py prefix`: kod 0, 34 nazwane symbole na końcu.
 
       (W6)
 
