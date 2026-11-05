@@ -15,3 +15,4 @@ Decyzje, które dotyczą więcej niż jednej funkcji: narzędzia, formaty, konwe
 | [0007](0007-zrodla-i-budowanie-animacji-moda.md) | Źródła i budowanie animacji moda | Przyjęta |
 | [0008](0008-dokladanie-definicji-animacji-moda-przez.md) | Dokładanie definicji animacji moda przez silnik | Przyjęta |
 | [0009](0009-zmienione-oryginalne-animacje-w-paczce.md) | Zmienione oryginalne animacje w paczce moda | Przyjęta |
+| [0010](0010-nowe-funkcje-zewnetrzne-silnika.md) | Nowe funkcje zewnętrzne silnika dla skryptów moda | Przyjęta |

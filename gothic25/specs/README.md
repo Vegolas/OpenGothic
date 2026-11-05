@@ -10,3 +10,4 @@ komenda `/g25-specify`. Statusy i cykl pracy opisuje [../sdd/workflow.md](../sdd
 | [002](002-skalowanie-obrazen-w-kombo/spec.md) | Skalowanie obrażeń w kombo | silnik i skrypty | Zrobiona |
 | [003](003-scenariusze-testowe-i-dziennik-walki/spec.md) | Scenariusze testowe i dziennik walki | silnik i narzędzia | W realizacji |
 | [004](004-potok-animacji/spec.md) | Potok animacji | narzędzia, zasoby i silnik | Zrobiona |
+| [005](005-trening-walki-wrecz-npc/spec.md) | Trening walki wręcz NPC | skrypty, możliwie silnik | W realizacji |

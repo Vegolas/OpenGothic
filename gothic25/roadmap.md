@@ -39,6 +39,20 @@ specyfikację (`/g25-specify`) i przenosimy tutaj tylko link.
 - Kierunek: sierpowe z lewej i prawej, combo z 3-4 ciosów, warianty parady, unik, użycie przez NPC
   (`FIGHT.DAT`), balans z 002 i ewentualnie talent (nowe symbole tylko w nowych plikach, ADR 0005).
 
+### Sparing NPC
+
+- **Warstwa:** silnik i skrypty. Rozwinięcie statycznego treningu z
+  [005](specs/005-trening-walki-wrecz-npc/spec.md).
+- Dwóch NPC walczy ze sobą naprawdę, przez AI walki (combo, serie, bloki i odskoki z 001), ale bez
+  obrażeń i bez reakcji innych NPC (świadkowie, straż, przyłączanie się do walki).
+- Pomysł właściciela z 2026-11-05, odłożony przy 005 P1 na rzecz statycznych ćwiczeń.
+
+### Trening strzelecki
+
+- **Warstwa:** skrypty, możliwie zasoby (tarcza strzelnicza).
+- Plan dnia, w którym NPC ćwiczy strzelanie z łuku albo kuszy, odpowiednik treningu walki wręcz
+  z [005](specs/005-trening-walki-wrecz-npc/spec.md). Pomysł właściciela z 2026-11-05.
+
 ## Infrastruktura
 
 - Kompilator Daedalus i baza skryptów: [ADR 0001](decisions/0001-kompilator-daedalus.md).
