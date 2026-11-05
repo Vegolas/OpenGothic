@@ -2006,6 +2006,79 @@ bool Npc::implComboLink() {
   return true;
   }
 
+bool Npc::implPracticeMove(int32_t move, bool linkNext) {
+  // fight move without a target (AI_PracticeMove); false - not now, retry on next tick
+  const auto ws = weaponState();
+  if(ws!=WeaponState::Fist && ws!=WeaponState::W1H && ws!=WeaponState::W2H)
+    return true;
+  if(move<PM_Attack || move>PM_JumpBack || isSwim() || isDive())
+    return true;
+
+  const uint64_t  now = owner.tickCount();
+  Pose::ComboInfo cmb;
+  const bool      inAttack = visual.pose().comboInfo(cmb);
+  const auto      bs       = bodyStateMasked();
+
+  if(move==PM_Block || move==PM_JumpBack) {
+    // from the stance only: a block would turn the current attack into a block
+    if(inAttack || bs==BS_PARADE || bs==BS_STUMBLE)
+      return false;
+    if(move==PM_Block) {
+      if(!hasAnim(Anim::AttackBlock))
+        return true;
+      if(!(ws==WeaponState::Fist ? blockFist() : blockSword()))
+        return false;
+      } else {
+      if(!hasAnim(Anim::MoveBack))
+        return true;
+      if(!setAnim(Anim::MoveBack))
+        return false;
+      }
+    implAniWait(visual.pose().animationTotalTime());
+    return true;
+    }
+
+  static const Anim ani[3] = {Anim::Attack, Anim::AttackL, Anim::AttackR};
+  auto anim = ani[move];
+  if(ws==WeaponState::Fist && !hasFistSideAttack(anim))
+    anim = Anim::Attack;
+  if(!hasAnim(anim))
+    return true;
+
+  if(inAttack) {
+    if(anim==Anim::Attack && cmb.forward && cmb.last) {
+      // talent limits length of forward combo, same as in a fight
+      FightLog::seriesBreak(*this,FightAlgo::Series(),true,"talent");
+      return true;
+      }
+    // link inside of the combo window, otherwise start from the stance after this hit
+    if(!cmb.window || now<=cmb.winBegin || now>cmb.winEnd)
+      return false;
+    }
+  else if(bs==BS_PARADE || bs==BS_STUMBLE) {
+    return false;
+    }
+
+  if(!doAttack(anim,BS_HIT))
+    return false;
+
+  if(visual.pose().comboInfo(cmb)) {
+    // NOTE: combo shifts start of the animation, so atkTotalTime is not relative to 'now'
+    uint64_t at = cmb.hitEnd+1;
+    if(linkNext && cmb.window && cmb.winEnd>cmb.winBegin+1) {
+      // link moment: 25..75% of the usable part of the window, as fight ai does
+      uint64_t end = cmb.winEnd>cmb.winBegin+100 ? cmb.winEnd-50 : cmb.winEnd;
+      at = cmb.winBegin + 1 + (end-cmb.winBegin-1)*(25+owner.script().rand(51))/100;
+      }
+    else if(linkNext) {
+      // no window to link: let the next attack see this hit, a forward one is dropped by the talent limit
+      at = now;
+      }
+    implAniWait(at>now ? at-now : 0);
+    }
+  return true;
+  }
+
 bool Npc::implAiTick(uint64_t dt) {
   // Note AI-action queue takes priority, test case: Vatras pray at night
   if(aiQueue.size()==0) {
@@ -2861,6 +2934,14 @@ void Npc::nextAiAction(AiQueue& queue, uint64_t dt) {
           queue.pushFront(std::move(act));
         }
       break;
+    case AI_PracticeMove: {
+      // the next practice attack is linked inside of the combo window of this one
+      auto next = queue.front();
+      bool link = (next!=nullptr && next->act==AI_PracticeMove && next->i0>=PM_Attack && next->i0<=PM_AttackR);
+      if(!implPracticeMove(act.i0,link))
+        queue.pushFront(std::move(act));
+      break;
+      }
     case AI_DrawWeaponRange:
       if(canSwitchWeapon()) {
         if(!drawWeaponBow())

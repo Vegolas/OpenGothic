@@ -52,7 +52,7 @@ z innymi `[P]` w tej samej fazie. W nawiasie: wymagania (W) i kryteria (K), któ
         - `dat.py prefix`: kod 0, doszło 16 nazwanych symboli na końcu.
 
       (W1, W10)
-- [ ] **Z2** Funkcja zewnętrzna `AI_PracticeMove` (plan E2, pkt 1-5).
+- [x] **Z2** Funkcja zewnętrzna `AI_PracticeMove` (plan E2, pkt 1-5).
       - Silnik:
         - `constants.h`: `AI_PracticeMove` na końcu wyliczenia;
         - `aiqueue.*`: `aiPracticeMove(move)`;
@@ -74,6 +74,25 @@ z innymi `[P]` w tej samej fazie. W nawiasie: wymagania (W) i kryteria (K), któ
         - nowicjusz 2H: `combo.max == 2` i przerwanie `talent`;
         - pięści: lewy i prawy dają `attacks.dir.left` i `attacks.dir.right`;
         - blok i odskok grają animację; zrzut ekranu.
+      - Wynik (2026-11-05):
+        - Limit talentu: cios do przodu przepada, gdy trwa ostatni etap combo. Gdy ostatni etap
+          nie ma okna, a następna czynność to cios treningowy, silnik od razu oddaje ją do kolejki,
+          bez czekania do końca etapu. Inaczej cios trafiłby na koniec etapu i zaczął nowe combo,
+          zamiast trafić na limit.
+        - Pomocnicze `AiQueue::front()` i wyliczenie `Npc::PracticeMove`, czyli wartości `move` dla
+          skryptów.
+        - Scenariusze `tests/dev/005-z2-*`, zaliczone za pierwszym razem:
+          - `mistrz-1h`, przebieg `20261105-223353`, 8 z 8: combo 4 (etapy połączone w 28-43% okna),
+            potem lewy (`new`), prawy (`side`) i cios do przodu (`side`), a po bloku i odskoku jeszcze
+            jeden cios. Kolejka się nie zablokowała;
+          - `nowicjusz-2h`, przebieg `20261105-223438`, 6 z 6: combo 2 i dwa przerwania `talent`
+            9-17 ms po drugim ciosie, potem lewy i prawy (`side`);
+          - `piesci`, przebieg `20261105-223517`, 7 z 7: combo 2, przerwanie `talent`, sierpowe
+            lewy i prawy, cios do przodu po prawym (`side`). Na zrzutach blok z rękami w górze
+            i manekin odsunięty odskokiem.
+        - Ciosy treningowe mają w dzienniku jeszcze `src` `continue` i serię `combo`. Oznaczenie
+          `practice` dochodzi w Z4.
+        - `dat.py prefix`: kod 0, 27 nazwanych symboli na końcu.
 
       (W2)
 - [ ] **Z3** Trening bez obrażeń (plan E2, pkt 1 i 6).

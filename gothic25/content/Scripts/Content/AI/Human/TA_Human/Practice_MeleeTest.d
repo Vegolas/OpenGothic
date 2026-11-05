@@ -36,6 +36,11 @@ func void TST_ReadyFist (var C_NPC slf)
 	AI_ReadyFist (slf);
 };
 
+func void TST_PracticeMove (var C_NPC slf, var int move)
+{
+	AI_PracticeMove (slf, move);
+};
+
 func int TST_IsFistMode (var C_NPC slf)
 {
 	return Npc_IsInFightMode (slf, FMODE_FIST);

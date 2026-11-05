@@ -1,0 +1,41 @@
+# criterion: 005 Z2
+# timeout: 180
+# Zadanie Z2 (spec. 005): ruchy treningowe AI_PracticeMove na manekinie testowym z mieczem 1H
+# i talentem mistrza. Cztery ciosy do przodu łączą się w combo 4. Seria lewy, prawy, przód
+# łączy się bokiem. Blok i odskok nie blokują kolejki: ostatni cios po nich musi paść.
+# Uruchomienie: tools/test.ps1 -Scenario dev/005-z2-mistrz-1h
+info told DIA_Xardas_Hello
+insert TST_ComboDummy
+wait 1
+call TST_Arm TST_ComboDummy 1 80
+call TST_ReadyMelee TST_ComboDummy
+wait 3
+call TST_PracticeMove TST_ComboDummy 0
+call TST_PracticeMove TST_ComboDummy 0
+call TST_PracticeMove TST_ComboDummy 0
+call TST_PracticeMove TST_ComboDummy 0
+wait 5
+call TST_PracticeMove TST_ComboDummy 1
+call TST_PracticeMove TST_ComboDummy 2
+call TST_PracticeMove TST_ComboDummy 0
+wait 4
+call TST_PracticeMove TST_ComboDummy 3
+wait 0.2
+screenshot blok.png
+wait 2
+call TST_PracticeMove TST_ComboDummy 4
+wait 0.3
+screenshot odskok.png
+wait 2
+call TST_PracticeMove TST_ComboDummy 0
+wait 2
+quit
+
+expect TST_ComboDummy attacks == 8
+expect TST_ComboDummy combo.max == 4
+expect TST_ComboDummy combo.count.4 == 1
+expect TST_ComboDummy attacks.dir.left.new == 1
+expect TST_ComboDummy attacks.dir.right.side == 1
+expect TST_ComboDummy attacks.dir.fwd.side == 1
+expect TST_ComboDummy break.talent == 0
+expect nolog not implemented call [AI_PRACTICEMOVE]

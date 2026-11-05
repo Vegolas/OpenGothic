@@ -1,0 +1,36 @@
+# criterion: 005 Z2
+# timeout: 180
+# Zadanie Z2 (spec. 005): ruchy treningowe pięściami na manekinie testowym bez broni. Combo do
+# przodu pięściami ma 2 ciosy, więc trzeci przepada przez limit talentu. Lewy i prawy to
+# sierpowe z 004, a cios do przodu po prawym łączy się bokiem.
+# Uruchomienie: tools/test.ps1 -Scenario dev/005-z2-piesci
+info told DIA_Xardas_Hello
+insert TST_ComboDummy
+wait 1
+call TST_ReadyFist TST_ComboDummy
+wait 3
+call TST_PracticeMove TST_ComboDummy 0
+call TST_PracticeMove TST_ComboDummy 0
+call TST_PracticeMove TST_ComboDummy 0
+wait 4
+call TST_PracticeMove TST_ComboDummy 1
+call TST_PracticeMove TST_ComboDummy 2
+call TST_PracticeMove TST_ComboDummy 0
+wait 4
+call TST_PracticeMove TST_ComboDummy 3
+wait 0.2
+screenshot blok.png
+wait 2
+call TST_PracticeMove TST_ComboDummy 4
+wait 0.3
+screenshot odskok.png
+wait 2
+quit
+
+expect TST_ComboDummy attacks == 5
+expect TST_ComboDummy combo.max == 2
+expect TST_ComboDummy break.talent == 1
+expect TST_ComboDummy attacks.dir.left.new == 1
+expect TST_ComboDummy attacks.dir.right.side == 1
+expect TST_ComboDummy attacks.dir.fwd.side == 1
+expect nolog not implemented call [AI_PRACTICEMOVE]

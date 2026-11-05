@@ -411,6 +411,7 @@ class GameScript final {
     void ai_drawweapon       (std::shared_ptr<zenkit::INpc> npcRef);
     void ai_readymeleeweapon (std::shared_ptr<zenkit::INpc> npcRef);
     void ai_readyfist        (std::shared_ptr<zenkit::INpc> npcRef);
+    void ai_practicemove     (std::shared_ptr<zenkit::INpc> npcRef, int move);
     void ai_readyrangedweapon(std::shared_ptr<zenkit::INpc> npcRef);
     void ai_readyspell       (std::shared_ptr<zenkit::INpc> npcRef, int spell, int mana);
     void ai_attack            (std::shared_ptr<zenkit::INpc> npcRef);

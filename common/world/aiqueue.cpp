@@ -258,6 +258,13 @@ AiQueue::AiAction AiQueue::aiReadyFist() {
   return a;
   }
 
+AiQueue::AiAction AiQueue::aiPracticeMove(int32_t move) {
+  AiAction a;
+  a.act = AI_PracticeMove;
+  a.i0  = move;
+  return a;
+  }
+
 AiQueue::AiAction AiQueue::aiReadyRangedWeapon() {
   AiAction a;
   a.act = AI_DrawWeaponRange;

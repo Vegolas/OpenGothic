@@ -72,6 +72,15 @@ class Npc final {
       BC_Invest,
       };
 
+    // moves of AI_PracticeMove; the values are part of the script interface
+    enum PracticeMove : int32_t {
+      PM_Attack   = 0,
+      PM_AttackL  = 1,
+      PM_AttackR  = 2,
+      PM_Block    = 3,
+      PM_JumpBack = 4,
+      };
+
     using Anim = AnimationSolver::Anim;
 
     Npc(World &owner, size_t instance, std::string_view waypoint, NpcProcessPolicy aiPolicy = NpcProcessPolicy::AiNormal);
@@ -501,6 +510,7 @@ class Npc final {
     bool      implGoTo   (uint64_t dt, float destDist);
     bool      implAttack (uint64_t dt);
     bool      implComboLink();
+    bool      implPracticeMove(int32_t move, bool linkNext);
     bool      implAiTick (uint64_t dt);
     void      implAiWait (uint64_t dt);
     void      implAniWait(uint64_t dt);
