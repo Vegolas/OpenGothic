@@ -68,6 +68,7 @@ class AiQueue {
     static AiAction aiTeleport(const WayPoint& to);
     static AiAction aiDrawWeapon();
     static AiAction aiReadyMeleeWeapon();
+    static AiAction aiReadyFist();
     static AiAction aiReadyRangedWeapon();
     static AiAction aiReadySpell(int32_t spell, int32_t mana);
     static AiAction aiAttack();

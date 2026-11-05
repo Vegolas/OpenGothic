@@ -252,6 +252,12 @@ AiQueue::AiAction AiQueue::aiReadyMeleeWeapon() {
   return a;
   }
 
+AiQueue::AiAction AiQueue::aiReadyFist() {
+  AiAction a;
+  a.act = AI_DrawWeaponFist;
+  return a;
+  }
+
 AiQueue::AiAction AiQueue::aiReadyRangedWeapon() {
   AiAction a;
   a.act = AI_DrawWeaponRange;

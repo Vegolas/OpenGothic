@@ -167,7 +167,11 @@ Bez wywołań nowych funkcji silnik zachowuje się jak dotąd: oryginalne skrypt
 
 Nowe pliki na końcu `Content/Gothic.src` (ADR 0005), w cp1250. Zmiany sprawdza `tools/dat.py prefix`.
 
-**`AI/Human/TA_Human/ZS_Practice_Melee.d`** (treść):
+Nazwy plików nie mogą pasować do wzorców z `Gothic.src`, np. `AI\HUMAN\TA_Human\ZS*.d` (linia 225),
+bo wzorzec wciągnąłby plik w środek kompilacji. Stąd `Practice_Melee.d`, a nie `ZS_Practice_Melee.d`
+(poprawka przy Z1).
+
+**`AI/Human/TA_Human/Practice_Melee.d`** (treść):
 
 - Deklaracje `extern func` z E1 i E2 (ADR 0010), stałe `PRACTICE_FRONT`, `PRACTICE_LEFT`,
   `PRACTICE_RIGHT`, `PRACTICE_BLOCK`, `PRACTICE_JUMPBACK` oraz `AIV_PracticeProfile = 90`.
@@ -202,7 +206,7 @@ Nowe pliki na końcu `Content/Gothic.src` (ADR 0005), w cp1250. Zmiany sprawdza 
   przechodzi do następnego punktu planu dnia (W8).
 - Reakcje (W7) dają te same percepcje co w `ZS_Practice_Sword` (`Perception_Set_Normal`).
 
-**`AI/Human/TA_Human/ZS_Practice_MeleeTest.d`** (dane testowe, po pliku treningu):
+**`AI/Human/TA_Human/Practice_MeleeTest.d`** (dane testowe, po pliku treningu):
 
 - Postacie testowe (id od 9910) z planami dnia na waypointach placu koszar
   (`NW_CITY_HABOUR_KASERN_*`, dokładne nazwy w zadaniu):

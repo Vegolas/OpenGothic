@@ -18,24 +18,38 @@ z innymi `[P]` w tej samej fazie. W nawiasie: wymagania (W) i kryteria (K), któ
   wystarczą.
 - Scenariusze robocze trafiają do `tests/dev/005-*.txt`. Scenariusze kryteriów powstają w Z9 i Z10.
 - Postacie i funkcje pomocnicze dla scenariuszy są w nowym pliku testowym
-  `Content/AI/Human/TA_Human/ZS_Practice_MeleeTest.d`. Ten plik stoi w `Gothic.src` po pliku treningu.
+  `Content/AI/Human/TA_Human/Practice_MeleeTest.d`. Ten plik stoi w `Gothic.src` po pliku treningu.
 
 ## Faza 1: Silnik, funkcje zewnętrzne i trening bez obrażeń
 
-- [ ] **Z1** Funkcja zewnętrzna `AI_ReadyFist` (plan E1).
+- [x] **Z1** Funkcja zewnętrzna `AI_ReadyFist` (plan E1).
       - Silnik:
         - `common/game/constants.h`: `AI_DrawWeaponFist` na końcu wyliczenia `Action`;
-        - `common/world/aiqueue.*`: `AiQueue::aiDrawWeaponFist()`;
+        - `common/world/aiqueue.*`: `AiQueue::aiReadyFist()`;
         - `common/game/gamescript.*`: `ai_readyfist` i `bindExternal("ai_readyfist", ...)`;
         - `common/world/objects/npc.cpp` `nextAiAction`: jak `AI_DrawWeaponMelee`, ale z
           `drawWeaponFist`; wraca na początek kolejki, dopóki broń się chowa.
       - Skrypty, nowe pliki na końcu `Content/Gothic.src`:
-        - `AI/Human/TA_Human/ZS_Practice_Melee.d`: nagłówek pliku i `extern func void AI_ReadyFist(var instance par0);`;
+        - `AI/Human/TA_Human/Practice_Melee.d`: nagłówek pliku i `extern func void AI_ReadyFist(var instance par0);`;
         - plik testowy z `TST_ReadyFist(npc)` i `TST_IsFistMode(npc)`, która zwraca
           `Npc_IsInFightMode(npc, FMODE_FIST)` do `call`.
       - Sprawdzenie (pierwsza nowa funkcja, ryzyko R3): scenariusz roboczy. `insert Pal_230_Ritter`
         (ma miecz), `call TST_ReadyFist`, odczekanie, `call TST_IsFistMode` daje 1 i zrzut ekranu
         z pięściami. Do tego `expect nolog not implemented call` i `dat.py prefix` z kodem 0.
+      - Wynik (2026-11-05):
+        - Nazwy plików zmienione z `ZS_Practice_Melee*.d` na `Practice_Melee*.d`, bo wzorzec
+          `AI\HUMAN\TA_Human\ZS*.d` z `Gothic.src:225` wciągnąłby je w środek kompilacji (plan
+          poprawiony).
+        - Pal_230 ma własny plan dnia, który odprowadziłby go do miasta. Scenariusz
+          `tests/dev/005-z1-readyfist` używa więc `TST_ComboDummy` uzbrojonego przez `TST_Arm`
+          (przeniesione tu z Z2), z `TST_ReadyMelee` i `TST_IsMeleeMode`.
+        - Przebieg `20261105-222445-dev-005-z1-readyfist` zaliczony, 4 z 4 oczekiwań:
+          - po `AI_ReadyMeleeWeapon` tryb broni 1;
+          - po `AI_ReadyFist` tryb pięści 1, a tryb broni 0 (dobyty miecz najpierw schowany);
+          - brak „not implemented call [AI_READYFIST]”. Nazwy w tej linii logu są nazwami
+            symboli, czyli wielkimi literami.
+        - Zrzuty niczego nie rozstrzygają, bo manekina zasłania bohater. Rozstrzyga wynik `call`.
+        - `dat.py prefix`: kod 0, doszło 16 nazwanych symboli na końcu.
 
       (W1, W10)
 - [ ] **Z2** Funkcja zewnętrzna `AI_PracticeMove` (plan E2, pkt 1-5).
@@ -49,11 +63,11 @@ z innymi `[P]` w tej samej fazie. W nawiasie: wymagania (W) i kryteria (K), któ
           użytecznej części okna), gdy następna czynność to cios treningowy, a inaczej do końca ciosu.
           Blok i odskok tylko z postawy.
       - Skrypty:
-        - w `ZS_Practice_Melee.d` deklaracja `extern func void AI_PracticeMove(var instance par0, var int par1);`
+        - w `Practice_Melee.d` deklaracja `extern func void AI_PracticeMove(var instance par0, var int par1);`
           oraz stałe `PRACTICE_FRONT` (0), `PRACTICE_LEFT`, `PRACTICE_RIGHT`, `PRACTICE_BLOCK`,
           `PRACTICE_JUMPBACK` (4);
-        - w pliku testowym `TST_PracticeMove(npc, move)` oraz `TST_Arm(npc, broń, procent)`. Ta druga
-          daje wstawionej postaci miecz 1H albo 2H i talent przez `B_SetFightSkills`.
+        - w pliku testowym `TST_PracticeMove(npc, move)`. `TST_Arm(npc, broń, procent)` jest już
+          z Z1.
       - Sprawdzenie: scenariusze robocze z `TST_ComboDummy`, który ma wyłączone percepcje i stoi
         w miejscu. Cztery kolejne ciosy do przodu:
         - mistrz 1H: `combo.max == 4`;
@@ -105,7 +119,7 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
       - Sprawdzenie: raport z dzienników Z4 i ręcznie przeliczone wartości dla jednego przebiegu.
 
       (W9)
-- [ ] **Z6** [P] Skrypty treningu w `ZS_Practice_Melee.d` (plan, „Skrypty”).
+- [ ] **Z6** [P] Skrypty treningu w `Practice_Melee.d` (plan, „Skrypty”).
       - `AIV_PracticeProfile = 90`, zmienne ustawień i `B_PracticeMelee_Settings()`: profil 0 według
         W2 i W3, profil 99 testowy (tylko ciosy z lewej, przerwa 2 s).
       - `TA_Practice_Melee`, `TA_Practice_Fist`, `ZS_Practice_Melee` i `ZS_Practice_Fist` (start, pętla,

@@ -2854,6 +2854,13 @@ void Npc::nextAiAction(AiQueue& queue, uint64_t dt) {
           queue.pushFront(std::move(act));
         }
       break;
+    case AI_DrawWeaponFist:
+      // drawWeaponFist puts a drawn weapon away first and returns false meanwhile
+      if(canSwitchWeapon()) {
+        if(!drawWeaponFist())
+          queue.pushFront(std::move(act));
+        }
+      break;
     case AI_DrawWeaponRange:
       if(canSwitchWeapon()) {
         if(!drawWeaponBow())
