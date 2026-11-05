@@ -425,16 +425,35 @@ void FightLog::practice(Npc& npc, std::string_view move, std::string_view link, 
   write(j.done());
   }
 
+// characters already in the log only: the log of a fight should not list the ai of the whole world
+static Character* loggedCharacter(Npc& npc) {
+  auto it = characters.find(&npc);
+  if(it==characters.end() || it->second.id==0 || it->second.handle.lock()!=npc.handlePtr())
+    return nullptr;
+  return &it->second;
+  }
+
 void FightLog::aiState(Npc& npc, std::string_view st) {
   if(!enabled)
     return;
-  // characters already in the log only: the log of a fight should not list the ai of the whole world
-  auto it = characters.find(&npc);
-  if(it==characters.end() || it->second.id==0 || it->second.handle.lock()!=npc.handlePtr())
+  auto c = loggedCharacter(npc);
+  if(c==nullptr)
     return;
   Json j(npc.world().tickCount(),"ai");
-  who(j,npc,it->second);
+  who(j,npc,*c);
   j.str("state",st);
+  write(j.done());
+  }
+
+void FightLog::aiWait(Npc& npc, int32_t ms) {
+  if(!enabled)
+    return;
+  auto c = loggedCharacter(npc);
+  if(c==nullptr)
+    return;
+  Json j(npc.world().tickCount(),"wait");
+  who(j,npc,*c);
+  j.num("ms",ms);
   write(j.done());
   }
 

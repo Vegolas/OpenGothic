@@ -198,7 +198,7 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
           zaliczony.
 
       (W9)
-- [ ] **Z6** [P] Skrypty treningu w `Practice_Melee.d` (plan, „Skrypty”).
+- [x] **Z6** [P] Skrypty treningu w `Practice_Melee.d` (plan, „Skrypty”).
       - `AIV_PracticeProfile = 90`, zmienne ustawień i `B_PracticeMelee_Settings()`: profil 0 według
         W2 i W3, profil 99 testowy (tylko ciosy z lewej, przerwa 2 s).
       - `TA_Practice_Melee`, `TA_Practice_Fist`, `ZS_Practice_Melee` i `ZS_Practice_Fist` (start, pętla,
@@ -214,6 +214,37 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
       - Plik testowy: `TST_StartPractice(npc, pięści)` startuje stan treningu bez planu dnia.
       - Sprawdzenie: scenariusz roboczy, 3 minuty treningu uzbrojonego manekina. Dziennik ma serie
         wszystkich rodzajów, przerwy, bloki i odskoki, a `wp_dist` jest małe. `dat.py prefix` daje 0.
+      - Wynik (2026-11-05):
+        - **Decyzje właściciela przy Z6:**
+          - R2: W5 i K5 zmienione w spec.md. W trakcie serii do 3,5 m od waypointu, początek serii
+            najwyżej 0,6 m. Najpierw było 0,5 m, ale `AI_GotoWP` kończy się 20-60 cm od punktu.
+          - Pomiar przerw: odstęp między seriami zawiera powrót na waypoint, więc reguła z Z5 nie
+            zostawiała próbek. Silnik zapisuje zdarzenie `wait` (`AI_Wait`, `AI_WaitMs`, tylko postacie
+            z dziennika). `fightlog.py` liczy przerwy i odpoczynki z czekania zaraz po serii.
+          - Doszła miara `practice.start_dist.max_cm`.
+        - Skrypty jak w planie, a do tego:
+          - zawsze `AI_GotoWP` i `AI_AlignToWP` po serii;
+          - po bloku albo odskoku powrót przed serią (odskok przesuwa o około 1,2 m, blok pięściami
+            o około 0,6 m);
+          - liczniki bloków i odpoczynków w `aivar` 91 i 92;
+          - seria mieszana bez dwóch takich samych ciosów pod rząd, bo dwa razy ten sam cios z boku
+            silnik łączy jak combo do przodu.
+        - R4 (pięści przy broni w walce) nie wymaga zmian. Gdy NPC dostaje `B_Attack`, koniec stanu
+          treningu się nie wykonuje, ale `B_SelectWeapon` w `ZS_Attack` chowa pięści i dobywa broni.
+        - W pliku testowym `TST_StartPractice`, `TST_SetProfile` i `TST_SetWalk`.
+        - Scenariusze robocze:
+          - `dev/005-z6-mistrz-1h`, 6 minut czasu gry, przebieg `20261105-232940`: 66 serii (prosty 15,
+            combo 16, lewy 14, prawy 7, mieszana 14), combo 1-4, przerwy 0,52-1,98 s, 11 odpoczynków
+            (seria na 6), 4,7 serii na blok albo odskok, 0 trafień, cios najdalej 152 cm, początek serii
+            najdalej 53 cm, odchylenie 0°. Zaliczony po zmianie progu startu na 0,6 m
+            (`fightlog.py check` z tym samym dziennikiem);
+          - `dev/005-z6-piesci`, przebieg `20261105-233311`, zaliczony: pięści przy założonym mieczu,
+            37 serii, combo 2 (12 przepadłych), sierpowe z obu stron, przerwy 1,06-3,49 s, start do 39 cm;
+          - diagnoza `dev/005-z6-lewy` i `dev/005-z6-profil99`. W pierwszym przebiegu mistrza 1H
+            (3 minuty) nie wypadła żadna seria „sam lewy”. Lewy z postawy działa w obu trybach chodu
+            (4 z 4), profil 99 daje 18 lewych i przerwy dokładnie 2000 ms, a bajtkod wyboru serii jest
+            poprawny. W dłuższym przebiegu lewych było 14, więc to był przypadek losowania.
+        - `dat.py prefix`: kod 0.
 
       (W1, W2, W3, W4, W5, W7, W8, W11)
 - [ ] **Z7** Dane testowe treningu w pliku testowym (plan, „Skrypty”).
@@ -247,8 +278,10 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
 - [ ] **Z9** Scenariusze `tests/005` K01-K06.
       - `K01-mistrz-1h`, `K02-talent-2h` i `reczne/K02-talent-2h`, `K03a-piesci-z-bronia`,
         `K03b-bez-broni`, `K03c-bronia`, `K04-profil-testowy`, `K06-bez-obrazen`. Każdy ma
-        `expect nolog not implemented call`.
-      - K05 nie ma osobnego scenariusza: jego oczekiwania (`wp_dist`, `wp_angle`) siedzą w K01-K03,
+        `expect nolog not implemented call [AI_PRACTICEMOVE]` i `[AI_READYFIST]`, z nazwą funkcji,
+        bo log gry ma inne linie „not implemented call”.
+      - K05 nie ma osobnego scenariusza: jego oczekiwania (`start_dist`, `wp_dist`, `wp_angle`) siedzą
+        w K01-K03,
         z nagłówkiem `criterion: 005 K5`.
       - Progi oczekiwań według kryteriów ze spec.md. Gdy próg trzeba poprawić, robimy to osobnym
         commitem z uzasadnieniem w scenariuszu (ADR 0004).

@@ -211,7 +211,7 @@ jako `\u00XX`. `fightlog.py` odkodowuje je jako cp1250.
 | Pole | Typ | Znaczenie |
 |---|---|---|
 | `t` | int | czas gry w ms (`ztimer multiplyer` go skaluje) |
-| `ev` | string | rodzaj zdarzenia: `meta`, `attack`, `result`, `break`, `state`, `practice`, `ai`, `marker` |
+| `ev` | string | rodzaj zdarzenia: `meta`, `attack`, `result`, `break`, `state`, `practice`, `ai`, `wait`, `marker` |
 | `who` | string | instancja postaci, której dotyczy zdarzenie (np. `PAL_230_RITTER`) |
 | `who_id` | int | numer postaci w tym dzienniku, od 1 w kolejności pojawienia się; odróżnia postacie tej samej instancji |
 | `player` | bool | czy to bohater |
@@ -323,6 +323,15 @@ postaci, które już są w dzienniku, żeby dziennik nie wypisywał AI całego �
 |---|---|
 | `state` | nazwa stanu ze skryptów, np. `ZS_PRACTICE_MELEE`, `ZS_TALK` |
 
+### `wait`: czekanie postaci (005)
+
+Postać zaczyna czekać przez `AI_Wait` albo `AI_WaitMs`. Zapisywane tylko dla postaci, które już są
+w dzienniku, tak jak `ai`.
+
+| Pole | Znaczenie |
+|---|---|
+| `ms` | długość czekania w ms czasu gry |
+
 ### `marker`: znacznik
 
 | Pole | Znaczenie |
@@ -372,10 +381,11 @@ Miary liczą się z całego dziennika przebiegu:
 | `practice.dropped` | ciosy treningowe, które przepadły przez limit talentu (`link: dropped`) |
 | `practice.series`, `practice.series.<rodzaj>` | serie ciosów treningu (ruchy jednego `pseries`, bez bloków i odskoków): razem i według rodzaju: `fwd` (jeden cios do przodu), `combo` (same ciosy do przodu, co najmniej 2), `left`, `right` (jeden cios z boku), `mixed` (pozostałe) |
 | `practice.series_per_defend` | serie ciosów na jeden blok albo odskok, np. 5 to „blok albo odskok mniej więcej co 5 serii” |
-| `practice.pause.count`, `practice.pause.min_ms`, `practice.pause.max_ms`, `practice.pause.median_ms` | przerwy po seriach ciosów: od końca ostatniego ruchu serii (`end_ms`) do początku następnej serii. Liczą się tylko odstępy krótsze niż 5,5 s, po których następna seria zaczyna się co najmniej 30 cm dalej od waypointu niż ta: inaczej postać mogła wracać na waypoint i odstęp nie jest czystą przerwą. Obrót do kierunku waypointu się wlicza |
-| `practice.rest.count`, `practice.series_per_rest` | odpoczynki (odstęp po serii ciosów co najmniej 5,5 s) i serie ciosów na jeden odpoczynek |
+| `practice.pause.count`, `practice.pause.min_ms`, `practice.pause.max_ms`, `practice.pause.median_ms` | przerwy po seriach ciosów: zdarzenia `wait` zaraz po ruchu treningowym z ciosem, po których postać dalej ćwiczy, krótsze niż 5,5 s (pole `ms`, czyli przerwa zlecona przez skrypt). Powrót na waypoint i obrót się nie wliczają |
+| `practice.rest.count`, `practice.series_per_rest` | odpoczynki (takie `wait` co najmniej 5,5 s) i serie ciosów na jeden odpoczynek |
 | `practice.period.min` | najkrótszy okres ciągu rodzajów serii ciosów, powtórzony co najmniej dwa razy; równy liczbie serii, gdy ciąg się nie powtarza. Mała wartość to trening w stałym cyklu (005 W3) |
 | `practice.wp_dist.max_cm` | największe `wp_dist` ciosu treningowego, czyli jak daleko od waypointu zaczął się cios (005 W5) |
+| `practice.start_dist.max_cm` | największe `wp_dist` pierwszego ruchu serii (także bloku i odskoku), czyli jak daleko od waypointu postać zaczęła serię po powrocie na miejsce (005 W5) |
 | `practice.wp_angle.max_deg` | największe `wp_angle` pierwszego ruchu serii, czyli jak postać stała po powrocie na miejsce (005 W5) |
 | `practice.sync_pct` | procent ciosów treningowych postaci, które zaczęły się mniej niż 200 ms od ciosu treningowego innej postaci (005 K2); brak danych, gdy nikt inny nie ćwiczy |
 | `practice.after_ai.max_ms` | najdłuższy czas od zdarzenia `ai` ze stanem spoza treningu (nie `ZS_PRACTICE*`) do ruchu treningowego po nim; 0, gdy po nim nie było ruchu (005 K8); brak danych bez takiego zdarzenia |

@@ -2815,6 +2815,7 @@ void Npc::nextAiAction(AiQueue& queue, uint64_t dt) {
       }
     case AI_Wait:
       implAiWait(uint64_t(act.i0));
+      FightLog::aiWait(*this,act.i0);
       break;
     case AI_StandUp:
     case AI_StandUpQuick: {

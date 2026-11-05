@@ -2,6 +2,8 @@
 
 - **Status:** W realizacji
 - **Utworzono:** 2026-11-05
+- **Zmieniona:** 2026-11-05 przy Z6 (decyzje właściciela, ryzyko R2 planu): W5 i K5, próg odejścia od
+  waypointu 3,5 m w trakcie serii i początek serii najwyżej 0,6 m od waypointu.
 - **Warstwa (wstępnie):** skrypty, możliwie silnik <!-- zasoby / skrypty / silnik -->
 
 - **Powiązane:** [001: Combosy NPC w walce wręcz](../001-combosy-npc-w-walce-wrecz/spec.md)
@@ -112,8 +114,15 @@ a do tego czasu przypisują go tylko scenariusze testowe.
   Pięści nie mają talentu, więc w treningu pięściami NPC ma przerwy wojownika.
 - **W4:** Proporcje rodzajów ciosów, częstość bloków i odskoków, zakres przerw i długość serii autor
   moda ustawia w skryptach, bez zmian w silniku. Ustawienia mogą się różnić między NPC.
-- **W5:** NPC ćwiczy w miejscu. Nie oddala się od swojego waypointu o więcej niż 1,5 m (wartość
-  startowa, do sprawdzenia w grze) i po każdej serii wraca na miejsce, zwrócony tak jak waypoint.
+- **W5:** NPC ćwiczy w miejscu. Po każdej serii wraca na swój waypoint i zwraca się tak jak on, więc
+  każdą serię zaczyna najwyżej 0,6 m od waypointu. W trakcie serii ciosy przesuwają go tak jak w walce,
+  ale żaden ruch nie zaczyna się dalej niż 3,5 m od waypointu.
+  - Zmienione 2026-11-05 przy Z6 (decyzja właściciela): wcześniej NPC nie oddalał się o więcej niż
+    1,5 m. Dziennik z Z4 pokazał, że combo 4 ciosów mistrza 1H przesuwa postać o około 2,8 m. Właściciel
+    wybrał pełne combo z powrotem po serii zamiast krótszych serii albo odskoku przed combo. Próg początku
+    serii najpierw wynosił 0,5 m. Powrót przez `AI_GotoWP` kończy się jednak 20-60 cm od waypointu
+    (tolerancja dojścia w silniku), a w przebiegu Z6 seria zaczynała się do 53 cm od niego, więc właściciel
+    wybrał próg 0,6 m.
 - **W6:** Ciosy treningowe nikogo nie ranią: ani bohatera, ani NPC, ani zwierząt. Nie liczą się jako
   atak, więc nie zaczynają walki i nie wywołują reakcji świadków. Ćwiczący nie celuje w nikogo ani nie
   odwraca się w stronę bohatera.
@@ -170,8 +179,9 @@ Wspólne przygotowanie (P0): mod zbudowany z repozytorium, gra uruchamiana przez
     przebudowywany.
 - [ ] **K5** (W5): Trening w miejscu.
   - Kroki: przebiegi z K1, K2 i K3.
-  - Oczekiwane: żaden cios nie zaczyna się dalej niż 1,5 m od waypointu. Po każdej serii NPC stoi na
-    miejscu, zwrócony tak jak waypoint (odchylenie do 15°).
+  - Oczekiwane: każda seria zaczyna się najwyżej 0,6 m od waypointu, a NPC jest zwrócony tak jak
+    waypoint (odchylenie do 15°). Żaden ruch nie zaczyna się dalej niż 3,5 m od waypointu.
+  - Zmienione 2026-11-05 przy Z6 razem z W5 (wcześniej 1,5 m dla każdego ciosu).
 - [ ] **K6** (W6): Trening nikogo nie rani.
   - Kroki: scenariusz automatyczny. Bohater bez trybu nieśmiertelności stoi pół metra przed
     ćwiczącym przez 3 minuty czasu gry. Potem w tym samym miejscu staje wstawiony mieszczanin, a na

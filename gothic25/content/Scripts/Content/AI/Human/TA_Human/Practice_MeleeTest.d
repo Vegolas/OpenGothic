@@ -69,6 +69,29 @@ func void TST_StartStand (var C_NPC slf)
 	AI_StartState (slf, ZS_Stand_ArmsCrossed, 0, "");
 };
 
+// Starts the practice state without a daily routine (Z6), at the waypoint of slf (TST_SetWp).
+func void TST_StartPractice (var C_NPC slf, var int fist)
+{
+	if (fist)
+	{
+		AI_StartState (slf, ZS_Practice_Fist, 1, "");
+	}
+	else
+	{
+		AI_StartState (slf, ZS_Practice_Melee, 1, "");
+	};
+};
+
+func void TST_SetProfile (var C_NPC slf, var int profile)
+{
+	slf.aivar[AIV_PracticeProfile] = profile;
+};
+
+func void TST_SetWalk (var C_NPC slf)
+{
+	AI_SetWalkmode (slf, NPC_WALK);
+};
+
 func int TST_IsFistMode (var C_NPC slf)
 {
 	return Npc_IsInFightMode (slf, FMODE_FIST);

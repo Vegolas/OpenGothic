@@ -40,8 +40,9 @@ class FightLog final {
                             std::string_view detail = {});
     // move of AI_PracticeMove: fwd, left, right, block, jumpback; link of an attack or "dropped"; endTime < 0 - none
     static void practice(Npc& npc, std::string_view move, std::string_view link, int64_t endTime);
-    // npc starts an ai state; logged only for characters already in the log
+    // npc starts an ai state, or waits (AI_Wait, AI_WaitMs); logged only for characters already in the log
     static void aiState (Npc& npc, std::string_view st);
+    static void aiWait  (Npc& npc, int32_t ms);
     static void marker(std::string_view what, int32_t line = -1, std::string_view text = {}, std::string_view file = {});
 
     static std::string_view linkName(Pose::ComboLink link);

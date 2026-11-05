@@ -161,6 +161,9 @@ Bez wywołań nowych funkcji silnik zachowuje się jak dotąd: oryginalne skrypt
   - `wp_angle`: różnica kierunku NPC i waypointu w stopniach.
 - Nowe zdarzenie `ai`: postać, która jest już w dzienniku, zaczyna stan AI (`startState`, nazwa
   stanu). Służy K7 i K8, a przydaje się też przy innych testach.
+- Nowe zdarzenie `wait` (dodane przy Z6, decyzja właściciela): postać z dziennika czeka przez `AI_Wait`
+  albo `AI_WaitMs`, pole `ms`. Miary przerw biorą z niego przerwę zleconą przez skrypt, bo od Z6 NPC
+  wraca na waypoint po każdej serii i odstęp między seriami zawiera spacer.
 - Bez zmiany znaczenia istniejących pól, więc bez ponownego porównania z 003 K3.
 
 ### Skrypty (Daedalus)
@@ -198,10 +201,12 @@ bo wzorzec wciągnąłby plik w środek kompilacji. Stąd `Practice_Melee.d`, a 
      broni daje pięści. W wariancie pięściami woła `AI_ReadyFist`.
   2. `B_PracticeMelee_Settings()` i poziom talentu: `Npc_GetTalentSkill` dla 1H albo 2H według
      broni z `Npc_GetEquippedMeleeWeapon`. Pięści mają poziom wojownika (W3).
-  3. Gdy licznik serii dojdzie do progu, NPC robi blok albo odskok (`AI_PracticeMove`, po połowie).
+  3. Gdy licznik serii dojdzie do progu, NPC robi blok albo odskok (`AI_PracticeMove`, po połowie),
+     a potem wraca na waypoint (`AI_GotoWP`, `AI_AlignToWP`), bo odskok i blok pięściami go przesuwają.
   4. Losowanie rodzaju serii według wag i dopisanie jej ruchów: kolejne `AI_PracticeMove`.
   5. Przerwa `AI_WaitMs` z zakresu poziomu talentu albo, co wylosowaną liczbę serii, odpoczynek.
-  6. Gdy NPC odszedł od waypointu, `AI_GotoWP`, a potem zawsze `AI_AlignToWP` (W5).
+  6. Zawsze `AI_GotoWP` i `AI_AlignToWP` (W5). `AI_GotoWP` także blisko punktu przypina NPC do
+     waypointu, a bez tego `AI_AlignToWP` nie ma kierunku do ustawienia.
 - **Koniec stanu:** `AI_RemoveWeapon`. Kolejkę czyści już silnik (`startState`), więc trening nie
   przechodzi do następnego punktu planu dnia (W8).
 - Reakcje (W7) dają te same percepcje co w `ZS_Practice_Sword` (`Perception_Set_Normal`).
@@ -226,8 +231,8 @@ opis planów dnia i ustawień treningu.
 - `tools/fightlog.py`: miary `practice.*` (opis w `tests/README.md`):
   - liczby ruchów według rodzaju i serie według rodzaju (prosty, combo, lewy, prawy, mieszana);
   - stosunek serii do bloków i odskoków oraz do odpoczynków;
-  - przerwy: minimum, maksimum i mediana, osobno zwykłe przerwy i odpoczynki (próg 5,5 s). Odstępy, po
-    których postać mogła wracać na waypoint, raport pomija (decyzja właściciela przy Z5, opis w `tasks.md`);
+  - przerwy: minimum, maksimum i mediana, osobno zwykłe przerwy i odpoczynki (próg 5,5 s), ze zdarzeń
+    `wait` zaraz po serii (Z6; wcześniejszy pomiar odstępów z Z5 opisuje `tasks.md`);
   - najkrótszy okres ciągu rodzajów serii;
   - największe `wp_dist` i `wp_angle` na początku serii;
   - odsetek ciosów, które startują w odstępie do 200 ms od ciosu innej postaci (K2);
@@ -301,6 +306,9 @@ Brak. Nowe funkcje bez symbolu-przełącznika z ADR 0003 opisuje ADR 0010.
 - **R2: ruch z animacji odsuwa NPC od miejsca.** Combo 1H mistrza i odskok mogą przekroczyć 1,5 m
   przed powrotem po serii. Wykrycie: K5 (`wp_dist`). Wtedy skracamy serie albo dodajemy powrót po
   odskoku.
+  - **Zaszło przy Z4** (combo 4 ciosów przesuwa o około 2,8 m). **Rozstrzygnięte przy Z6** decyzjami
+    właściciela: W5 dopuszcza 3,5 m w trakcie serii, a początek serii najwyżej 0,6 m od waypointu
+    (tolerancja dojścia `AI_GotoWP` to 20-60 cm). Powrót po każdej serii i po bloku albo odskoku.
 - **R3: pierwsza nowa funkcja zewnętrzna.** Rejestracja w ZenKit sprawdza zgodność typów
   parametrów z deklaracją w `.DAT`. Sprawdzamy to w pierwszym zadaniu, na małym scenariuszu z
   `expect nolog not implemented call`.

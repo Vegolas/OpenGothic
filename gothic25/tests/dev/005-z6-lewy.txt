@@ -1,0 +1,27 @@
+# criterion: 005 Z6
+# timeout: 180
+# Zadanie Z6 (spec. 005), diagnoza: ciosy z lewej mistrza 1H z postawy, najpierw w trybie biegu
+# (jak w Z2), potem w trybie chodu (jak w stanie treningu). Każdy cios osobno, z przerwą.
+# Uruchomienie: tools/test.ps1 -Scenario dev/005-z6-lewy
+info told DIA_Xardas_Hello
+insert TST_ComboDummy
+wait 1
+call TST_Arm TST_ComboDummy 1 80
+call TST_ReadyMelee TST_ComboDummy
+wait 3
+call TST_PracticeMove TST_ComboDummy 1
+wait 3
+call TST_PracticeMove TST_ComboDummy 1
+wait 3
+call TST_SetWalk TST_ComboDummy
+wait 2
+call TST_PracticeMove TST_ComboDummy 1
+wait 3
+call TST_PracticeMove TST_ComboDummy 1
+wait 3
+call TST_PracticeMove TST_ComboDummy 2
+wait 3
+quit
+
+expect TST_ComboDummy attacks.dir.left == 4
+expect TST_ComboDummy attacks.dir.right == 1

@@ -1,0 +1,33 @@
+# criterion: 005 Z6
+# timeout: 300
+# Zadanie Z6 (spec. 005): trening pięściami (TA_Practice_Fist) manekina z założonym mieczem 1H
+# i talentem mistrza. Pięści nie mają talentu, więc przerwy są jak u wojownika (1-3,5 s), a combo
+# do przodu ma 2 ciosy. Boki to sierpowe z 004.
+# Uruchomienie: tools/test.ps1 -Scenario dev/005-z6-piesci
+info told DIA_Xardas_Hello
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_01
+wait 1
+insert TST_ComboDummy
+wait 1
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_02
+call TST_SetWp TST_ComboDummy NW_CITY_HABOUR_KASERN_CENTRE_01
+call TST_Arm TST_ComboDummy 1 80
+call TST_StartPractice TST_ComboDummy 1
+ztimer multiplyer 2
+wait 60
+call TST_IsFistMode TST_ComboDummy
+screenshot trening.png
+wait 120
+quit
+
+expect TST_ComboDummy practice.series >= 20
+expect TST_ComboDummy combo.max == 2
+expect TST_ComboDummy attacks.dir.left >= 1
+expect TST_ComboDummy attacks.dir.right >= 1
+expect TST_ComboDummy practice.pause.min_ms >= 1000
+expect TST_ComboDummy practice.pause.max_ms <= 3500
+expect TST_ComboDummy practice.start_dist.max_cm <= 60
+expect TST_ComboDummy res.hit == 0
+expect log scenario: call: TST_ISFISTMODE = 1
+expect nolog not implemented call [AI_PRACTICEMOVE]
+expect nolog not implemented call [AI_READYFIST]
