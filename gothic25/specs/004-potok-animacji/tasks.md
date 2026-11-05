@@ -442,7 +442,7 @@ nie kopiujemy w całości.
           przodu, w prawo żadnego. Sierpowe: 11 trafień, 5 odskoków, 11 pudeł.
 
       Po Z9, Z10, Z11 i Z12. (W1, W6, W8)
-- [ ] **Z16** [P] `anim.py mirror`.
+- [x] **Z16** [P] `anim.py mirror`.
       - Odbicie według planu: `W'_i = S·W_m(i)·S·C_i`, z korektą `C_i` z pozy spoczynkowej.
         Zamiana węzłów L/R według nazw (`L`/`R`, `LEFT`/`RIGHT`).
       - Tekstowe odbicie bloku definicji: zamiana stron w `DEF_HIT_LIMB` i innych nazwach węzłów oraz
@@ -451,6 +451,39 @@ nie kopiujemy w całości.
         - podwójne odbicie `t_1hAttackL` (z `Humans_1hST1`) równe wejściu w granicach kwantu;
         - odbity `t_1hAttackL` ma ruch w drugą stronę niż wejście i stronę zgodną z `t_1hAttackR`
           (kierunek ruchu ręki i korzenia w raporcie).
+      - Wynik (2026-11-04):
+        - polecenie `anim.py mirror ŹRÓDŁO --name NAZWA --gothic DIR [--out PLIK.anim]
+          [--compare SKRYPT-ANI]`. Źródłem jest `.anim` moda albo animacja z gry (np.
+          `HUMANS_1HST1-T_1HATTACKL`). Polecenie wypisuje raport i odbity blok definicji, a kończy się
+          kodem 1, gdy podwójne odbicie albo strona ruchu się nie zgadza;
+        - konwencje sprawdzone na danych gry:
+          - próbka MAN to obrót sprzężonego kwaternionu z pozycją w czwartej kolumnie (`mkMatrix`
+            w `animmath.cpp`);
+          - macierze MDH są zapisane wierszami;
+          - oś boczna modelu to x (lewa dłoń -28,56, prawa +28,56);
+          - kości w pozie spoczynkowej są symetryczne;
+        - pary L/R powstają z nazw. Slot bez pary (`ZS_LEFTARM`) wypada z odbicia z komunikatem.
+          Sloty `ZS_LEFTHAND` i `ZS_RIGHTHAND` nie są symetryczne w MDH, więc odbity slot zachowuje
+          swoje przesunięcie z pozy spoczynkowej: przedmiot w lewej ręce siedzi jak w lewym slocie gry;
+        - w definicji zmienia się nazwa i strona w `DEF_HIT_LIMB`, w innych slotach (bez przedmiotów),
+          w pozycjach PFX i w węzłach morph. Klatki zostają bez zmian;
+        - podwójne odbicie liczę jako kąt i odległość względem granicy formatu. W MAN składowa w
+          kwaternionu nie jest zapisana, więc przy obrocie bliskim 180° jedna kwantyzacja może obrócić
+          kość o 0,85°, a przy zwykłym obrocie o 0,007°. „Równe” znaczy: w granicy dwóch kwantyzacji;
+        - `t_1hAttackL`: podwójne odbicie daje 0,0000° i 0,0016 cm (0,29 granicy). Ręka z mieczem
+          (`ZS_RIGHTHAND`) wejścia przesuwa się w bok o -112 cm, odbicia o +102 cm, a oryginalnego
+          `t_1hAttackR` o +93 cm, czyli w tę samą stronę co odbicie. Korzeń nie rusza się w bok,
+          a odbity `DEF_HIT_LIMB` to `ZS_LEFTHAND` (raport w scratchpadzie sesji `z16/K12-1h.txt`);
+        - `T_FISTATTACKL`: 0,0048° i 0,0024 cm (0,90 granicy). Dłoń jest dokładnym lustrem, a definicja
+          `t_FistAttackR` ma `BIP01 R HAND` (`z16/K12-hook.txt`). Odbity sierpowy przechodzi kontrolę
+          szkieletu buildu, a jego MAN ma 7091 B;
+        - dodatkowo wszystkie 1038 animacji ludzi z gry (z nakładkami): podwójne odbicie mieści się
+          w granicy, najwyżej w 0,90 (najgorzej 1,25° przy obrocie bliskim 180° i 0,09 cm).
+          `ZS_LEFTARM` wypada w 142 animacjach. Lepszy dobór kodów (8 zaokrągleń) obniżyłby błąd do
+          0,5°, ale zmienia koder wszystkich eksportów, a w grze tego nie widać, więc go nie wprowadzam;
+        - do Z17: postawa `S_FISTRUN` nie jest symetryczna (lewa noga z przodu), więc odbity sierpowy
+          stoi w postawie z prawą nogą z przodu. W klatce 0 stopy są lustrem postawy (lewa x -38,6
+          zamiast -13,6). Przejście z `S_FISTRUN` przestawi więc nogi.
 
       Po Z2 i Z6, równolegle z Z15. (W14, K12)
 - [ ] **Z17** Sierpowy z prawej przez odbicie.

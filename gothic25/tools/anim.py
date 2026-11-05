@@ -44,16 +44,20 @@ Usage:
   anim.py roundtrip MODEL --gothic DIR
   anim.py defs MODEL [ANI...] --gothic DIR [--ext FILE.EXT.MDS | --no-ext]
   anim.py mds-check FOLDER --gothic DIR      *.mds sources against the game MSB, through both parsers
+  anim.py mirror SOURCE --name NAME --gothic DIR [--out FILE.anim] [--compare SCRIPT-ANI]
+                                             left <-> right mirror of an animation and its definition
 """
 
 from __future__ import annotations
 
 import argparse
 import base64
+import copy
 import fnmatch
 import json
 import math
 import os
+import re
 import struct
 import sys
 from dataclasses import dataclass, field
@@ -1483,6 +1487,296 @@ def cmd_build(args) -> int:
     return 0
 
 
+# --- mirror (spec 004 W14) ----------------------------------------------------------------------------
+# Matrices are 4x4 rows for column vectors, as the engine uses them (Pose::implMkSkeleton): the world
+# transform of a node is parent_world @ local. An MDH node matrix is stored by rows (zenkit transposes it
+# on read); a MAN sample is the rotation of its conjugate quaternion with the position in column 3
+# (animmath.cpp mkMatrix). In model space x is the character's right and y is up.
+#
+# Node i of the mirror takes the motion of its partner m(i) (left <-> right by name) reflected in the plane
+# x = 0: world'_i = S @ world_m(i) @ S @ C_i with S = diag(-1, 1, 1, 1) and the constant correction
+# C_i = (S @ rest_m(i) @ S)^-1 @ rest_i, so the rest pose mirrors to itself and a second mirror gives the
+# input back. Per sample: local'_i = C_p^-1 @ S @ local_m(i) @ S @ C_i, p the parent of i.
+
+MIRROR = ((-1.0, 0.0, 0.0, 0.0), (0.0, 1.0, 0.0, 0.0), (0.0, 0.0, 1.0, 0.0), (0.0, 0.0, 0.0, 1.0))
+IDENTITY = ((1.0, 0.0, 0.0, 0.0), (0.0, 1.0, 0.0, 0.0), (0.0, 0.0, 1.0, 0.0), (0.0, 0.0, 0.0, 1.0))
+SIDE_LETTER = re.compile(r"(?<![A-Za-z0-9])[LRlr](?![A-Za-z0-9])")
+SIDE_WORD = re.compile(r"left|right", re.IGNORECASE)
+
+
+def other_side(name: str) -> str:
+    """The node or slot name of the other side: a separate L or R, LEFT or RIGHT (any case)."""
+    def word(m):
+        w = "RIGHT" if m.group(0).upper() == "LEFT" else "LEFT"
+        t = m.group(0)
+        return w if t.isupper() else w.lower() if t.islower() else w.capitalize()
+    name = SIDE_LETTER.sub(lambda m: {"L": "R", "R": "L", "l": "r", "r": "l"}[m.group(0)], name)
+    return SIDE_WORD.sub(word, name)
+
+
+def mat_mul(a, b):
+    return tuple(tuple(sum(a[r][k] * b[k][c] for k in range(4)) for c in range(4)) for r in range(4))
+
+
+def mat_inv_rigid(m):
+    rt = [[m[c][r] for c in range(3)] for r in range(3)]
+    t = [-sum(rt[r][k] * m[k][3] for k in range(3)) for r in range(3)]
+    return tuple(tuple(rt[r]) + (t[r],) for r in range(3)) + ((0.0, 0.0, 0.0, 1.0),)
+
+
+def mdh_matrix(node: MdhNode):
+    f = node.matrix
+    return tuple(tuple(f[4 * r + c] for c in range(4)) for r in range(4))
+
+
+def sample_matrix(s: tuple):
+    w, x, y, z, px, py, pz = s
+    return ((w * w + x * x - y * y - z * z, 2 * (x * y + w * z), 2 * (x * z - w * y), px),
+            (2 * (x * y - w * z), w * w - x * x + y * y - z * z, 2 * (y * z + w * x), py),
+            (2 * (x * z + w * y), 2 * (y * z - w * x), w * w - x * x - y * y + z * z, pz),
+            (0.0, 0.0, 0.0, 1.0))
+
+
+def matrix_sample(m) -> tuple:
+    """The sample of a matrix (inverse of sample_matrix), w >= 0 as the MAN keeps it."""
+    (m00, m01, m02, _), (m10, m11, m12, _), (m20, m21, m22, _), _ = m
+    # quaternion of the rotation for column vectors; the sample is its conjugate
+    tr = m00 + m11 + m22
+    if tr > 0:
+        s = math.sqrt(tr + 1.0) * 2
+        w, x, y, z = s / 4, (m21 - m12) / s, (m02 - m20) / s, (m10 - m01) / s
+    elif m00 > m11 and m00 > m22:
+        s = math.sqrt(1.0 + m00 - m11 - m22) * 2
+        w, x, y, z = (m21 - m12) / s, s / 4, (m01 + m10) / s, (m02 + m20) / s
+    elif m11 > m22:
+        s = math.sqrt(1.0 + m11 - m00 - m22) * 2
+        w, x, y, z = (m02 - m20) / s, (m01 + m10) / s, s / 4, (m12 + m21) / s
+    else:
+        s = math.sqrt(1.0 + m22 - m00 - m11) * 2
+        w, x, y, z = (m10 - m01) / s, (m02 + m20) / s, (m12 + m21) / s, s / 4
+    n = math.sqrt(w * w + x * x + y * y + z * z) * (-1.0 if w < 0 else 1.0)
+    return (w / n, -x / n, -y / n, -z / n, m[0][3], m[1][3], m[2][3])
+
+
+def partners(mdh: Mdh) -> list:
+    """Index of the node of the other side for every node (itself in the middle), None if missing."""
+    index = {n.name.upper(): i for i, n in enumerate(mdh.nodes)}
+    return [index.get(other_side(n.name).upper()) for n in mdh.nodes]
+
+
+def rest_world(mdh: Mdh) -> list:
+    out = []
+    for n in mdh.nodes:
+        local = mdh_matrix(n)
+        out.append(mat_mul(out[n.parent], local) if n.parent >= 0 else local)
+    return out
+
+
+def mirror_corrections(mdh: Mdh) -> tuple:
+    """(partner of every node, its correction C_i or None without a partner)."""
+    pair, rest = partners(mdh), rest_world(mdh)
+    return pair, [None if m is None else mat_mul(mat_inv_rigid(mat_mul(mat_mul(MIRROR, rest[m]), MIRROR)), rest[i])
+                  for i, m in enumerate(pair)]
+
+
+def mirror_man(a: Man, mdh: Mdh, name: str) -> tuple:
+    """(mirrored animation named `name`, names of sampled slots that have no partner and are left out)."""
+    nodes = mdh.nodes
+    if a.checksum != mdh.checksum:
+        raise ValueError(f"{a.name}: checksum {a.checksum:08X}, the model hierarchy has {mdh.checksum:08X}")
+    if any(i >= len(nodes) for i in a.node_indices):
+        raise ValueError(f"{a.name}: a node index is outside the model hierarchy ({len(nodes)} nodes)")
+    pair, corr = mirror_corrections(mdh)
+    dropped = [nodes[i].name for i in a.node_indices if pair[i] is None]
+    source = {idx: k for k, idx in enumerate(a.node_indices)}
+    out_nodes = sorted(pair[i] for i in a.node_indices if pair[i] is not None)
+    plan = []
+    for i in out_nodes:
+        m, p = pair[i], nodes[i].parent
+        if (p < 0) != (nodes[m].parent < 0) or (p >= 0 and pair[p] != nodes[m].parent):
+            raise ValueError(f"{nodes[i].name} and {nodes[m].name} do not have mirrored parents in the model")
+        left = MIRROR if p < 0 else mat_mul(mat_inv_rigid(corr[p]), MIRROR)
+        plan.append((source[m], left, mat_mul(MIRROR, corr[i])))
+    b = a.bbox
+    out = Man(model=a.model, name=name.upper(), next=name.upper() if a.next.upper() == a.name.upper() else a.next,
+              version=a.version, layer=a.layer, fps=a.fps, fps_source=a.fps_source, checksum=a.checksum,
+              bbox=(0.0 - b[3], b[1], b[2], 0.0 - b[0], b[4], b[5]),
+              node_indices=out_nodes, node_names=[nodes[i].name for i in out_nodes])
+    for row in a.samples:
+        out.samples.append([matrix_sample(mat_mul(mat_mul(left, sample_matrix(row[k])), right))
+                            for k, left, right in plan])
+    return snap(out), dropped
+
+
+def mirror_ani(d: MdsAni, name: str) -> MdsAni:
+    """The definition of the mirrored animation: new name, the other side in node and slot names."""
+    m = copy.deepcopy(d)
+    m.name, m.origin = name, "mod"
+    if d.next.upper() == d.name.upper():
+        m.next = name
+    m.model = re.sub(re.escape(d.name), name, d.model, flags=re.IGNORECASE)
+    for e in m.events:
+        e.slot, e.slot2 = other_side(e.slot), other_side(e.slot2)
+        if e.type in FRAME_EVENTS or e.type == "DEF_FIGHTMODE":
+            continue
+        slots = 1 if e.type in SLOT_ITEM_EVENTS else len(e.raw)  # (slot, item): the item stays
+        e.raw = tuple(other_side(x) if k < slots else x for k, x in enumerate(e.raw))
+    m.pfx = [(f, i, n, other_side(pos), at) for f, i, n, pos, at in m.pfx]
+    m.morph = [(f, n, other_side(node)) for f, n, node in m.morph]
+    return m
+
+
+def ani_block(d: MdsAni, script: str) -> str:
+    """The ani block of one definition, as it stands between the aniEnum braces."""
+    lines = write_mds(ModelScript([d]), script).split("\r\n")
+    return "\r\n".join(lines[4:-3]) + "\r\n"
+
+
+def rot_error_bound(w: float) -> float:
+    """Largest angle (radians) by which one MAN quantization can turn a rotation whose sample has this w:
+    the stored x, y, z move by half a step at most and w is computed again from them, which is coarse
+    near w = 0 (a turn by about 180 degrees): 0.007 degrees at w = 1, 0.85 degrees at w = 0."""
+    s = ROT_SCALE
+    d = math.sqrt(3.0) * s + 0.75 * s * s  # largest change of x*x + y*y + z*z
+    dw2 = min(d, (d / w) ** 2) if w > 0 else d
+    return 2.0 * math.sqrt(0.75 * s * s + dw2)
+
+
+def quat_angle(a: tuple, b: tuple) -> float:
+    dot = abs(sum(x * y for x, y in zip(a[:4], b[:4])))
+    dot /= math.sqrt(sum(x * x for x in a[:4]) * sum(x * x for x in b[:4])) or 1.0
+    return 2.0 * math.acos(min(1.0, dot))
+
+
+def double_mirror(a: Man, mdh: Mdh) -> dict:
+    """Mirrors `a` twice and compares the result with `a` (nodes without a partner left out). Every sample
+    goes through two quantizations (mirror and back), so the bound of a sample is what they can move it:
+    rot_error_bound of both, and for positions half a step of both in each axis plus the turn error
+    times the offset of the node's correction (slots whose rest pose is not symmetric). 'share' is the largest
+    difference as a share of its bound; up to 1 the double mirror equals the input within the precision of
+    the format (all 1038 HUMANS animations of the game: at most 0.90)."""
+    m, dropped = mirror_man(a, mdh, "MIRROR")
+    back, _ = mirror_man(m, mdh, a.name)
+    pair, corr = mirror_corrections(mdh)
+    mk = {idx: k for k, idx in enumerate(m.node_indices)}
+    bk = {idx: k for k, idx in enumerate(back.node_indices)}
+    steps = m.quant[1] + back.quant[1]
+    out = {"degrees": 0.0, "cm": 0.0, "share": 0.0, "dropped": dropped}
+    for f, row in enumerate(a.samples):
+        for k, i in enumerate(a.node_indices):
+            if i not in bk:
+                continue
+            sa, sm, sb = row[k], m.samples[f][mk[pair[i]]], back.samples[f][bk[i]]
+            turn = rot_error_bound(sm[0]) + rot_error_bound(sb[0])
+            offset = math.sqrt(sum(corr[i][r][3] ** 2 for r in range(3)))
+            angle = quat_angle(sa, sb)
+            dist = math.sqrt(sum((x - y) ** 2 for x, y in zip(sa[4:], sb[4:])))
+            out["degrees"] = max(out["degrees"], math.degrees(angle))
+            out["cm"] = max(out["cm"], dist)
+            shift = 0.5 * math.sqrt(3.0) * steps + rot_error_bound(sm[0]) * offset + 1e-6  # half a step in x, y, z
+            out["share"] = max(out["share"], angle / turn, dist / shift)
+    return out
+
+
+def world_path(a: Man, mdh: Mdh, node: int) -> list:
+    """Model space position of a node in every frame; nodes without samples keep their rest transform."""
+    chain, p = [], node
+    while p >= 0:
+        chain.append(p)
+        p = mdh.nodes[p].parent
+    k = {idx: j for j, idx in enumerate(a.node_indices)}
+    out = []
+    for row in a.samples:
+        w = IDENTITY
+        for i in reversed(chain):
+            w = mat_mul(w, sample_matrix(row[k[i]]) if i in k else mdh_matrix(mdh.nodes[i]))
+        out.append((w[0][3], w[1][3], w[2][3]))
+    return out
+
+
+def motion(label: str, a: Man, mdh: Mdh, limb: str) -> tuple:
+    """Report line of the sideways motion of the hit limb and the root, and the limb's swing: the x of
+    its farthest point from the start, minus the start."""
+    names = [n.name.upper() for n in mdh.nodes]
+    if limb.upper() not in names:
+        raise ValueError(f"{label}: no node {limb} in the model")
+    path = world_path(a, mdh, names.index(limb.upper()))
+    root = world_path(a, mdh, next(i for i, n in enumerate(mdh.nodes) if n.parent < 0))
+    n = len(path)
+    marks = [path[round(t * (n - 1))][0] for t in (0.0, 0.25, 0.5, 0.75, 1.0)]
+    far = max(range(n), key=lambda f: abs(path[f][0] - path[0][0]))
+    swing = path[far][0] - path[0][0]
+    return (f"  {label:30s} {limb:14s}" + "".join(f" {x:+7.1f}" for x in marks)
+            + f"   swing {swing:+6.1f} at frame {far:2d}   root {root[-1][0] - root[0][0]:+5.1f}"), swing
+
+
+def load_animation(spec: str, gothic: Path) -> Man:
+    """A .anim file, or SCRIPT-ANI from the game archives (e.g. HUMANS_1HST1-T_1HATTACKL)."""
+    if spec.lower().endswith(".anim"):
+        p = Path(spec)
+        return from_text(p.read_text(encoding="utf-8"), str(p))
+    base = spec.upper() if spec.upper().endswith(".MAN") else spec.upper() + ".MAN"
+    files = game_files(gothic, [base])
+    if base not in files:
+        raise ValueError(f"no {base} in the game archives of {gothic}")
+    return parse_man(read_entry(files[base]), man_model(base))
+
+
+def cmd_mirror(args) -> int:
+    gothic = Path(args.gothic)
+    a = load_animation(args.source, gothic)
+    model = a.model.split("_", 1)[0]
+    mdh_entry = game_files(gothic, [f"{model}.MDH"]).get(f"{model}.MDH")
+    if mdh_entry is None:
+        raise ValueError(f"no {model}.MDH in the game archives of {gothic}")
+    mdh = parse_mdh(read_entry(mdh_entry))
+    names = [n.name for n in mdh.nodes]
+    a.node_names = [names[i] if i < len(names) else "" for i in a.node_indices]
+    script, _, _, _ = load_merged(gothic, a.model, default_ext(a.model))
+    label = f"{a.model}-{a.name}"
+
+    m, dropped = mirror_man(a, mdh, args.name)
+    twice = double_mirror(snap(copy.deepcopy(a)), mdh)
+    equal = twice["share"] <= 1.0
+    print(f"mirror {label} -> {m.name}: {m.frame_count} frames, {len(m.node_indices)} nodes"
+          + (f"; left out (no node of the other side): {', '.join(dropped)}" if dropped else ""))
+    print(f"double mirror: rotations within {twice['degrees']:.4f} degrees, positions within {twice['cm']:.4f} cm, "
+          f"{twice['share']:.2f} of what the format's quantization can move: "
+          + ("equal to the input" if equal else "DIFFERENT from the input"))
+
+    d = find_ani(script, a.name)
+    limb = next((e.slot for e in d.events if e.type == "DEF_HIT_LIMB" and e.slot), "") if d else ""
+    limb = limb or args.limb
+    print("hit limb and root sideways, model x in cm (+ is the character's right), "
+          "at 0, 25, 50, 75 and 100 % of the frames:")
+    line, swing = motion(label, a, mdh, limb)
+    print(line)
+    line, mswing = motion(m.name + " (mirror)", m, mdh, other_side(limb))
+    print(line)
+    ok = equal and swing * mswing < 0
+    if swing * mswing >= 0:
+        print("error: the mirror does not swing to the other side")
+    if args.compare:
+        c = load_animation(args.compare, gothic)
+        cd = find_ani(load_merged(gothic, c.model, default_ext(c.model))[0], c.name)
+        climb = next((e.slot for e in cd.events if e.type == "DEF_HIT_LIMB" and e.slot), "") if cd else ""
+        line, cswing = motion(f"{c.model}-{c.name}", c, mdh, climb or args.limb)
+        print(line)
+        same = cswing * mswing > 0
+        print(f"the mirror swings to the {'same side as' if same else 'OTHER side than'} {c.model}-{c.name}")
+        ok = ok and same
+
+    if d is not None:
+        print(f"definition ({a.model}):")
+        sys.stdout.write(ani_block(mirror_ani(d, args.name), a.model).replace("\r\n", "\n"))
+    else:
+        print(f"no definition of {a.name} in {a.model}")
+    if args.out:
+        Path(args.out).write_text(to_text(m), encoding="utf-8", newline="\n")
+        print(f"written {args.out}")
+    return 0 if ok else 1
+
+
 # --- local test data (spec 004 K4, K11; never committed: made from the player's game) -----------------
 
 def quat_mul(a: tuple, b: tuple) -> tuple:
@@ -1643,6 +1937,15 @@ def main() -> int:
     p.add_argument("--extra", action="append", default=[], help="another source folder, e.g. local test data")
     p.add_argument("--gothic", help="Gothic II folder, to check definitions against the game")
     p.set_defaults(func=cmd_build)
+
+    p = sub.add_parser("mirror", help="left <-> right mirror of an animation and its definition (W14, K12)")
+    p.add_argument("source", help="a .anim file, or SCRIPT-ANI of the game, e.g. HUMANS_1HST1-T_1HATTACKL")
+    p.add_argument("--name", required=True, help="name of the mirrored animation, e.g. T_FISTATTACKR")
+    p.add_argument("--gothic", required=True, help="Gothic II folder (model hierarchy and definitions)")
+    p.add_argument("--out", help="write the mirrored animation to this .anim file")
+    p.add_argument("--compare", help="SCRIPT-ANI of the game that should swing to the same side as the mirror")
+    p.add_argument("--limb", default="BIP01 R HAND", help="node to report when the definition has no hit limb")
+    p.set_defaults(func=cmd_mirror)
 
     p = sub.add_parser("defs", help="definitions of a model: game MSB plus the mod extension (ADR 0008)")
     p.add_argument("model", help="model or overlay script name, e.g. HUMANS or HUMANS_1HST1")
