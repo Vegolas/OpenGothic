@@ -59,7 +59,9 @@ Fork ma własne workflow. Upstreamowy `Build` (`.github/workflows/build.yml`) je
 poleceniem `gh workflow disable`, a nie edytowany, żeby aktualizacje z Try/OpenGothic nie dawały konfliktów.
 
 - `gothic25-mod.yml`: przy zmianach w `gothic25/` pobiera `gdc`, kompiluje skrypty i buduje
-  paczkę moda (`publish.ps1 -SkipEngine`). Paczka trafia do artefaktów.
+  paczkę moda (`publish.ps1 -SkipEngine -NoMirrors`). Paczka trafia do artefaktów. CI nie ma kopii
+  gry, więc paczka nie ma animacji odbitych z `anims/anims.json` (np. prawego sierpowego) i nie jest
+  wydaniem. Wydanie buduje się lokalnie z folderem gry.
 - `gothic25-engine.yml`: przy zmianach poza `gothic25/` buduje silnik na Windowsie i Linuksie
   (te same kroki co upstream).
 

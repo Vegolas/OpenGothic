@@ -1396,8 +1396,9 @@ def check_skeleton(where: str, a: Man, skel: dict) -> list:
     return errors
 
 
-def build(src: Path, extras: list, gothic: Path | None) -> tuple:
-    """Returns (outputs {file name: bytes}, errors, notes)."""
+def build(src: Path, extras: list, gothic: Path | None, no_mirrors: bool = False) -> tuple:
+    """Returns (outputs {file name: bytes}, errors, notes). With `no_mirrors` the mirrors of anims.json
+    (which need the game) are left out together with their definitions, e.g. for CI without the game."""
     manifest_path = src / "anims.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     outputs, errors, notes = {}, [], []
@@ -1460,6 +1461,9 @@ def build(src: Path, extras: list, gothic: Path | None) -> tuple:
                     errors.append(f"{where}: {e}")
 
         for target, rule in sorted(cfg.get("mirrors", {}).items(), key=lambda t: t[0].upper()):
+            if no_mirrors:
+                notes.append(f"anims.json (mirror {target}): left out (--no-mirrors)")
+                continue
             errors += build_mirror(model, target, rule, sources, built, mod_defs, game_defs,
                                    files if gothic is not None else None, notes)
 
@@ -1558,7 +1562,7 @@ def cmd_build(args) -> int:
     src = Path(args.src) if args.src else root / "anims"
     out = Path(args.out) if args.out else root / "build" / "anims"
     gothic = Path(args.gothic) if args.gothic else None
-    outputs, errors, notes = build(src, args.extra, gothic)
+    outputs, errors, notes = build(src, args.extra, gothic, args.no_mirrors)
     for n in notes:
         print("note: " + n)
     if errors:
@@ -2190,6 +2194,9 @@ def main() -> int:
     p.add_argument("--out", help="output folder (default: gothic25/build/anims)")
     p.add_argument("--extra", action="append", default=[], help="another source folder, e.g. local test data")
     p.add_argument("--gothic", help="Gothic II folder, to check definitions against the game")
+    p.add_argument("--no-mirrors", action="store_true",
+                   help="leave out the mirrors of anims.json, which need --gothic (a check without the game, "
+                        "e.g. CI; such a package is not a release)")
     p.set_defaults(func=cmd_build)
 
     p = sub.add_parser("mirror", help="left <-> right mirror of an animation and its definition (W14, K12)")

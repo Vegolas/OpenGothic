@@ -11,14 +11,18 @@
 
   The animations are built first. With a Gothic folder (-GothicDir, G25_GOTHIC_DIR or local.json)
   their definitions are also checked against the game; without one those checks are skipped.
+  The mirrors of anims/anims.json need the game; -NoMirrors leaves them out, so a build without the
+  game (CI) still runs, but such a package is not a release.
   -AnimExtra adds source folders, e.g. local test data that never goes into the repository.
 .EXAMPLE
   tools/pack.ps1
   tools/pack.ps1 -AnimExtra build/anims-fixtures
+  tools/pack.ps1 -NoMirrors
 #>
 param(
   [string]$GothicDir,
-  [string[]]$AnimExtra
+  [string[]]$AnimExtra,
+  [switch]$NoMirrors
 )
 
 . (Join-Path $PSScriptRoot 'lib/common.ps1')
@@ -31,6 +35,10 @@ try {
   $animArgs += @('--gothic', (Resolve-GothicDir $GothicDir))
 } catch {
   Write-Warning "No Gothic folder: animation definitions are not checked against the game."
+}
+if($NoMirrors) {
+  Write-Warning "-NoMirrors: the mirrored animations of anims.json are left out; this package is not a release."
+  $animArgs += '--no-mirrors'
 }
 foreach($extra in $AnimExtra) {
   if(-not $extra) { continue }
