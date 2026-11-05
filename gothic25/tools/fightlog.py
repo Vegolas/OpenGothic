@@ -38,9 +38,13 @@ KNOWN_METRIC = re.compile(
     r"|combo\.max|combo\.count\.\d+|series\.(attack|side|front|triple|whirl|master|combo|multi)|break\.\w+"
     r"|skip\.(max_ms|avg_ms)|link\.(min_pct|avg_pct)|damage\.stage\.\d+\.(avg|count|max)|damage\.(min|max)"
     r"|state\.\w+|bonus\.stage\.\d+\.(min|max)|bonus\.dir\.\w+\.max"
-    r"|hit\.\w+\.(min_ms|max_ms)|link\.after\.\w+\.(min_ms|max_ms))$")
+    r"|hit\.\w+\.(min_ms|max_ms)|link\.after\.\w+\.(min_ms|max_ms)"
+    r"|practice\.(moves|dropped|series|move\.\w+|series\.\w+|pause\.(count|min_ms|max_ms|median_ms)|rest\.count"
+    r"|series_per_(defend|rest)|period\.min|wp_dist\.max_cm|wp_angle\.max_deg|sync_pct|after_ai\.max_ms))$")
 STATISTIC = re.compile(r"^(combo\.max|skip\.\w+|link\.\w+|damage\.stage\.\d+\.(avg|max)|damage\.(min|max)"
-                       r"|bonus\.\S+|hit\.\S+|link\.after\.\S+)$")
+                       r"|bonus\.\S+|hit\.\S+|link\.after\.\S+"
+                       r"|practice\.(pause\.(min_ms|max_ms|median_ms)|series_per_\w+|period\.min|wp_\w+\.\w+|sync_pct"
+                       r"|after_ai\.max_ms))$")
 LOG_KINDS = {"log": "jest", "nolog": "nie ma"}  # expect log <text>: a line of log.txt has the text
 OPS = {"==": operator.eq, "!=": operator.ne, "<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge}
 
@@ -132,6 +136,120 @@ def combo_chains(attacks: list[dict]) -> list[int]:
     if current is not None:
         chains.append(current)
     return chains
+
+
+# spec 005: practice series of AI_PracticeMove (practice events of the fight log)
+PRACTICE_ATTACKS = ("fwd", "left", "right")
+PRACTICE_DEFENDS = ("block", "jumpback")
+PRACTICE_KINDS = ["fwd", "combo", "left", "right", "mixed"]
+PRACTICE_REST_MS = 5500  # a gap after a series of attacks at least this long is a rest (W3: 6-10 s)
+PRACTICE_RETURN_CM = 30  # the next series starts less than this farther from the waypoint: the npc walked back
+PRACTICE_SYNC_MS = 200   # practice attacks of two characters closer than this start together (K2)
+
+
+def practice_kind(moves: list[str]) -> str:
+    """Kind of a practice series of attacks: fwd (one forward attack), combo, left, right, mixed."""
+    if all(mv == "fwd" for mv in moves):
+        return "fwd" if len(moves) == 1 else "combo"
+    if len(moves) == 1:
+        return moves[0]
+    return "mixed"
+
+
+def smallest_period(seq: list[str]) -> int:
+    """Shortest period p (repeated at least twice: p <= len/2) of a sequence; len(seq) when it does not repeat."""
+    for p in range(1, len(seq) // 2 + 1):
+        if all(seq[i] == seq[i + p] for i in range(len(seq) - p)):
+            return p
+    return len(seq)
+
+
+def practice_metrics(events: list[dict], ids: set[int], m: dict[str, float]) -> None:
+    """practice.* metrics of the characters `ids` (gothic25/tests/README.md, "Oczekiwania")."""
+    by_char: dict[int, list[dict]] = defaultdict(list)
+    others: list[int] = []                           # practice attacks of other characters, for the sync (K2)
+    left: dict[int, list[int]] = defaultdict(list)   # the character starts another ai state (K8)
+    for ev in events:
+        if ev["ev"] == "practice":
+            if ev["who_id"] in ids:
+                by_char[ev["who_id"]].append(ev)
+            elif ev["move"] in PRACTICE_ATTACKS and ev["link"] != "dropped":
+                others.append(ev["t"])
+        elif ev["ev"] == "ai" and ev["who_id"] in ids and not ev["state"].upper().startswith("ZS_PRACTICE"):
+            left[ev["who_id"]].append(ev["t"])
+    if not by_char:
+        return
+
+    pauses, attack_dist, start_angle, periods, mine, after = [], [], [], [], [], []
+    rests = defends = attack_series = 0
+    for cid, evs in by_char.items():
+        for ev in evs:
+            if ev["link"] == "dropped":
+                m["practice.dropped"] += 1
+                continue
+            m["practice.moves"] += 1
+            m[f"practice.move.{ev['move']}"] += 1
+            if ev["move"] in PRACTICE_DEFENDS:
+                defends += 1
+                continue
+            mine.append(ev["t"])
+            if ev["wp_dist"] is not None:
+                attack_dist.append(ev["wp_dist"])
+
+        # series: performed moves of one pseries; a pause follows a series of attacks
+        series = [[e for e in evs if e["pseries"] == n and e["link"] != "dropped"]
+                  for n in sorted({e["pseries"] for e in evs})]
+        series = [s for s in series if s]
+        kinds = []
+        for cur, nxt in zip(series, series[1:] + [None]):
+            first = cur[0]
+            if first["wp_angle"] is not None:
+                start_angle.append(first["wp_angle"])
+            if first["move"] in PRACTICE_DEFENDS:
+                continue
+            kind = practice_kind([e["move"] for e in cur])
+            kinds.append(kind)
+            attack_series += 1
+            m[f"practice.series.{kind}"] += 1
+            ends = [e["end_ms"] for e in cur if e["end_ms"] is not None]
+            if nxt is None or not ends:
+                continue
+            gap = nxt[0]["t"] - max(ends)
+            if gap >= PRACTICE_REST_MS:
+                rests += 1
+                continue
+            if (first["wp_dist"] is not None and nxt[0]["wp_dist"] is not None
+                    and nxt[0]["wp_dist"] < first["wp_dist"] + PRACTICE_RETURN_CM):
+                continue  # the npc walked back to the waypoint during this gap: not a clean pause
+            pauses.append(gap)
+        if kinds:
+            periods.append(smallest_period(kinds))
+        for t in left.get(cid, []):
+            after += [e["t"] - t for e in evs if e["t"] > t]
+            after.append(0)
+
+    m["practice.series"] = attack_series
+    m["practice.rest.count"] = rests
+    m["practice.pause.count"] = len(pauses)
+    if pauses:
+        m["practice.pause.min_ms"] = min(pauses)
+        m["practice.pause.max_ms"] = max(pauses)
+        m["practice.pause.median_ms"] = statistics.median(pauses)
+    if defends:
+        m["practice.series_per_defend"] = attack_series / defends
+    if rests:
+        m["practice.series_per_rest"] = attack_series / rests
+    if periods:
+        m["practice.period.min"] = min(periods)
+    if attack_dist:
+        m["practice.wp_dist.max_cm"] = max(attack_dist)
+    if start_angle:
+        m["practice.wp_angle.max_deg"] = max(start_angle)
+    if mine and others:
+        together = sum(any(abs(t - o) < PRACTICE_SYNC_MS for o in others) for t in mine)
+        m["practice.sync_pct"] = 100 * together / len(mine)
+    if after:
+        m["practice.after_ai.max_ms"] = max(after)
 
 
 def metrics(events: list[dict], ids: set[int]) -> dict[str, float]:
@@ -232,6 +350,7 @@ def metrics(events: list[dict], ids: set[int]) -> dict[str, float]:
         for direction, values in table.items():
             m[f"{name}.{direction}.min_ms"] = min(values)
             m[f"{name}.{direction}.max_ms"] = max(values)
+    practice_metrics(events, ids, m)
     return dict(m)
 
 
@@ -464,6 +583,30 @@ def techniques_section(events: list[dict], bonus: list[int] | None) -> list[str]
     return out
 
 
+def practice_lines(m: dict[str, float]) -> list[str]:
+    """Practice summary of a character (spec 005)."""
+    if not m.get("practice.moves") and not m.get("practice.dropped"):
+        return []
+
+    def sec(key: str) -> str:
+        return f"{m[key] / 1000:.2f}" if key in m else "–"
+
+    moves = ", ".join(f"{k} {fmt(m[f'practice.move.{k}'])}" for k in PRACTICE_ATTACKS + PRACTICE_DEFENDS
+                      if m.get(f"practice.move.{k}"))
+    kinds = ", ".join(f"{k} {fmt(m[f'practice.series.{k}'])}" for k in PRACTICE_KINDS if m.get(f"practice.series.{k}"))
+    return [
+        f"- Trening: ruchy {fmt(m.get('practice.moves', 0))} ({moves or '–'}), przepadłe "
+        f"{fmt(m.get('practice.dropped', 0))}; serie ciosów {fmt(m.get('practice.series', 0))} ({kinds or '–'})",
+        f"- Trening, przerwy: {fmt(m.get('practice.pause.count', 0))} bez powrotu, min {sec('practice.pause.min_ms')} s, "
+        f"mediana {sec('practice.pause.median_ms')} s, max {sec('practice.pause.max_ms')} s; odpoczynki "
+        f"{fmt(m.get('practice.rest.count', 0))}; serii na blok albo odskok {fmt(m.get('practice.series_per_defend'))}, "
+        f"na odpoczynek {fmt(m.get('practice.series_per_rest'))}",
+        f"- Trening, miejsce: cios najdalej {fmt(m.get('practice.wp_dist.max_cm'))} cm od waypointu, największe "
+        f"odchylenie na początku serii {fmt(m.get('practice.wp_angle.max_deg'))}°; najkrótszy okres serii "
+        f"{fmt(m.get('practice.period.min'))}; ciosy razem z inną postacią {fmt(m.get('practice.sync_pct'))}%",
+    ]
+
+
 def report(events: list[dict], tactics: dict[int, str], source: Path, status: dict | None,
            bonus: list[int] | None = None) -> str:
     out: list[str] = []
@@ -533,6 +676,7 @@ def report(events: list[dict], tactics: dict[int, str], source: Path, status: di
         states = [(s, m.get(f"state.{s}", 0)) for s in DOWN_STATES]
         if any(v for _, v in states):
             out.append("- Stany: " + ", ".join(f"{s} {fmt(v)}" for s, v in states if v))
+        out += practice_lines(m)
         stages = sorted(int(k.split(".")[2]) for k in m if k.startswith("damage.stage.") and k.endswith(".count"))
         if stages:
             out.append("")

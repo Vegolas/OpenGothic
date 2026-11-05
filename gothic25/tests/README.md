@@ -368,6 +368,17 @@ Miary liczą się z całego dziennika przebiegu:
 | `state.<stan>` | liczba zdarzeń `state` postaci |
 | `hit.<dir>.min_ms`, `hit.<dir>.max_ms` | ile ms po początku ciosu danego rodzaju przychodzi jego wynik (klatka trafienia); liczą się ciosy z własną animacją (`link` `new` albo `side`), bo połączenie do przodu wskakuje w środek animacji. Porównanie z `DEF_OPT_FRAME` definicji (004 K6) |
 | `link.after.<dir>.min_ms`, `link.after.<dir>.max_ms` | ile ms po początku ciosu danego rodzaju z własną animacją pada następny cios podpięty w jego oknie combo; porównanie z `DEF_WINDOW` (004 K6) |
+| `practice.moves`, `practice.move.<ruch>` | ruchy treningowe (005), które się wykonały: razem i według `move` (`fwd`, `left`, `right`, `block`, `jumpback`) |
+| `practice.dropped` | ciosy treningowe, które przepadły przez limit talentu (`link: dropped`) |
+| `practice.series`, `practice.series.<rodzaj>` | serie ciosów treningu (ruchy jednego `pseries`, bez bloków i odskoków): razem i według rodzaju: `fwd` (jeden cios do przodu), `combo` (same ciosy do przodu, co najmniej 2), `left`, `right` (jeden cios z boku), `mixed` (pozostałe) |
+| `practice.series_per_defend` | serie ciosów na jeden blok albo odskok, np. 5 to „blok albo odskok mniej więcej co 5 serii” |
+| `practice.pause.count`, `practice.pause.min_ms`, `practice.pause.max_ms`, `practice.pause.median_ms` | przerwy po seriach ciosów: od końca ostatniego ruchu serii (`end_ms`) do początku następnej serii. Liczą się tylko odstępy krótsze niż 5,5 s, po których następna seria zaczyna się co najmniej 30 cm dalej od waypointu niż ta: inaczej postać mogła wracać na waypoint i odstęp nie jest czystą przerwą. Obrót do kierunku waypointu się wlicza |
+| `practice.rest.count`, `practice.series_per_rest` | odpoczynki (odstęp po serii ciosów co najmniej 5,5 s) i serie ciosów na jeden odpoczynek |
+| `practice.period.min` | najkrótszy okres ciągu rodzajów serii ciosów, powtórzony co najmniej dwa razy; równy liczbie serii, gdy ciąg się nie powtarza. Mała wartość to trening w stałym cyklu (005 W3) |
+| `practice.wp_dist.max_cm` | największe `wp_dist` ciosu treningowego, czyli jak daleko od waypointu zaczął się cios (005 W5) |
+| `practice.wp_angle.max_deg` | największe `wp_angle` pierwszego ruchu serii, czyli jak postać stała po powrocie na miejsce (005 W5) |
+| `practice.sync_pct` | procent ciosów treningowych postaci, które zaczęły się mniej niż 200 ms od ciosu treningowego innej postaci (005 K2); brak danych, gdy nikt inny nie ćwiczy |
+| `practice.after_ai.max_ms` | najdłuższy czas od zdarzenia `ai` ze stanem spoza treningu (nie `ZS_PRACTICE*`) do ruchu treningowego po nim; 0, gdy po nim nie było ruchu (005 K8); brak danych bez takiego zdarzenia |
 
 Gdy miara nie ma danych (np. `skip.avg_ms` bez połączeń albo `bonus.*` w dzienniku bez pola `bonus`),
 oczekiwanie jest niezaliczone z wartością „brak danych”. Liczniki (np. `series.triple`, `break.hit`)

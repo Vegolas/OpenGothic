@@ -226,7 +226,8 @@ opis planów dnia i ustawień treningu.
 - `tools/fightlog.py`: miary `practice.*` (opis w `tests/README.md`):
   - liczby ruchów według rodzaju i serie według rodzaju (prosty, combo, lewy, prawy, mieszana);
   - stosunek serii do bloków i odskoków oraz do odpoczynków;
-  - przerwy: minimum, maksimum i mediana, osobno zwykłe przerwy i odpoczynki (próg 5 s);
+  - przerwy: minimum, maksimum i mediana, osobno zwykłe przerwy i odpoczynki (próg 5,5 s). Odstępy, po
+    których postać mogła wracać na waypoint, raport pomija (decyzja właściciela przy Z5, opis w `tasks.md`);
   - najkrótszy okres ciągu rodzajów serii;
   - największe `wp_dist` i `wp_angle` na początku serii;
   - odsetek ciosów, które startują w odstępie do 200 ms od ciosu innej postaci (K2);

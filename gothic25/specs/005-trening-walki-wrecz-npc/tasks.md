@@ -159,7 +159,7 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
         - `dat.py prefix`: kod 0, 40 nazwanych symboli na końcu.
 
       (W5, W7, W9)
-- [ ] **Z5** [P] Miary treningu w `tools/fightlog.py` (plan, „Narzędzia i testy”).
+- [x] **Z5** [P] Miary treningu w `tools/fightlog.py` (plan, „Narzędzia i testy”).
       - Miary `practice.*`:
         - ruchy i serie według rodzaju;
         - stosunek serii do bloków i odskoków oraz do odpoczynków;
@@ -170,6 +170,32 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
         - czas ruchów po końcu treningu (zdarzenie `ai`).
       - Opis miar w tabeli „Oczekiwania” w `tests/README.md`.
       - Sprawdzenie: raport z dzienników Z4 i ręcznie przeliczone wartości dla jednego przebiegu.
+      - Wynik (2026-11-05):
+        - Pomiar przerw zmieniony decyzją właściciela przy Z5. Plan liczył przerwę jako odstęp od
+          `end_ms` serii do następnej, ale w odstęp wlicza się powrót na waypoint (combo mistrza
+          odsuwa NPC o około 2,8 m, Z4). Zostaje odstęp, a raport pomija odstępy, po których
+          następna seria zaczyna się mniej niż 30 cm dalej od waypointu niż poprzednia, bo wtedy
+          postać mogła wracać. Odstęp od 5,5 s to odpoczynek. Silnik bez zmian.
+          - Ograniczenia: obrót do waypointu wlicza się w przerwę. Seria, która prawie nie przesuwa
+            postaci (sam cios z boku), też wypada z próbki. Reguła zakłada, że postać ćwiczy na
+            waypoincie zwrócona jak on, więc ciosy ją od niego odsuwają.
+        - Miary `practice.*`: `moves`, `move.<ruch>`, `dropped`, `series`, `series.<rodzaj>`
+          (`fwd`, `combo`, `left`, `right`, `mixed`), `series_per_defend`, `pause.count`,
+          `pause.min_ms`, `pause.max_ms`, `pause.median_ms`, `rest.count`, `series_per_rest`,
+          `period.min` (okres powtórzony co najmniej dwa razy), `wp_dist.max_cm` (ciosy),
+          `wp_angle.max_deg` (pierwszy ruch serii), `sync_pct` (200 ms) i `after_ai.max_ms`.
+          Raport ma dla każdej postaci trzy linie „Trening”.
+        - Ręczne przeliczenie `dev/005-z2-mistrz-1h` (`20261105-224801`):
+          - 10 ruchów i 3 serie ciosów (combo, mieszana, prosty), 1,5 serii na blok albo odskok;
+          - jedna czysta przerwa 9017 − 7207 = 1810 ms, zgodna z raportem;
+          - `wp_dist` najwyżej 365 cm;
+          - odstęp przed blokiem pominięty, bo seria lewy-prawy przesunęła manekina tylko o 28 cm.
+        - Oczekiwania na dzienniku `dev/005-z4-dziennik`: 11 z 12. Niezaliczone `sync_pct`, bo
+          ćwiczy tylko jedna postać, więc słusznie wychodzi „brak danych”.
+        - Sztuczny dziennik dwóch postaci w scratchpadzie (poza gitem) potwierdził okres 2,
+          odpoczynek, przerwy 1000 ms, `sync_pct` 100% i `after_ai` 1500 ms.
+        - Wcześniejsze oczekiwania bez zmian: `dev/005-z2-nowicjusz-2h` sprawdzony ponownie,
+          zaliczony.
 
       (W9)
 - [ ] **Z6** [P] Skrypty treningu w `Practice_Melee.d` (plan, „Skrypty”).
