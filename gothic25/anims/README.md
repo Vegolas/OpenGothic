@@ -7,6 +7,10 @@
 silnik), [ADR 0009](../decisions/0009-zmienione-oryginalne-animacje-w-paczce.md) (zmienione
 oryginały). Specyfikacja: [004](../specs/004-potok-animacji/spec.md).
 
+Polecenia z tego opisu uruchamiaj w katalogu `gothic25/`: ścieżki w przykładach (`tools/...`,
+`build/...`, `anims/...`) są względem niego. Jeśli zasady wykonywania blokują `.ps1`, uruchamiaj je
+przez `powershell -NoProfile -ExecutionPolicy Bypass -File tools/<skrypt>.ps1 ...`.
+
 ## Co tu jest
 
 | Plik | Co to |
@@ -35,17 +39,22 @@ poza gitem.
 
 ## Przygotowanie (raz)
 
-1. Blender 5.2: ścieżka w `gothic25/local.json`, klucz `blender` (wzór w `local.example.json`), albo
-   zmienna `G25_BLENDER`. Folder gry: klucz `gothicDir` albo `G25_GOTHIC_DIR`.
-2. Dodatek importu KrxImpExp w przypiętej wersji:
+1. Najpierw „Pierwsze uruchomienie” z [README moda](../README.md), kroki 1-3: `local.json` z folderem
+   gry, zbudowany silnik (albo `engineBuildDir` wskazujący gotowy build) i kompilator skryptów.
+   `install.ps1` i `run.ps1` nie są potrzebne: podgląd idzie przez `tools/test.ps1`, który sam
+   kompiluje skrypty i pakuje moda.
+2. Blender 5.2: ścieżka do `blender.exe` w `local.json`, klucz `blender` (wzór w
+   `local.example.json`). Pierwszeństwo ma parametr `-Blender`, potem zmienna `G25_BLENDER`, na końcu
+   `local.json`; komunikat o złej ścieżce mówi, skąd ją wziął.
+3. Dodatek importu KrxImpExp w przypiętej wersji (wymaga `git` w PATH i dostępu do gitlab.com):
 
    ```
    tools/get-krx.ps1
    ```
 
    Instaluje się do `gothic25/.tools/blender-scripts/`, poza profilem Blendera. `anim.ps1` sam go
-   tam wskazuje i sprawdza jego sumę kontrolną. Zła ścieżka Blendera albo inny commit dodatku kończy
-   się komunikatem, co poprawić.
+   tam wskazuje i sprawdza jego wersję i sumę kontrolną. Zła ścieżka Blendera albo inny commit dodatku
+   kończy się komunikatem, co poprawić (zwykle: `tools/get-krx.ps1` albo `tools/get-krx.ps1 -Force`).
 
 ## Nowa animacja krok po kroku
 
@@ -78,7 +87,9 @@ Przykład: animacja `T_G25PROBA` modelu ludzi.
 
    Powstają `anims/HUMANS/T_G25PROBA.anim` i lekki `anims/HUMANS/T_G25PROBA.blend`. Bez `-Action`
    eksportuje się akcja przypięta do szkieletu.
-4. Definicja w `anims/HUMANS/HUMANS.EXT.MDS`, w bloku z numerem specyfikacji (`// G25 NNN`):
+4. Definicja w `anims/HUMANS/HUMANS.EXT.MDS`, wewnątrz `aniEnum { ... }` bloku `Model`, w bloku
+   z komentarzem `// G25 NNN`, gdzie `NNN` to numer specyfikacji, której animacja służy (animację
+   tylko na próbę dopisz bez commita i potem usuń). Przykład to cios:
 
    ```
    // G25 NNN: krótko, po co ta animacja.
@@ -92,8 +103,14 @@ Przykład: animacja `T_G25PROBA` modelu ludzi.
    }
    ```
 
-   - Nazwa `ani` to nazwa animacji (wielkość liter bez znaczenia). Silnik bierze klatki
-     z `HUMANS-T_G25PROBA.MAN`, a nazwę pliku `.ASC` pomija.
+   - Pola `ani`: nazwa animacji (wielkość liter bez znaczenia), warstwa (`1` dla animacji ciała),
+     następna animacja (`""`: brak, po końcu wraca do stanu postaci), czas przejścia na wejściu
+     i na wyjściu w sekundach, flagi (`M.`: ruch korzenia przesuwa postać), plik źródłowy, kierunek
+     (`F`, do przodu) i zakres klatek. Silnik bierze klatki z `HUMANS-T_G25PROBA.MAN`, a nazwę pliku
+     `.ASC` pomija.
+   - Zdarzenia `DEF_HIT_LIMB`, `DEF_OPT_FRAME`, `DEF_HIT_END` i `DEF_WINDOW` ma tylko cios: robią
+     z animacji atak (dziennik walki liczy go wtedy jako cios). Animacja, która nie jest ciosem,
+     ich nie ma; zostają najwyżej efekty (`*eventSFX`, `*eventPFX`).
    - Zakres `F 1 N`: `N` to liczba klatek animacji. Build sprawdza, że się zgadza.
    - Klatki zdarzeń: `DEF_OPT_FRAME` (chwila trafienia) i efekty (`eventSFX`, `eventPFX`) liczą się od
      pierwszej klatki zakresu. `DEF_HIT_END` (koniec ataku) i `DEF_WINDOW` (okno combo) liczą się od

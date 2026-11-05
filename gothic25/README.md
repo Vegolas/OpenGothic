@@ -30,6 +30,13 @@ musi wynikać ze specyfikacji w `specs/`.
 ## Pierwsze uruchomienie
 
 1. Skopiuj `local.example.json` jako `local.json` i ustaw `gothicDir` (folder z `System/Gothic2.exe`).
+   Pozostałe klucze:
+   - `engineBuildDir`: katalog buildu CMake, w którym leży `opengothic/` z silnikiem. Domyślnie
+     `build/` w korzeniu repozytorium, a ścieżka względna liczy się od korzenia;
+   - `engineBuildType`: typ buildu dla `build-engine.ps1`;
+   - `python`: polecenie Pythona;
+   - `blender`: Blender 5.2, tylko do animacji (`anims/README.md`);
+   - `scriptCompiler`: zastępuje `gdc` innym kompilatorem skryptów.
 2. Zbuduj silnik: `tools/build-engine.ps1`.
 3. Pobierz kompilator skryptów (`gdc`, wymaga środowiska .NET 8): `tools/get-gdc.ps1`.
 4. Skompiluj skrypty, spakuj moda i zainstaluj go w grze: `tools/build-scripts.ps1`,
@@ -41,6 +48,10 @@ uruchamiaj je przez `powershell -NoProfile -ExecutionPolicy Bypass -File gothic2
 Pakowanie wymaga Pythona 3.10 lub nowszego (tylko biblioteka standardowa).
 
 Ścieżkę do gry można też podać parametrem `-GothicDir` albo zmienną środowiskową `G25_GOTHIC_DIR`.
+
+Do pracy nad modem bez grania (testy, animacje) kroki 4 i 5 nie są potrzebne: `tools/test.ps1` sam
+kompiluje skrypty i pakuje moda do `build/game`, a gra startuje z niego bez instalacji
+([tests/README.md](tests/README.md)).
 
 ## CI
 

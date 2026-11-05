@@ -70,15 +70,17 @@ function Resolve-GothicDir([string]$Override) {
   return (Resolve-Path $dir).Path
 }
 
+# Blender 5.2: -Blender first, then the G25_BLENDER variable, then "blender" in gothic25/local.json.
 function Resolve-Blender([string]$Override) {
   $exe = $Override
-  if(-not $exe) { $exe = $env:G25_BLENDER }
-  if(-not $exe) { $exe = Get-Prop (Get-LocalConfig) 'blender' }
+  $from = 'the -Blender parameter'
+  if(-not $exe) { $exe = $env:G25_BLENDER; $from = 'the G25_BLENDER variable' }
+  if(-not $exe) { $exe = Get-Prop (Get-LocalConfig) 'blender'; $from = '"blender" in gothic25/local.json' }
   if(-not $exe) {
     throw "Blender is not set. Pass -Blender, set G25_BLENDER, or set blender in gothic25/local.json (Blender 5.2)."
   }
   if(-not (Test-Path $exe -PathType Leaf)) {
-    throw "Blender not found: $exe. Fix blender in gothic25/local.json (or G25_BLENDER)."
+    throw "Blender not found: $exe (from $from). Fix it to the path of blender.exe of Blender 5.2."
   }
   return (Resolve-Path $exe).Path
 }

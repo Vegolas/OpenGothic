@@ -1,6 +1,6 @@
 # 004: Potok animacji
 
-- **Status:** W realizacji
+- **Status:** Zrobiona
 - **Utworzono:** 2026-11-03
 - **Zmieniona:** 2026-11-03 po sprawdzeniu licencji MDK (zadanie Z4): P2 rozstrzygnięte od nowa,
   doszło P9, zmienione W2, W5-W7, W9, W13, W16, K4, K7, K11 i K14. Ponownie 2026-11-04: P9
@@ -207,18 +207,18 @@ Wspólne przygotowanie (P0): mod zbudowany z repozytorium, gra uruchamiana przez
 (scenariusze z `tests/004/`), dla kryteriów ręcznych z `-Manual`. Blender i dodatek importu
 w wersjach z W10 (Blender 5.2 LTS, KrxImpExp z przypiętego commitu gałęzi `dev`).
 
-- [ ] **K1** (W2, W3): Oryginalne animacje przechodzą konwersję bez straty.
+- [x] **K1** (W2, W3): Oryginalne animacje przechodzą konwersję bez straty.
   - Kroki: polecenie konwersji w obie strony dla wszystkich animacji modelu ludzi i jego nakładek
     z kopii gry (podstawa i dodatek), bez otwierania Blendera.
   - Oczekiwane: każdy plik wynikowy jest bajt w bajt równy oryginałowi. Raport podaje liczbę
     sprawdzonych animacji i listę różnic (pustą).
-- [ ] **K2** (W2): Oryginał wczytany do Blendera wygląda jak w grze.
+- [x] **K2** (W2): Oryginał wczytany do Blendera wygląda jak w grze.
   - Kroki: wczytaj do Blendera oryginalny cios pięścią i atak mieczem jednoręcznym ze stylu
     mistrza. Porównaj klatki z optymalną klatką trafienia z tymi samymi chwilami w grze
     (scenariusz z W9).
   - Oczekiwane: pozy się zgadzają (ocena człowieka): stopy na ziemi, ten sam kierunek ciosu
     i ruch postaci w tę samą stronę.
-- [ ] **K3** (W1, W4): Budowanie jest powtarzalne i zgłasza błędy.
+- [x] **K3** (W1, W4): Budowanie jest powtarzalne i zgłasza błędy.
   - Kroki: zbuduj animacje dwa razy z tego samego stanu repozytorium i porównaj wyniki. Potem
     zbuduj kolejno z trzema zepsutymi źródłami testowymi: animacja bez jednej kości, zdarzenie poza
     zakresem klatek, definicja wskazująca brakującą animację. Na koniec zmień plik Blendera bez
@@ -226,13 +226,13 @@ w wersjach z W10 (Blender 5.2 LTS, KrxImpExp z przypiętego commitu gałęzi `de
   - Oczekiwane: oba wyniki są identyczne, a budowanie działa na komputerze bez Blendera. Każdy
     zepsuty przypadek i niezgodny eksport kończą się kodem błędu i komunikatem z nazwą animacji
     i powodem.
-- [ ] **K4** (W5, W9): Podmiana istniejącej animacji.
+- [x] **K4** (W5, W9): Podmiana istniejącej animacji.
   - Kroki: testowa podmiana animacji stania ludzi (np. spojrzenie w bok) jako lokalne dane testowe
     (W16), zbudowanie moda z nimi, scenariusz z W9 z serią zrzutów bohatera.
   - Oczekiwane: na zrzutach widać zmienioną animację. Bohater stoi w miejscu, a inne animacje
     (bieg, walka) są oryginalne. Dane testowe powstają lokalnie z kopii gry, nie trafiają do
     repozytorium ani do wydania.
-- [ ] **K5** (W6, W8): Sierpowe bohatera w grze.
+- [x] **K5** (W6, W8): Sierpowe bohatera w grze.
   - Kroki: P0 z `-Manual`, bohater z pięściami, `insert` przeciwnika, który nie oddaje. Kilka razy
     atak z lewej i z prawej z miejsca. Potem serie: cios do przodu i w jego oknie combo atak z lewej,
     w oknie sierpowego atak z prawej, a na koniec cios do przodu. Na koniec samo zwykłe combo
@@ -244,22 +244,22 @@ w wersjach z W10 (Blender 5.2 LTS, KrxImpExp z przypiętego commitu gałęzi `de
     - trafienia wypadają w klatkach trafienia z definicji, a sierpowe mają obrażenia ataku bocznego
       bez premii (002 W3);
     - zwykłe combo pięściami działa jak dotąd.
-- [ ] **K6** (W6): Zdarzenia z definicji działają.
+- [x] **K6** (W6): Zdarzenia z definicji działają.
   - Kroki: scenariusz z W9 odtwarza sierpowy na bohaterze stojącym przy przeciwniku. Dziennik walki
     i log gry.
   - Oczekiwane: trafienie, dźwięk zamachu i okno combo pojawiają się w klatkach z definicji.
-- [ ] **K7** (W7): Paczka nie zawiera niezmienionych oryginałów.
+- [x] **K7** (W7): Paczka nie zawiera niezmienionych oryginałów.
   - Kroki: zbuduj paczkę moda i porównaj jej zawartość z archiwami oryginalnej gry (nazwy i sumy
     kontrolne).
   - Oczekiwane: w paczce nie ma niezmienionego pliku animacji ani definicji modelu z gry, w tym
     pełnych definicji modelu. Są tylko MAN zbudowane z `.anim` moda i pliki definicji moda (W1, W6).
     Żaden MAN z paczki nie ma tych samych próbek co oryginał.
-- [ ] **K8** (W8, W12, W15): Bez moda bez zmian.
+- [x] **K8** (W8, W12, W15): Bez moda bez zmian.
   - Kroki: ta sama kompilacja silnika bez moda, bohater z pięściami: atak z lewej, zwykły atak,
     combo. Potem scenariusz z K13 bez moda.
   - Oczekiwane: atak z lewej niczego nie robi, zwykły atak i combo są jak w oryginale. Kopacz nie
     wyprowadza sierpowych, a jego ciosy boczne ze stylu są ciosami do przodu.
-- [ ] **K9** (W12): Zapisy.
+- [x] **K9** (W12): Zapisy.
   - Kroki: zapis z poprzedniej wersji moda wczytany w nowej. Potem zapis zrobiony w trakcie
     sierpowego, wczytany ponownie z modem.
   - Oczekiwane: wszystkie zapisy się wczytują. Z modem bohater po wczytaniu może walczyć pięściami
@@ -269,14 +269,14 @@ w wersjach z W10 (Blender 5.2 LTS, KrxImpExp z przypiętego commitu gałęzi `de
     bo skrypty moda mają inne numery symboli niż skrypty gry (ADR 0005). Animację, której nie zna,
     silnik pomija przy wczytaniu zapisu: `Pose::load` usuwa jej warstwę, a postać wraca do zwykłej
     pozy.
-- [ ] **K10** (W10, W11): Złe ustawienia i opis kroków.
+- [x] **K10** (W10, W11): Złe ustawienia i opis kroków.
   - Kroki: na czystym checkoucie pobierz dodatek importu narzędziem moda i wykonaj import oryginału.
     Potem uruchom import ze złą ścieżką do Blendera, a potem z innym commitem dodatku importu.
     Osoba spoza implementacji (albo nowa sesja Claude'a) dodaje według opisu z W11 testową animację
     i ogląda ją w grze.
   - Oczekiwane: oba złe ustawienia kończą się komunikatem, co poprawić. Według opisu da się przejść
     całą drogę bez dodatkowych pytań.
-- [ ] **K11** (W9, W13): Definicje moda łączą się z oryginałem.
+- [x] **K11** (W9, W13): Definicje moda łączą się z oryginałem.
   - Kroki: scenariusz z lokalnym plikiem testowym definicji moda (W16), który dodaje nową animację
     do modelu ludzi, zastępuje definicję jednej oryginalnej animacji (np. zmienia jej zdarzenie)
     i dodaje animację do nakładki stylu walki. Poleceniem z W9 wypisuje definicje tych animacji
@@ -286,7 +286,7 @@ w wersjach z W10 (Blender 5.2 LTS, KrxImpExp z przypiętego commitu gałęzi `de
       z oryginału;
     - animacja dodana do nakładki działa po nałożeniu nakładki;
     - bez pliku i bez moda wszystkie trzy wypisują się jak w oryginale, a nowej nie ma.
-- [ ] **K12** (W14): Odbicie lustrzane.
+- [x] **K12** (W14): Odbicie lustrzane.
   - Kroki: odbij w narzędziu sierpowy z lewej, a wynik odbij jeszcze raz. Odbij też oryginalny atak
     boczny mieczem z lewej i porównaj z oryginalnym atakiem z prawej. Scenariusz z W9 ze zrzutami
     obu sierpowych.
@@ -294,7 +294,7 @@ w wersjach z W10 (Blender 5.2 LTS, KrxImpExp z przypiętego commitu gałęzi `de
     Odbity atak mieczem z lewej jest ruchem w drugą stronę, a kończyna trafiająca w zdarzeniach jest
     po drugiej stronie. Na zrzutach sierpowy z prawej jest lustrzanym odbiciem lewego: stopy na
     ziemi, ta sama wysokość ciosu (ocena człowieka).
-- [ ] **K13** (W15): NPC wyprowadzają sierpowe.
+- [x] **K13** (W15): NPC wyprowadzają sierpowe.
   - Kroki: scenariusz automatyczny jak 001 K12: `insert BDT_10027_Addon_Buddler` (styl silny, bez broni
     białej) atakuje nieśmiertelnego bohatera przez 2 minuty. Potem zestaw `tools/test.ps1 -Spec 001`
     jako test regresji.
@@ -302,7 +302,7 @@ w wersjach z W10 (Blender 5.2 LTS, KrxImpExp z przypiętego commitu gałęzi `de
     bez premii. Combo do przodu pięściami ma nadal 2 ciosy. Zestaw 001 przechodzi. Jeśli jakieś
     kryterium 001 zakładało ciosy boczne pięściami jako ciosy do przodu, poprawiamy jego oczekiwania
     (W15).
-- [ ] **K14** (W16): Eksport nie przepuszcza niezmienionych oryginałów.
+- [x] **K14** (W16): Eksport nie przepuszcza niezmienionych oryginałów.
   - Kroki: zaimportuj oryginał, skopiuj jego akcję pod nową nazwą i spróbuj ją wyeksportować do
     źródeł moda. Potem to samo z jawnym wyjątkiem dla danych testowych do katalogu lokalnego. Potem
     zmień kopię (np. obróć jedną kość w jednej klatce) i wyeksportuj ją do źródeł moda. Na koniec
@@ -385,3 +385,37 @@ zrobiony w trakcie sierpowego wczytany bez moda nie zatrzyma postaci. Sprawdza t
 ## Weryfikacja
 
 <!-- Wypełniane po implementacji: kto, kiedy, na jakiej wersji, wynik dla każdego K. -->
+
+**Przebiegi automatyczne (Claude, 2026-11-05, commit `04f4b5c3`, czyste drzewo).**
+- **Zestawy:** `tools/test.ps1 -Spec 004` przeszło 11 z 11 scenariuszy (przebiegi
+  `20261105-1819*` do `-1823*`). Regresja: `-Spec 001` 17 z 17, `-Spec 002` 12 z 12, `-Spec 003`
+  2 z 2.
+- **Narzędzia:** `anim.py` i `anim.ps1` uruchomione jednym skryptem z sesji (Z20). Wyniki i kody
+  wyjścia są w tabeli.
+- **Katalogi wyników:** leżą w `gothic25/build/test-runs/` poza gitem, więc liczby, które
+  rozstrzygają kryteria, są wpisane w tabeli.
+- **Wersja kryteriów:** W14 ma dopisek o odbiciu wpiętym w postawę, a K9 nie ma już kroku „bez moda”
+  (decyzje właściciela z 2026-11-05).
+
+**Sesje ręczne (Mateusz Tomanek, 2026-11-05, commit `04f4b5c3`).**
+- **Stan drzewa:** zmienione tylko dokumenty i komunikaty błędów w `common.ps1` i `test.ps1`, bez
+  zmian w grze i animacjach.
+- **Przebiegi:** `test.ps1 -Manual` z katalogami w `build/test-runs/`. Liczby z dziennika walki
+  policzył Claude.
+
+| K | Wynik | Wersja | Kto |
+|---|---|---|---|
+| K1 | spełnione. `anim.py roundtrip HUMANS`: 1038 animacji ludzi i nakładek z gry, MAN -> `.anim` -> MAN, 1038 identycznych bajt w bajt, 0 różnic. Dodatkowo przez Blendera (`anim.ps1 roundtrip`): też 1038 z 1038 | `04f4b5c3` | Claude, automatycznie |
+| K2 | spełnione. Materiał: oryginalny `S_FISTATTACK` i mistrzowski `T_1HATTACKL` (nakładka `HUMANS_1HST2`) w grze (przebieg `20261105-190828-K02-oryginaly`, klatki 0, 9, 15, 24 i 0, 3, 8, 14) i te same klatki w Blenderze od tyłu i od przodu. Wstępnie (Claude): kierunek ciosu i skręt tułowia się zgadzają; po `DEF_HIT_END` gra kończy cios i wraca do postawy, więc klatka 24 ciosu pięścią w grze to już postawa. Ocena właściciela: pozy w Blenderze zgadzają się z grą (stopy na ziemi, kierunek ciosu i ruch postaci) | `04f4b5c3` | Mateusz Tomanek (ocena), Claude (zrzuty z gry i Blendera) |
+| K3 | spełnione. Dwa buildy repozytorium identyczne (3 pliki, te same SHA-256). Build to sam Python, bez Blendera; źródło testowe `valid` buduje się z danymi gry i bez nich. Zepsute źródła kończą się kodem 1 z nazwą animacji i powodem: „bones without samples: BIP01 L HAND”, „DEF_OPT_FRAME [12] outside frames 1-10”, „the definition points to a missing animation HUMANS-T_G25MISSING.MAN”. Kopia `T_FISTATTACKL.blend` zmieniona w klatce 5 bez eksportu: `anim.ps1 check` kod 1, „differs from T_FISTATTACKL.anim” | `04f4b5c3` | Claude, automatycznie |
+| K4 | spełnione. `004/K04`: stanie `S_RUN` z obrotem głowy z lokalnych danych `anim.py fixtures` (`# anim-extra:`), definicja z gry; na zrzutach głowa obraca się w obie strony, a bohater stoi w miejscu. Dane testowe leżą w `build/` (poza gitem), a paczka po zestawie ma tylko 3 pliki animacji moda (K7) | `04f4b5c3` | Claude, automatycznie (zrzuty: Claude) |
+| K5 | spełnione. Sesja ręczna `004/reczne/K05-sierpowe` (przebieg `20261105-202145-004-reczne-K05-sierpowe`). Bohater: 72 ciosy, 24 z lewej i 28 z prawej (39 podpiętych bokiem), 20 do przodu. Serie mieszają kierunki w jednej serii dziennika, np. prawy, do przodu, lewy, prawy, do przodu. Wynik sierpowych po 440-447 ms (`DEF_OPT_FRAME 11`), ciosu do przodu po 360-367 ms (`DEF_OPT_FRAME 9`). Wszystkie 29 trafień sierpowych ma premię 100, drugi cios combo do przodu 150 (002). Zwykłe combo: 2 ciosy z wynikiem; trzecie naciśnięcie daje w dzienniku combo 3 bez wyniku, tak samo jak przed 004 (przebieg `20261103-184235-idle-khorinis`, `5dec302e`). Ocena w grze: oba sierpowe czytelne jako cios z tej strony, serie płynne, zwykłe combo jak dawniej | `04f4b5c3` | Mateusz Tomanek (gra), Claude (dziennik) |
+| K6 | spełnione. `004/K06` (kopacz, 120 s, ×2): wynik sierpowych po 440-452 ms, czyli 11 klatek (`DEF_OPT_FRAME 11`), tak jak oryginalny cios do przodu po 360 ms przy `DEF_OPT_FRAME 9`. Ciosy podpięte po sierpowych po 592-602 ms, w oknie `DEF_WINDOW 11 16` (440-640 ms). Dźwięk zamachu nie trafia do dziennika; w sesji K5 słychać go przy sierpowych z obu stron | `04f4b5c3` | Claude, automatycznie; dźwięk: Mateusz Tomanek (gra) |
+| K7 | spełnione. `anim.py check-pack` na paczce z zestawów: 3 pliki animacji (`HUMANS-T_FISTATTACKL.MAN` i `-R.MAN` po 7091 B, `HUMANS.EXT.MDS` 745 B), wszystkie „ok”: żaden nie jest równy plikowi gry, nie ma `.MSB` ani pełnego `.MDS`, a MAN nie ma próbek oryginału | `04f4b5c3` | Claude, automatycznie |
+| K8 | spełnione. Bez moda (`# mod: off`): `004/K08a` nie ma linii „model script extension”, cios pięścią, stanie i `T_1HATTACKL` mają definicje z gry (`DEF_OPT_FRAME` 9 i 24); `004/K08b` kopacz 79 ciosów do przodu, 0 z lewej i 0 z prawej. Bohater bez moda (sesja ręczna `004/reczne/K08-bohater-bez-moda`, przebieg `20261105-204350-…-nomod`, gra bez pliku `.ini` moda): atak z lewej i z prawej nic nie robi, w dzienniku tylko ciosy do przodu, combo łączy się jak przed 004 (etap 2, a trzecie naciśnięcie bez wyniku, jak w K5) | `04f4b5c3` | Claude, automatycznie; bohater: Mateusz Tomanek (gra), Claude (dziennik) |
+| K9 | spełnione (kryterium zmienione 2026-11-05). `004/K09a`: zapis w trakcie sierpowego; `K09b`: po wczytaniu z modem bohater wyprowadza prawy sierpowy (`ani info` pochodzenie `mod`); `K09c`: zapis z 0.1.0 wczytuje się, rozszerzenie „2 added, 0 replaced”, sierpowe działają | `04f4b5c3` | Claude, automatycznie |
+| K10 | spełnione, z lukami opisu poprawionymi po przebiegu. Nowy agent Claude'a bez kontekstu sesji na czystym worktree: `local.json`, `get-gdc.ps1`, `get-krx.ps1` i import oryginału działają. Zła ścieżka Blendera: kod 1, „Blender not found: … Fix blender in gothic25/local.json (or G25_BLENDER)”. Inny commit dodatku: kod 1, „KrxImpExp 0123… is installed, the tools need 5be176c4…. Run tools/get-krx.ps1”, a zmieniony plik dodatku: „… was modified. Run tools/get-krx.ps1 -Force”. Według `anims/README.md` dodał `T_G25PROBA` (prawe ramię w górę) i zobaczył ją w grze (`ani info` pochodzenie `mod`, zrzuty z uniesionym ramieniem), a `check` i `check-pack` przeszły. Werdykt: „tak, z lukami”. Luki: brak katalogu, z którego uruchamiać polecenia, nieopisany `engineBuildDir`, przy definicji brak miejsca wpisu, numeru `NNN`, objaśnienia pól i uwagi o zdarzeniach ciosu, brak informacji, że `install.ps1` i `run.ps1` nie są potrzebne, kolejność źródeł ścieżki Blendera, wymaganie `git` przy `get-krx.ps1`. Wszystkie poprawione w `README.md`, `anims/README.md`, komunikacie o Blenderze (podaje teraz źródło ścieżki) i o braku silnika; nowa sesja nie przechodziła drogi drugi raz | `04f4b5c3` (przejście), poprawki w commicie weryfikacji | agent Claude'a bez kontekstu, automatycznie |
+| K11 | spełnione. `004/K11a` (dane `k11`): „HUMANS.EXT.MDS: 3 added, 1 replaced” i „HUMANS_1HST1.EXT.MDS: 1 added”, `T_G25TEST` i podmieniony `S_FISTATTACK` (`DEF_OPT_FRAME` 10 i 25) z moda, `S_RUN` z gry, `T_G25OVERLAYTEST` działa na szkielecie z nakładką. `K11b` (bez danych): „2 added, 0 replaced”, bez rozszerzenia nakładki, wszystkie trzy z gry. Bez moda: `K08a` | `04f4b5c3` | Claude, automatycznie |
+| K12 | spełnione. `anim.py mirror` `t_1hAttackL` podwójne odbicie 0,0000° i 0,0016 cm (0,29 granicy formatu); ręka z mieczem wejścia -112 cm w bok, odbicia +102 cm, oryginalnego `t_1hAttackR` +93 cm (ta sama strona co odbicie), korzeń 0; `DEF_HIT_LIMB` odbicia `ZS_LEFTHAND`. Sierpowy: podwójne odbicie 0,0048° i 0,0024 cm (0,90 granicy). `004/K12`: `ani info` obu sierpowych i zrzuty. Ocena właściciela na zrzutach `hookL-1..7` i `hookR-1..7` (przebieg `20261105-182320-004-K12-sierpowe-zrzuty`): prawy sierpowy jest lustrzanym odbiciem lewego, stopy na ziemi, ta sama wysokość ciosu | `04f4b5c3` | Claude, automatycznie; wygląd: Mateusz Tomanek |
+| K13 | spełnione. `004/K13` (kopacz, 120 s, ×2): 35 sierpowych z lewej (7 podpiętych bokiem w seriach), 36 z prawej (29 bokiem), premia ciosów bocznych 100, combo do przodu 2. Regresja `-Spec 001` 17 z 17 bez zmiany oczekiwań | `04f4b5c3` | Claude, automatycznie |
+| K14 | spełnione. Import `S_FISTATTACK`, kopia akcji `T_G25COPY`: eksport do źródeł kod 1 („unchanged copy of the original HUMANS-S_FISTATTACK.MAN”); `-AllowDerived` poza `build/` kod 1, do `build/anims-derived-test` kod 0. Kopia z obróconą głową w klatce 10 eksportuje się do źródeł. Nowa animacja na czystym szkielecie: `.anim` bez `raw` i `layout`, 25 kości, 0 slotów `ZS_`; `anim.ps1 check` zgodny | `04f4b5c3` | Claude, automatycznie |

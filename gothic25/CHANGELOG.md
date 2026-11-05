@@ -40,6 +40,20 @@ Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), wersje według
 
   Gra bez trybu deweloperskiego działa jak dotąd. Kryteria, które da się ocenić z raportu, zalicza
   automatyczny przebieg ([ADR 0004](decisions/0004-zaliczanie-kryteriow-przez-scenariusze.md)).
+- Potok animacji ([specyfikacja 004](specs/004-potok-animacji/spec.md)):
+  - Sierpowe z lewej i z prawej. Bohater i NPC walczący pięściami zadają je atakiem z lewej i z prawej,
+    także w seriach z ciosem do przodu. Obrażenia jak przy ataku bocznym, bez premii combo. Prawy
+    sierpowy to lustrzane odbicie lewego. Wymaga silnika z tego wydania.
+  - Animacje moda powstają ze źródeł w `anims/` (tekstowy `.anim`, lekki `.blend`, wpisy definicji
+    `<MODEL>.EXT.MDS`). `tools/anim.py` buduje z nich pliki gry bez Blendera i sprawdza, że paczka nie
+    zawiera niezmienionych plików z gry ([ADR 0009](decisions/0009-zmienione-oryginalne-animacje-w-paczce.md)).
+  - Edycja w Blenderze 5.2 przez `tools/anim.ps1` z przypiętym dodatkiem KrxImpExp
+    (`tools/get-krx.ps1`). `anim.py mirror` odbija animację na drugą stronę.
+  - Silnik dokłada definicje animacji moda (`*.EXT.MDS`) do modeli z gry
+    ([ADR 0008](decisions/0008-dokladanie-definicji-animacji-moda-przez.md)). Nowe polecenia konsoli w trybie
+    deweloperskim: `play ani` i `ani info`. Bez moda animacje są jak w oryginale.
+  - Scenariusze testowe: nagłówek `# anim-extra:` z lokalnymi danymi animacji, oczekiwania
+    `expect log` i `expect nolog`, czasy trafienia i podpięcia ciosu w raporcie walki.
 
 ### Poprawiono
 

@@ -622,7 +622,7 @@ nie kopiujemy w całości.
 
 ## Faza 5: Weryfikacja
 
-- [ ] **Z20** Przejść kroki kryteriów akceptacji i uzupełnić sekcję „Weryfikacja” w spec.md
+- [x] **Z20** Przejść kroki kryteriów akceptacji i uzupełnić sekcję „Weryfikacja” w spec.md
       (K1-K14).
       - Automatycznie, na zacommitowanym kodzie (ADR 0004):
         - narzędzia K1, K3, K7, K12 (część narzędziowa) i K14;
@@ -632,5 +632,12 @@ nie kopiujemy w całości.
         wygląd w K12.
       - K10: czysty checkout, `get-krx.ps1`, nowa sesja Claude'a przechodzi `anims/README.md`.
       - Wpis dla każdego K: scenariusz albo polecenie, commit, kto uruchomił, rozstrzygające liczby.
+      - Wynik (2026-11-05, commit `04f4b5c3`): wszystkie K1-K14 spełnione.
+        - Automatycznie: `-Spec 004` 11 z 11, regresja 001, 002 i 003 bez zmian.
+        - Z właścicielem: K2, K5 (z dźwiękiem K6), K8 i K12.
+        - Dla K8 doszedł scenariusz `reczne/K08-bohater-bez-moda` (`# mod: off`), bo cel testowy
+          z K5 jest w skryptach moda.
+        - K10 dało poprawki opisu w `README.md` i `anims/README.md` oraz komunikatów `Resolve-Blender`
+          i `test.ps1`.
 
       (K1-K14)

@@ -296,7 +296,7 @@ if($Spec -and ($Manual -or $Save)) {
 $gothic = Resolve-GothicDir $GothicDir
 $exe    = Get-EngineExe (Resolve-EngineBuildDir $BuildDir)
 if(-not (Test-Path $exe)) {
-  throw "Engine not found: $exe. Run tools/build-engine.ps1 first."
+  throw "Engine not found: $exe. Run tools/build-engine.ps1 first, or set engineBuildDir in gothic25/local.json to the CMake build folder that holds opengothic/."
 }
 if($Save -and -not (Test-Path $Save -PathType Leaf)) {
   throw "Save file not found: $Save"
