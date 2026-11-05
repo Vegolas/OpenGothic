@@ -289,12 +289,19 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
         - `dat.py prefix`: kod 0.
 
       (W1, K1-K8, K10)
-- [ ] **Z8** [P] Dokumentacja skryptów i changelog.
+- [x] **Z8** [P] Dokumentacja skryptów i changelog.
       - `content/Scripts/README.md`, sekcja „Symbole dla silnika”: tabela funkcji zewnętrznych
         (`AI_ReadyFist`, `AI_PracticeMove`, ADR 0010), plany dnia treningu, ustawienia i profile,
         `AIV_PracticeProfile`.
       - `CHANGELOG.md` `[Unreleased]`: trening walki wręcz NPC i nowe funkcje silnika. Na starszym
         silniku wywołania są ignorowane.
+      - Wynik (2026-11-05):
+        - README skryptów: tabela „Funkcje zewnętrzne” (`AI_ReadyFist`, `AI_PracticeMove`) i część
+          „Trening walki wręcz”: plany dnia, pętla serii, profile z wartościami profilu 0, `aivar`
+          90-92 i postacie testowe.
+        - Changelog: wpis 005 w „Dodano”, z działaniem na starszym silniku (wywołania ignorowane, postać
+          stoi z dobytą bronią).
+        - Bez zmian w kodzie, więc bez scenariuszy.
 
       (W4, W10)
 
