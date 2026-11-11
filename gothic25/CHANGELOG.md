@@ -64,7 +64,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), wersje według
   - Silnik: funkcje dla skryptów `AI_PracticeMove` i `AI_ReadyFist`
     ([ADR 0010](decisions/0010-nowe-funkcje-zewnetrzne-silnika.md)). Wymaga silnika z tego wydania.
     Starszy silnik ignoruje te wywołania, więc postać z nowym treningiem tylko stoi z dobytą bronią.
-  - Dziennik walki: zdarzenia `practice`, `ai` i `wait` oraz miary treningu w raporcie (`practice.*`).
+  - Dziennik walki: zdarzenia `practice`, `ai` i `wait`, miary treningu w raporcie (`practice.*`)
+    i oczekiwania dla wszystkich postaci dziennika (`all`). Nowe polecenie konsoli w trybie
+    deweloperskim: `wp info`.
 
 ### Poprawiono
 

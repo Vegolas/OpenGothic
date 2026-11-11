@@ -1,6 +1,6 @@
 # 005: Trening walki wręcz NPC
 
-- **Status:** W realizacji
+- **Status:** Zrobiona
 - **Utworzono:** 2026-11-05
 - **Zmieniona:** 2026-11-05 przy Z6 (decyzje właściciela, ryzyko R2 planu): W5 i K5, próg odejścia od
   waypointu 3,5 m w trakcie serii i początek serii najwyżej 0,75 m od waypointu.
@@ -144,7 +144,7 @@ Wspólne przygotowanie (P0): mod zbudowany z repozytorium, gra uruchamiana przez
 (scenariusze z `tests/005/`), dla kryteriów ręcznych z `-Manual`. Czas gry przyspieszony przez
 `ztimer multiplyer`, dziennik walki włączony.
 
-- [ ] **K1** (W1, W2, W3, W9): Repertuar i losowość bronią jednoręczną.
+- [x] **K1** (W1, W2, W3, W9): Repertuar i losowość bronią jednoręczną.
   - Kroki: scenariusz automatyczny. `insert` NPC z bronią jednoręczną i talentem mistrza, przypisanie
     mu `Practice_Melee` w miejscu wstawienia, 10 minut czasu gry, raport z dziennika walki.
   - Oczekiwane:
@@ -157,7 +157,7 @@ Wspólne przygotowanie (P0): mod zbudowany z repozytorium, gra uruchamiana przez
     - są dłuższe odpoczynki (6–10 s), od 1 na 8 do 1 na 4 serie;
     - kolejność rodzajów serii nie jest stałym cyklem: raport nie znajduje okresu krótszego niż
       10 serii.
-- [ ] **K2** (W2, W3): Talent i brak synchronizacji.
+- [x] **K2** (W2, W3): Talent i brak synchronizacji.
   - Kroki: scenariusz automatyczny. Dwóch NPC z bronią dwuręczną obok siebie: nowicjusz (talent poniżej
     30%) i mistrz (60% i więcej). Obaj dostają `Practice_Melee` w tej samej chwili, 10 minut czasu
     gry. Potem to samo w `-Manual`, a człowiek patrzy na obu.
@@ -166,24 +166,24 @@ Wspólne przygotowanie (P0): mod zbudowany z repozytorium, gra uruchamiana przez
     w zakresach z W3, a mediana przerw mistrza jest krótsza niż nowicjusza. Mniej niż 20% ciosów obu
     NPC zaczyna się w odstępie poniżej 0,2 s od siebie. Ocena człowieka: obaj nie ruszają się
     w jednym rytmie, a mistrza da się rozpoznać.
-- [ ] **K3** (W1, W2): Trening pięściami.
+- [x] **K3** (W1, W2): Trening pięściami.
   - Kroki: scenariusz automatyczny jak w K1, w trzech przebiegach: NPC z bronią jednoręczną
     w wariancie pięściami, NPC bez broni białej w wariancie bronią i NPC z bronią w wariancie bronią
     (kontrola).
   - Oczekiwane: w pierwszych dwóch przebiegach NPC ma w rękach tylko pięści, a dziennik ma ciosy do
     przodu, combo dwuciosowe i sierpowe z obu stron (004), także w seriach. NPC bez broni nie ma
     po treningu nowych przedmiotów w ekwipunku. W trzecim przebiegu NPC ćwiczy swoją bronią.
-- [ ] **K4** (W4): Ustawienia ze skryptów.
+- [x] **K4** (W4): Ustawienia ze skryptów.
   - Kroki: scenariusz automatyczny jak w K1 z lokalnymi ustawieniami testowymi: tylko ataki z lewej
     i stała przerwa 2 s.
   - Oczekiwane: dziennik ma tylko ataki z lewej, a przerwy wynoszą 2 s ± 0,2 s. Silnik nie był
     przebudowywany.
-- [ ] **K5** (W5): Trening w miejscu.
+- [x] **K5** (W5): Trening w miejscu.
   - Kroki: przebiegi z K1, K2 i K3.
   - Oczekiwane: każda seria zaczyna się najwyżej 0,75 m od waypointu, a NPC jest zwrócony tak jak
     waypoint (odchylenie do 15°). Żaden ruch nie zaczyna się dalej niż 3,5 m od waypointu.
   - Zmienione 2026-11-05 przy Z6 razem z W5 (wcześniej 1,5 m dla każdego ciosu).
-- [ ] **K6** (W6): Trening nikogo nie rani.
+- [x] **K6** (W6): Trening nikogo nie rani.
   - Kroki: scenariusz automatyczny. Bohater bez trybu nieśmiertelności stoi pół metra przed
     ćwiczącym przez 3 minuty czasu gry. Potem w tym samym miejscu staje wstawiony mieszczanin, a na
     koniec owca.
@@ -195,27 +195,27 @@ Wspólne przygotowanie (P0): mod zbudowany z repozytorium, gra uruchamiana przez
     atakującego, a trening czyści cel i kończy klatkę trafienia przed sprawdzeniem celu, więc
     dokładne miejsce postronnych nic nie zmienia. Bohater stoi dokładnie pół metra przed
     ćwiczącym (`goto pos` z pozycji i kierunku waypointu, polecenie `wp info`).
-- [ ] **K7** (W7): Rozmowa i reakcje.
+- [x] **K7** (W7): Rozmowa i reakcje.
   - Kroki: `-Manual`, scenariusz wstawia ćwiczącego jak w K1. Zagadaj do niego i zakończ rozmowę.
     Potem dobądź broni obok niego, schowaj ją, a na koniec uderz go. Dla porównania to samo przy NPC
     z obecnym treningiem z mieczem.
   - Oczekiwane: przy rozmowie, dobytej broni i ataku NPC zachowuje się jak NPC w obecnym treningu
     z mieczem. Po rozmowie wraca do treningu w ciągu kilku sekund.
-- [ ] **K8** (W8): Koniec pory treningu.
+- [x] **K8** (W8): Koniec pory treningu.
   - Kroki: scenariusz automatyczny. NPC z planem dnia: trening, a po nim stanie w innym miejscu.
     `set time` na dwie minuty przed końcem treningu, potem czekanie do 5 minut po końcu.
   - Oczekiwane: dziennik nie ma ciosów treningowych później niż 3 s po końcu pory treningu. NPC
     chowa broń i idzie na miejsce z następnego punktu planu dnia.
-- [ ] **K9** (W10): Bez moda bez zmian, regresja walki.
+- [x] **K9** (W10): Bez moda bez zmian, regresja walki.
   - Kroki: scenariusz bez moda (`# mod: off`): jeden z NPC z obecnym treningiem z mieczem w porze
     treningu, seria zrzutów. Potem zestawy `tools/test.ps1 -Spec 001` i `-Spec 004`.
   - Oczekiwane: NPC bez moda ćwiczy oryginalne kata. Zestawy 001 i 004 przechodzą bez zmiany
     oczekiwań.
-- [ ] **K10** (W11): Zapisy.
+- [x] **K10** (W11): Zapisy.
   - Kroki: zapis w trakcie serii treningowej, wczytany ponownie. Potem zapis z poprzedniej wersji
     moda wczytany w nowej.
   - Oczekiwane: oba zapisy się wczytują. Po wczytaniu pierwszego NPC dalej ćwiczy na swoim miejscu.
-- [ ] **K11** (P3): Świat bez zmian.
+- [x] **K11** (P3): Świat bez zmian.
   - Kroki: scenariusz automatyczny z modem, nowa gra. `goto waypoint` do jednego z NPC z obecnym
     treningiem z mieczem w jego porze treningu, seria zrzutów i dziennik walki.
   - Oczekiwane: NPC ćwiczy oryginalne kata, a dziennik nie ma ciosów treningowych.
@@ -260,3 +260,40 @@ moda na licencji GothicMOD (konstytucja, zasada 9).
 ## Weryfikacja
 
 <!-- Wypełniane po implementacji: kto, kiedy, na jakiej wersji, wynik dla każdego K. -->
+
+**Przebiegi automatyczne (Claude, 2026-11-11, commit `d27d4c0b`, czyste drzewo).**
+- **Zestawy:** `tools/test.ps1 -Spec 005`: 13 z 14 scenariuszy (przebiegi `20261111-1738*` do
+  `-1803*`). Niezaliczony `K10b` to błąd miary: pierwszy ruch po wczytaniu zapisu z połowy combo był
+  trzecim ciosem tej serii (113 cm od waypointu), a `fightlog.py` liczył go jako początek serii.
+  Poprawka miary `ec993ac4` nie zmienia wyników pozostałych przebiegów, a po niej `K10a` i `K10b`
+  przeszły (`20261111-1839*`, `-1840*`, commit `ec993ac4`).
+- **Regresja (K9):** `-Spec 001` 17 z 17 i `-Spec 004` 11 z 11 (`20261111-1803*` do `-1836*`).
+- **Zapisy:** `tools/dat.py prefix` względem `GOTHIC.DAT` sprzed 005 (`02ddcb93`): kod 0. Doszło
+  180 nazwanych symboli na końcu, a nazwane symbole z wersji poprzedniej zachowały numery.
+- **Katalogi wyników:** leżą w `gothic25/build/test-runs/` poza gitem, więc liczby, które
+  rozstrzygają kryteria, są wpisane w tabeli.
+- **Wersja kryteriów:** W5 i K5 (3,5 m w serii, początek serii do 0,75 m, decyzje właściciela przy
+  Z6 i Z7) i K6 (postronni obok ćwiczącego, decyzja przy Z9).
+
+**Sesje ręczne (Mateusz Tomanek, 2026-11-11, commit `ec993ac4`).**
+- **Przebiegi:** `tools/test.ps1 -Manual` dla `reczne/K02-talent-2h`, `reczne/K07-rozmowa`
+  i `reczne/K09-kata-bez-moda` (`20261111-205159`, `-205257`, `-205405`), katalogi
+  w `build/test-runs/`.
+- **Stan drzewa:** zmieniona tylko sekcja „Weryfikacja” w `spec.md` i nowy scenariusz ręczny
+  `reczne/K09-kata-bez-moda`, bez zmian w silniku i skryptach.
+- **Ocena właściciela:** według kroków K2, K7 i K9 wszystko wygląda w porządku. Obok oceny
+  w tabeli są liczby z dziennika walki tych sesji.
+
+| K | Wynik | Wersja | Kto |
+|---|---|---|---|
+| K1 | spełnione. `005/K01-mistrz-1h` (`20261111-173851`, 24 z 24), mistrz 1H przez 10 minut gry. Serie: prosty 26, combo 35, z lewej 19, z prawej 14, mieszane 19; combo 2, 3 i 4 (13, 10 i 12 razy). Blok albo odskok co 5,7 serii, przerwy 534-1986 ms (zakres mistrza 0,5-2 s), odpoczynek co 7,1 serii, najkrótszy okres ciągu serii 113 (bez cyklu) | `d27d4c0b` | Claude, automatycznie |
+| K2 | spełnione. `005/K02-talent-2h` (`20261111-174403`, 17 z 17): combo nowicjusza 2, mistrza 4; trafienie ciosu do przodu u nowicjusza po 324 ms i więcej, u mistrza najwyżej po 216 ms; przerwy nowicjusza 2162-4984 ms, mistrza 512-1982 ms; ciosy razem z drugim 15,2% i 11,0% (próg 20%). Ocena właściciela w sesji `reczne/K02-talent-2h` (`20261111-205159`): obaj nie ruszają się w jednym rytmie, a mistrza da się rozpoznać. Dziennik tej sesji (24 s): nowicjusz same pojedyncze ciosy i przerwy 3,2-4,1 s, mistrz combo do 3 i przerwy 1,4-1,7 s, 0% ciosów razem | `d27d4c0b`, sesja `ec993ac4` | Claude, automatycznie; wygląd: Mateusz Tomanek |
+| K3 | spełnione. `K03a` (`20261111-174914`, 10 z 10): z mieczem w wariancie pięściami tryb pięści, combo 2, sierpowe z lewej 10 i z prawej 19, 9 serii mieszanych. `K03b` (`-175054`, 10 z 10): bez broni pięści, combo 2, bez założonej broni i bez nowej maczugi (tę od `B_RefreshAtInsert` przy wstawieniu odliczamy). `K03c` (`-175236`, 6 z 6): kontrola z bronią, tryb broni, combo 4 | `d27d4c0b` | Claude, automatycznie |
+| K4 | spełnione. `K04-profil-testowy` (`20261111-175419`, 9 z 9): profil 99 daje 53 ciosy z lewej, 0 innych ruchów, przerwy dokładnie 2000 ms, 0 odpoczynków. Silnik ten sam co w pozostałych przebiegach | `d27d4c0b` | Claude, automatycznie |
+| K5 | spełnione (kryterium zmienione przy Z6 i Z7). Z `K01`-`K03c`: początek serii najdalej 53 cm (1H), 66 i 69 cm (2H), 39 i 35 cm (pięści); odchylenie od kierunku waypointu na początku serii 0°; najdalszy ruch 292 cm (1H) i 226 cm (2H) | `d27d4c0b` | Claude, automatycznie |
+| K6 | spełnione (kryterium zmienione przy Z9). `K06-bez-obrazen` (`20261111-175602`, 8 z 8): bohater bez nieśmiertelności 70 cm przed waypointem ćwiczącego przez 3 minuty gry, potem mieszczanin i owca obok. 144 pudła `practice`, 0 trafień, życie bohatera, mieszczanina i owcy bez zmian, mieszczanin w swoim stanie, owca nie atakuje i nie ucieka, ćwiczący dalej ćwiczy, odchylenie do 12° | `d27d4c0b` | Claude, automatycznie |
+| K7 | spełnione. Sesja `reczne/K07-rozmowa` (`20261111-205257`): strażnik 329 z nowym treningiem przy rozmowie, dobytej broni i ataku zachowuje się jak strażnik 330 ze starym, a po rozmowie wraca do treningu (ocena właściciela). Dziennik: 329 ćwiczy (9 ruchów, w tym blok, 8 pudeł `practice`, 0 trafień treningowych, początek serii do 37 cm). Po ciosie bohatera w strażnika 330 (t=47,6 s) 330 i 329 przechodzą w `ZS_ATTACK` (329 po 12 ms) i razem z 331 i Wulfgarem atakują bohatera. Dziennik śledzi 329 dopiero od jego pierwszego ruchu (t=29,9 s), więc rozmowy i dobytej broni w nim nie widać | `ec993ac4` | Mateusz Tomanek (gra), Claude (dziennik) |
+| K8 | spełnione. `K08-koniec-pory` (`20261111-175935`, 6 z 6): 11 serii przed końcem pory, po zmianie stanu o 9:00 (`ZS_STAND_ARMSCROSSED`) 0 ruchów treningowych, broń schowana, postać przy `CENTRE_03` | `d27d4c0b` | Claude, automatycznie |
+| K9 | spełnione. `K09-bez-moda` (`20261111-180027`): bez moda 0 ruchów treningowych. Regresja `-Spec 001` 17 z 17 i `-Spec 004` 11 z 11 bez zmiany oczekiwań. Zrzuty K09 nie pokazują strażników (kamera patrzy tam, gdzie bohater), więc kata ocenił właściciel w sesji `reczne/K09-kata-bez-moda` (`20261111-205405`, bez moda): strażnicy ćwiczą oryginalne kata z mieczem | `d27d4c0b`, sesja `ec993ac4` | Claude, automatycznie; wygląd: Mateusz Tomanek |
+| K10 | spełnione. `K10a` (`20261111-183958`): zapis zaraz po drugim ciosie combo. `K10b` (`-184030`, 4 z 4): po wczytaniu postać dalej ćwiczy, 17 serii, początek serii do 53 cm, 0 trafień. `K10c` (`-180211`, 5 z 5, `d27d4c0b`): zapis z 0.1.0 się wczytuje, nowa postać ćwiczy (15 serii), strażnik 329 w tym zapisie ma stary trening | `ec993ac4` (K10a, K10b), `d27d4c0b` (K10c) | Claude, automatycznie |
+| K11 | spełnione. `K11-swiat-bez-zmian` (`20261111-180310`, 4 z 4): z modem strażnicy 329, 330 i 331 są w `ZS_Practice_Sword`, dziennik nie ma ruchów treningowych | `d27d4c0b` | Claude, automatycznie |

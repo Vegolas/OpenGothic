@@ -404,11 +404,22 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
 
 ## Faza 4: Weryfikacja
 
-- [ ] **Z11** Przejść kroki kryteriów akceptacji i uzupełnić sekcję „Weryfikacja” w spec.md (K1-K11).
+- [x] **Z11** Przejść kroki kryteriów akceptacji i uzupełnić sekcję „Weryfikacja” w spec.md (K1-K11).
       - `tools/test.ps1 -Spec 005` na czystym drzewie.
       - Regresja `-Spec 001` i `-Spec 004` (K9).
       - `dat.py prefix` względem `02ddcb93`.
       - Sesje ręczne z właścicielem: `reczne/K02` (wygląd i rytm) i `reczne/K07` (rozmowa i reakcje).
       - Wpisy według ADR 0004: scenariusz, commit, kto uruchomił i liczby z raportu.
+      - Wynik (2026-11-11):
+        - `-Spec 005` na `d27d4c0b`: 13 z 14. `K10b` padł przez błąd miary: po wczytaniu zapisu
+          z połowy combo `fightlog.py` liczył dalszy cios serii jako jej początek (113 cm od
+          waypointu). Poprawka `ec993ac4` pomija serie zaczęte przed dziennikiem, a po niej `K10a`
+          i `K10b` przeszły;
+        - regresja: `-Spec 001` 17 z 17, `-Spec 004` 11 z 11;
+        - `dat.py prefix`: kod 0, 180 nowych nazwanych symboli na końcu;
+        - doszedł scenariusz ręczny `reczne/K09-kata-bez-moda`, bo zrzuty `K09-bez-moda` nie
+          pokazują strażników;
+        - sesje ręczne właściciela na `ec993ac4` (K2, K7, K9): wszystko w porządku;
+        - K1-K11 spełnione, specyfikacja ma status `Zrobiona`.
 
       (K1-K11)

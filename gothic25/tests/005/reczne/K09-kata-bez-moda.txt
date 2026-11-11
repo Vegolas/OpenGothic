@@ -1,0 +1,10 @@
+# criterion: 005 K9
+# timeout: 3600
+# mod: off
+# Część wizualna 005 K9 (tryb ręczny, bez moda): strażnicy 329 (CENTRE_02), 330 (CENTRE_03) i 331
+# (CENTRE_04) w porze treningu ćwiczą oryginalne kata z mieczem. Zrzuty z K09 tego nie pokazują
+# (kamera patrzy tam, gdzie bohater). Obróć się do nich i popatrz chwilę.
+# Uruchomienie: tools/test.ps1 -Scenario 005/reczne/K09-kata-bez-moda -Manual
+info told DIA_Xardas_Hello
+set time 10 0
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_01
