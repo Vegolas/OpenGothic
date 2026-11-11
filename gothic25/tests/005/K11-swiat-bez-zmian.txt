@@ -1,0 +1,26 @@
+# criterion: 005 K11
+# timeout: 240
+# Świat bez zmian (005 K11): z modem, nowa gra. Strażnicy 329 (CENTRE_02), 330 (CENTRE_03) i 331
+# (CENTRE_04) w porze treningu ćwiczą po staremu, bo żaden NPC świata nie ma nowego planu dnia (P3).
+# Oczekiwane: wszyscy trzej są w stanie starego treningu z mieczem, a dziennik nie ma ruchów
+# treningowych. Zrzuty pokazują kata.
+info told DIA_Xardas_Hello
+set time 10 0
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_01
+wait 1
+ztimer multiplyer 2
+wait 10
+screenshot kata-1.png
+wait 2
+screenshot kata-2.png
+wait 20
+call TST_IsOldPractice Mil_329_Miliz
+call TST_IsOldPractice Mil_330_Miliz
+call TST_IsOldPractice Mil_331_Miliz
+call TST_IsPracticing Mil_329_Miliz
+quit
+
+expect all practice.moves == 0
+expect log scenario: call: TST_ISOLDPRACTICE = 1
+expect nolog scenario: call: TST_ISOLDPRACTICE = 0
+expect log scenario: call: TST_ISPRACTICING = 0

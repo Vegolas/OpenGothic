@@ -1,0 +1,20 @@
+# criterion: 005 K7
+# timeout: 3600
+# Rozmowa i reakcje (005 K7), tryb ręczny. Strażnik 329 przechodzi na nowy trening na swoim miejscu
+# (NW_CITY_HABOUR_KASERN_CENTRE_02, TST_PracticeMilitia), a strażnik 330 ćwiczy po staremu (kata
+# z mieczem) na CENTRE_03, do porównania. Bohater stoi na CENTRE_01 i ma nieśmiertelność, bo straż
+# odpowie na atak.
+# Co zrobić:
+# 1. Podejdź do strażnika 329 (nowy trening) i zagadaj. Zakończ rozmowę i patrz, czy po kilku
+#    sekundach znów ćwiczy.
+# 2. Dobądź broni obok niego, poczekaj na reakcję i schowaj broń.
+# 3. Uderz go i zobacz, jak reaguje.
+# 4. To samo przy strażniku 330 (stary trening) i porównaj reakcje.
+# Dziennik walki zapisuje stany AI strażnika 329 (zdarzenia ai) i jego ruchy treningowe.
+# Uruchomienie: tools/test.ps1 -Scenario 005/reczne/K07-rozmowa -Manual
+info told DIA_Xardas_Hello
+set time 10 0
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_01
+wait 1
+cheat god
+call TST_PracticeMilitia

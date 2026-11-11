@@ -348,7 +348,8 @@ w dzienniku, tak jak `ai`.
 expect <kto> <miara> <op> <wartość>
 ```
 
-- `<kto>`: `hero` albo nazwa instancji. Miara sumuje wszystkie postacie tej instancji.
+- `<kto>`: `hero`, nazwa instancji albo `all` (wszystkie postacie dziennika; także gdy nie ma w nim
+  żadnej, np. `expect all practice.moves == 0`). Miara sumuje wszystkie postacie tej instancji.
 - `<op>`: `==`, `!=`, `<`, `<=`, `>`, `>=`.
 - `<wartość>`: liczba.
 

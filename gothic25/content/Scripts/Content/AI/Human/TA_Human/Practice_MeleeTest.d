@@ -133,6 +133,23 @@ func int TST_IsPracticing (var C_NPC slf)
 	return FALSE;
 };
 
+func int TST_IsWeaponless (var C_NPC slf)
+{
+	return Npc_IsInFightMode (slf, FMODE_NONE);
+};
+
+// at the place of a waypoint, within 3 m (spec 005 K8)
+func int TST_IsNearWp (var C_NPC slf, var string wp)
+{
+	return Npc_GetDistToWP (slf, wp) < 300;
+};
+
+// the old sword practice of the game (spec 005 K11)
+func int TST_IsOldPractice (var C_NPC slf)
+{
+	return Npc_IsInState (slf, ZS_Practice_Sword);
+};
+
 func int TST_IsFistMode (var C_NPC slf)
 {
 	return Npc_IsInFightMode (slf, FMODE_FIST);

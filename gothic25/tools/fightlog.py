@@ -417,9 +417,11 @@ def evaluate(exp: Expectation, events: list[dict], chars: dict[int, Character],
         return
     if exp.who.lower() == "hero":
         ids = {c.id for c in chars.values() if c.player}
+    elif exp.who.lower() == "all":
+        ids = set(chars)  # every character of the log, none at all is fine (counters are 0)
     else:
         ids = {c.id for c in chars.values() if c.who.lower() == exp.who.lower()}
-    if not ids:
+    if not ids and exp.who.lower() != "all":
         exp.note = "brak tej postaci w dzienniku"
         return
     value = metrics(events, ids).get(exp.metric)

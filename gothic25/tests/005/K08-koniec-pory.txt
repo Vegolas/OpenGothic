@@ -1,0 +1,30 @@
+# criterion: 005 K8
+# timeout: 360
+# Koniec pory treningu (005 K8): TST_Practice_Shift ćwiczy od 8:00 do 9:00 na CENTRE_01, a potem stoi
+# na CENTRE_03. Postać najpierw dochodzi na miejsce i ćwiczy, potem zegar idzie na 8:58: dwie minuty
+# gry przed końcem pory. Minuta gry to około 4,1 s czasu z wait (zegar biegnie 14,5 raza szybciej),
+# więc 9:00 wypada po około 8 s, a wait 40 sięga około 7 minut gry po końcu.
+# Oczekiwane: po zmianie stanu (zdarzenie ai ze stanem spoza treningu) nie ma ruchów treningowych
+# później niż po 3 s; postać chowa broń i stoi przy CENTRE_03.
+info told DIA_Xardas_Hello
+set time 8 30
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_02
+wait 1
+call B_RemoveNpc Mil_330_Miliz
+insert TST_Practice_Shift
+ztimer multiplyer 2
+wait 40
+set time 8 58
+wait 40
+call TST_IsWeaponless TST_Practice_Shift
+call TST_IsNearWp TST_Practice_Shift NW_CITY_HABOUR_KASERN_CENTRE_03
+call TST_IsPracticing TST_Practice_Shift
+screenshot po-treningu.png
+quit
+
+expect TST_Practice_Shift practice.series >= 3
+expect TST_Practice_Shift practice.after_ai.max_ms <= 3000
+expect log scenario: call: TST_ISWEAPONLESS = 1
+expect log scenario: call: TST_ISNEARWP = 1
+expect log scenario: call: TST_ISPRACTICING = 0
+expect nolog not implemented call [AI_PRACTICEMOVE]

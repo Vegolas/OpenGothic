@@ -362,7 +362,7 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
         - `dat.py prefix`: kod 0.
 
       (K1, K2, K3, K4, K5, K6)
-- [ ] **Z10** Scenariusze `tests/005` K07-K11.
+- [x] **Z10** Scenariusze `tests/005` K07-K11.
       - `reczne/K07-rozmowa`: strażnik 329 przez `TST_PracticeMilitia()`, opis w komentarzu
         scenariusza.
       - `K08-koniec-pory`: `set time 8 58`, potem `wait`.
@@ -371,6 +371,34 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
         (`build/testsaves/001-K9-v0.1.0-pal230.sav`).
       - `K11-swiat-bez-zmian`: strażnik 329 ze swoim planem dnia, a dziennik bez ruchów treningowych.
       - Sprawdzenie: każdy scenariusz uruchomiony pojedynczo.
+      - Wynik (2026-11-11):
+        - `fightlog.py`: `<kto>` = `all` liczy wszystkie postacie dziennika, także gdy nie ma żadnej
+          (`expect all practice.moves == 0` w K09 i K11). Opis w `tests/README.md`.
+        - W pliku testowym `TST_IsWeaponless`, `TST_IsNearWp` i `TST_IsOldPractice`
+          (`ZS_Practice_Sword`).
+        - K08: zegar gry biegnie 14,5 raza szybciej niż czas z `wait`, więc minuta gry to około
+          4,1 s. Postać zaczyna o 8:30, ćwiczy, a potem `set time 8 58` i czekanie do około 9:07.
+        - Przebiegi zaliczone za pierwszym razem:
+          - `K08-koniec-pory` (`20261111-173158`): 11 serii przed końcem pory. Po `set time 8 58`
+            (t=41,0 s) stan treningu zaczął się od nowa, ostatni ruch padł przy t=50,7 s, a o 9:00
+            (t=53,1 s) przyszło zdarzenie `ai` `ZS_STAND_ARMSCROSSED`. Po nim 0 ruchów treningowych
+            (`after_ai` 0 ms). Postać schowała broń, stoi przy `CENTRE_03` i już nie ćwiczy;
+          - `K09-bez-moda` (`20261111-173248-…-nomod`): bez moda dziennik nie ma żadnego ruchu
+            treningowego. Zrzuty pokazują jednak inny róg placu (kamera patrzy tam, gdzie bohater,
+            a obrotu bohatera scenariusz nie ustawia), więc kata strażników na nich nie widać. Bez moda
+            nie ma funkcji testowych, które sprawdziłyby stan strażników. Stary trening w tych samych
+            skryptach sprawdza K11 z modem, a regresję walki zestawy 001 i 004 w Z11;
+          - `K10a-zapis-w-serii` (`20261111-173322`): zapis zaraz po drugim ciosie combo;
+          - `K10b-wczytanie` (`20261111-173345`): po wczytaniu postać dalej ćwiczy (15 serii, start do
+            52 cm, 0 trafień);
+          - `K10c-zapis-z-0.1.0` (`20261111-173447`): zapis z 0.1.0 się wczytuje, nowa postać
+            testowa ćwiczy (14 serii, 0 trafień), a strażnik 329 w tym zapisie dalej ma stary trening;
+          - `K11-swiat-bez-zmian` (`20261111-173551`): strażnicy 329, 330 i 331 są w
+            `ZS_Practice_Sword`, dziennik bez ruchów treningowych. Zrzuty tak jak w K09 nie pokazują
+            strażników.
+        - `reczne/K07-rozmowa` czeka na sesję ręczną z właścicielem w Z11. Strażnik 329 z nowym
+          treningiem, strażnik 330 ze starym do porównania, a bohater ma nieśmiertelność.
+        - `dat.py prefix`: kod 0.
 
       (K7, K8, K9, K10, K11)
 
