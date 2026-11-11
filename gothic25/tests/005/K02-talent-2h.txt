@@ -1,0 +1,42 @@
+# criterion: 005 K2
+# criterion: 005 K5
+# timeout: 600
+# Talent i brak synchronizacji (005 K2): nowicjusz 2H (20%, CENTRE_03) i mistrz 2H (80%, CENTRE_04)
+# ćwiczą obok siebie przez 10 minut czasu gry. Wstawieni w tej samej chwili. Strażnicy 330 i 331,
+# którzy ćwiczą na tych waypointach, są usuwani.
+# Progi: combo nowicjusza do 2, mistrza 4 (001 W1); trafienie ciosu do przodu u nowicjusza
+# najwcześniej po 280 ms, u mistrza najpóźniej po 250 ms (Z7: 324-332 i 200-216 ms); przerwy
+# w zakresach W3 (nowicjusz 2-5 s, mistrz 0,5-2 s, więc mediana mistrza jest krótsza);
+# mniej niż 20% ciosów każdego zaczyna się w odstępie poniżej 0,2 s od ciosu drugiego.
+# Część wizualną ocenia człowiek w reczne/K02-talent-2h. K5 jak w K01.
+info told DIA_Xardas_Hello
+set time 10 0
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_02
+wait 1
+call B_RemoveNpc Mil_330_Miliz
+call B_RemoveNpc Mil_331_Miliz
+insert TST_Practice_Novice2H
+insert TST_Practice_Master2H
+ztimer multiplyer 2
+wait 300
+screenshot trening.png
+wait 300
+quit
+
+expect TST_Practice_Novice2H combo.max <= 2
+expect TST_Practice_Master2H combo.max == 4
+expect TST_Practice_Novice2H hit.fwd.min_ms >= 280
+expect TST_Practice_Master2H hit.fwd.max_ms <= 250
+expect TST_Practice_Novice2H practice.pause.min_ms >= 2000
+expect TST_Practice_Novice2H practice.pause.max_ms <= 5000
+expect TST_Practice_Master2H practice.pause.min_ms >= 500
+expect TST_Practice_Master2H practice.pause.max_ms <= 2000
+expect TST_Practice_Novice2H practice.sync_pct < 20
+expect TST_Practice_Master2H practice.sync_pct < 20
+expect TST_Practice_Novice2H practice.start_dist.max_cm <= 75
+expect TST_Practice_Master2H practice.start_dist.max_cm <= 75
+expect TST_Practice_Novice2H practice.wp_angle.max_deg <= 15
+expect TST_Practice_Master2H practice.wp_angle.max_deg <= 15
+expect TST_Practice_Master2H practice.wp_dist.max_cm <= 350
+expect nolog not implemented call [AI_PRACTICEMOVE]
+expect nolog not implemented call [AI_READYFIST]

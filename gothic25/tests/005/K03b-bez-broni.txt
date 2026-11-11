@@ -1,0 +1,35 @@
+# criterion: 005 K3
+# criterion: 005 K5
+# timeout: 360
+# Trening pięściami (005 K3), przebieg 2: postać bez broni białej w wariancie bronią
+# (TST_Practice_NoWeapon, TA_Practice_Melee, CENTRE_03), 3 minuty czasu gry. Strażnik 330 (CENTRE_03)
+# jest usuwany.
+# Oczekiwane: ćwiczy pięściami (combo 2, sierpowe z obu stron, także w seriach) i nie dostaje broni
+# (ani założonej broni białej, ani maczugi ze starego treningu). Maczugę do ekwipunku daje już
+# B_RefreshAtInsert przy wstawieniu postaci straży bez broni, więc liczy się tylko przyrost od chwili
+# po wstawieniu do końca treningu. K5 jak w K01.
+info told DIA_Xardas_Hello
+set time 10 0
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_02
+wait 1
+call B_RemoveNpc Mil_330_Miliz
+insert TST_Practice_NoWeapon
+wait 1
+call TST_MarkMace TST_Practice_NoWeapon
+ztimer multiplyer 2
+wait 180
+call TST_IsFistMode TST_Practice_NoWeapon
+call TST_HasMeleeWeapon TST_Practice_NoWeapon
+call TST_MaceGained TST_Practice_NoWeapon
+quit
+
+expect log scenario: call: TST_ISFISTMODE = 1
+expect log scenario: call: TST_HASMELEEWEAPON = 0
+expect log scenario: call: TST_MACEGAINED = 0
+expect TST_Practice_NoWeapon combo.max == 2
+expect TST_Practice_NoWeapon attacks.dir.left >= 1
+expect TST_Practice_NoWeapon attacks.dir.right >= 1
+expect TST_Practice_NoWeapon practice.series.mixed >= 1
+expect TST_Practice_NoWeapon practice.start_dist.max_cm <= 75
+expect TST_Practice_NoWeapon practice.wp_angle.max_deg <= 15
+expect nolog not implemented call [AI_PRACTICEMOVE]

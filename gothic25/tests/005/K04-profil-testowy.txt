@@ -1,0 +1,24 @@
+# criterion: 005 K4
+# timeout: 360
+# Ustawienia ze skryptów (005 K4): postać z profilem testowym 99 (TST_Practice_Profile, CENTRE_04:
+# same ciosy z lewej, stała przerwa 2 s, bez bloków, odskoków i odpoczynków), 3 minuty czasu gry.
+# Silnik ten sam co w pozostałych scenariuszach: profil to tylko wartości w skryptach.
+info told DIA_Xardas_Hello
+set time 10 0
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_02
+wait 1
+call B_RemoveNpc Mil_331_Miliz
+insert TST_Practice_Profile
+ztimer multiplyer 2
+wait 180
+quit
+
+expect TST_Practice_Profile practice.move.left >= 10
+expect TST_Practice_Profile practice.move.fwd == 0
+expect TST_Practice_Profile practice.move.right == 0
+expect TST_Practice_Profile practice.move.block == 0
+expect TST_Practice_Profile practice.move.jumpback == 0
+expect TST_Practice_Profile practice.pause.min_ms >= 1800
+expect TST_Practice_Profile practice.pause.max_ms <= 2200
+expect TST_Practice_Profile practice.rest.count == 0
+expect nolog not implemented call [AI_PRACTICEMOVE]

@@ -189,6 +189,12 @@ Wspólne przygotowanie (P0): mod zbudowany z repozytorium, gra uruchamiana przez
     koniec owca.
   - Oczekiwane: dziennik nie ma trafień ani obrażeń, życie bohatera, mieszczanina i owcy się nie
     zmienia, nikt nie zaczyna walki ani nie ucieka. Ćwiczący nie obraca się w stronę bohatera.
+  - Zmienione 2026-11-06 przy Z9 (decyzja właściciela): mieszczanin i owca stają obok ćwiczącego,
+    1-3 m od niego, a nie dokładnie w miejscu bohatera. Polecenie `insert` stawia postać 2 m przed
+    bohaterem, a obrotu bohatera scenariusz nie ustawia. Obrażenia wręcz trafiają w grze tylko cel
+    atakującego, a trening czyści cel i kończy klatkę trafienia przed sprawdzeniem celu, więc
+    dokładne miejsce postronnych nic nie zmienia. Bohater stoi dokładnie pół metra przed
+    ćwiczącym (`goto pos` z pozycji i kierunku waypointu, polecenie `wp info`).
 - [ ] **K7** (W7): Rozmowa i reakcje.
   - Kroki: `-Manual`, scenariusz wstawia ćwiczącego jak w K1. Zagadaj do niego i zakończ rozmowę.
     Potem dobądź broni obok niego, schowaj ją, a na koniec uderz go. Dla porównania to samo przy NPC

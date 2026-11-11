@@ -1,0 +1,13 @@
+# criterion: 005 Z9
+# timeout: 90
+# Zadanie Z9 (spec. 005): pozycje i kierunki waypointów placu koszar (polecenie wp info), żeby
+# w K06 postawić bohatera pół metra przed ćwiczącym (goto pos).
+# Uruchomienie: tools/test.ps1 -Scenario dev/005-z9-waypointy
+wp info NW_CITY_HABOUR_KASERN_CENTRE_01
+wp info NW_CITY_HABOUR_KASERN_CENTRE_02
+wp info NW_CITY_HABOUR_KASERN_CENTRE_03
+wp info NW_CITY_HABOUR_KASERN_CENTRE_04
+wp info NW_CITY_KASERN_BARRACK02_03
+quit
+
+expect log scenario: wp info: NW_CITY_HABOUR_KASERN_CENTRE_01 pos

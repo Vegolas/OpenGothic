@@ -307,7 +307,7 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
 
 ## Faza 3: Scenariusze kryteriów
 
-- [ ] **Z9** Scenariusze `tests/005` K01-K06.
+- [x] **Z9** Scenariusze `tests/005` K01-K06.
       - `K01-mistrz-1h`, `K02-talent-2h` i `reczne/K02-talent-2h`, `K03a-piesci-z-bronia`,
         `K03b-bez-broni`, `K03c-bronia`, `K04-profil-testowy`, `K06-bez-obrazen`. Każdy ma
         `expect nolog not implemented call [AI_PRACTICEMOVE]` i `[AI_READYFIST]`, z nazwą funkcji,
@@ -318,6 +318,48 @@ Z5 wymaga formatu z Z4, a Z7 skryptów z Z6. Z5, Z6 i Z8 nie zależą od siebie.
       - Progi oczekiwań według kryteriów ze spec.md. Gdy próg trzeba poprawić, robimy to osobnym
         commitem z uzasadnieniem w scenariuszu (ADR 0004).
       - Sprawdzenie: każdy scenariusz uruchomiony pojedynczo (`-Scenario`).
+      - Wynik (2026-11-06 i 2026-11-11):
+        - Nowe polecenie konsoli `wp info <waypoint>` (`common/marvin.*`, opis w `tests/README.md`)
+          wypisuje pozycję i kierunek waypointu. K06 stawia z niego bohatera 70 cm przed `CENTRE_01`
+          (`goto pos 4423 800 7010`). Tekst powstaje przez `std::string`, bo `string_frm` przepełniał
+          stertę przy dłuższym napisie z liczbami (osobna poprawka upstreamu na gałęzi
+          `claude/xenodochial-booth-7cd831`).
+        - **Decyzja właściciela przy Z9:** w K6 mieszczanin i owca stają obok ćwiczącego (1-3 m), nie
+          w miejscu bohatera. Dopisek jest w spec.md.
+        - Funkcje testowe: `TST_HpLostSum`, `TST_HasMeleeWeapon`, `TST_MarkMace`, `TST_MaceGained`,
+          `TST_IsPracticing`, `TST_IsCalm` i `TST_IsMonsterCalm`, a także mieszczanin
+          `TST_Practice_Bystander` ze zwykłymi percepcjami ludzi (id 9917).
+        - Pierwsza runda (2026-11-06): K01, K03b i K06 przegrały przez walkę, nie przez trening.
+          - Bohater stał w budynku koszar (`NW_CITY_KASERN_BARRACK02_03`), a ćwiczący z gildii straży
+            atakują intruza w swoich pomieszczeniach.
+          - Trafienia miały `src` `queue`. Postać bez broni wzięła maczugę, przeszukując powalonego
+            bohatera.
+          - Właściciel przypadkiem zamknął jedno okno i latał Marvinem.
+          - Scenariusze stawiają teraz bohatera na placu (`CENTRE_02`), a K06 usuwa też strażników 330
+            i 331.
+        - K03b: `B_RefreshAtInsert` z gry daje wstawionemu NPC straży bez broni maczugę do ekwipunku
+          (bez zakładania). Scenariusz sprawdza więc przyrost od chwili po wstawieniu
+          (`TST_MarkMace`, `TST_MaceGained`), a nie samą obecność maczugi.
+        - Przebiegi zaliczone:
+          - `K01-mistrz-1h` (`20261111-165255`, 24 z 24). Serie: prosty 24, combo 35, lewy 10,
+            prawy 18, mieszana 20. Combo 2, 3 i 4 są (13, 8 i 14 razy), blok albo odskok co 5,1 serii,
+            przerwy 521-1997 ms, odpoczynek co 5,9 serii, okres 107 (brak cyklu), start serii do 62 cm,
+            odchylenie 0°, najdalej 256 cm, 0 trafień;
+          - `K02-talent-2h` (`20261111-165855`, 17 z 17). Combo nowicjusza 2 i mistrza 4, trafienie
+            nowicjusza od 324 ms, mistrza do 216 ms, przerwy 2000-4989 i 520-1999 ms, synchronizacja
+            10,6% i 7,7%, start serii do 64 i 70 cm, odchylenie 0°, najdalej 280 cm;
+          - `K03a-piesci-z-bronia` (`20261106-002001`, 10 z 10): tryb pięści, combo 2, sierpowe;
+          - `K03b-bez-broni` (`20261111-171031`, 10 z 10): pięści, bez założonej broni, bez nowej
+            maczugi;
+          - `K03c-bronia` (`20261106-002353`, 6 z 6): tryb broni, combo 4;
+          - `K04-profil-testowy` (`20261106-002554`, 9 z 9): 43 lewe, poza tym 0, przerwa 2000 ms,
+            0 odpoczynków;
+          - `K06-bez-obrazen` (`20261111-170555`, 8 z 8): 171 pudeł `practice`, 0 trafień, bohater,
+            mieszczanin i owca bez straty życia, mieszczanin i owca spokojni, ćwiczący dalej ćwiczy,
+            odchylenie do 5°.
+        - K03a, K03c i K04 poszły jeszcze z bohaterem w koszarach, ale ich oczekiwania nie zależą od
+          walki o wtargnięcie. Z11 uruchomi cały zestaw na zacommitowanym kodzie.
+        - `dat.py prefix`: kod 0.
 
       (K1, K2, K3, K4, K5, K6)
 - [ ] **Z10** Scenariusze `tests/005` K07-K11.

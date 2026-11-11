@@ -1,0 +1,47 @@
+# criterion: 005 K1
+# criterion: 005 K5
+# timeout: 600
+# Repertuar i losowość treningu bronią jednoręczną (005 K1) oraz trening w miejscu (K5): mistrz 1H
+# (TST_Practice_Master1H, talent 80%) ćwiczy na placu koszar (NW_CITY_HABOUR_KASERN_CENTRE_01)
+# przez 10 minut czasu gry. Postać zaczyna obok bohatera na placu i sama dochodzi na waypoint.
+# Bohater stoi na placu, nie w koszarach: strażnicy atakują intruza w swoich pomieszczeniach.
+# Progi K1: każdy rodzaj serii co najmniej 3 razy; combo od 1 do 4; blok albo odskok od 1 na 10
+# do 1 na 3 serie; przerwy pokrywają zakres mistrza 0,5-2 s (najkrótsza w dolnej, najdłuższa
+# w górnej ćwiartce); odpoczynek od 1 na 8 do 1 na 4 serie; brak okresu krótszego niż 10 serii.
+# Progi K5 (W5 zmienione przy Z6 i Z7): początek serii do 75 cm od waypointu, odchylenie do 15°,
+# żaden ruch dalej niż 3,5 m.
+info told DIA_Xardas_Hello
+set time 10 0
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_02
+wait 1
+insert TST_Practice_Master1H
+ztimer multiplyer 2
+wait 300
+screenshot trening.png
+wait 300
+quit
+
+expect TST_Practice_Master1H practice.series.fwd >= 3
+expect TST_Practice_Master1H practice.series.combo >= 3
+expect TST_Practice_Master1H practice.series.left >= 3
+expect TST_Practice_Master1H practice.series.right >= 3
+expect TST_Practice_Master1H practice.series.mixed >= 3
+expect TST_Practice_Master1H combo.count.2 >= 1
+expect TST_Practice_Master1H combo.count.3 >= 1
+expect TST_Practice_Master1H combo.count.4 >= 1
+expect TST_Practice_Master1H combo.max == 4
+expect TST_Practice_Master1H practice.series_per_defend >= 3
+expect TST_Practice_Master1H practice.series_per_defend <= 10
+expect TST_Practice_Master1H practice.pause.min_ms >= 500
+expect TST_Practice_Master1H practice.pause.min_ms <= 875
+expect TST_Practice_Master1H practice.pause.max_ms >= 1625
+expect TST_Practice_Master1H practice.pause.max_ms <= 2000
+expect TST_Practice_Master1H practice.series_per_rest >= 4
+expect TST_Practice_Master1H practice.series_per_rest <= 8
+expect TST_Practice_Master1H practice.period.min >= 10
+expect TST_Practice_Master1H practice.start_dist.max_cm <= 75
+expect TST_Practice_Master1H practice.wp_angle.max_deg <= 15
+expect TST_Practice_Master1H practice.wp_dist.max_cm <= 350
+expect TST_Practice_Master1H res.hit == 0
+expect nolog not implemented call [AI_PRACTICEMOVE]
+expect nolog not implemented call [AI_READYFIST]

@@ -57,6 +57,12 @@ func int TST_HpLost (var C_NPC slf)
 	return slf.attribute[ATR_HITPOINTS_MAX] - slf.attribute[ATR_HITPOINTS];
 };
 
+// hitpoints lost by three characters together (spec 005 K6)
+func int TST_HpLostSum (var C_NPC a, var C_NPC b, var C_NPC c)
+{
+	return TST_HpLost (a) + TST_HpLost (b) + TST_HpLost (c);
+};
+
 // Sets the waypoint of the daily routine (self.wp), the place of the practice (Z4).
 func void TST_SetWp (var C_NPC slf, var string wp)
 {
@@ -90,6 +96,41 @@ func void TST_SetProfile (var C_NPC slf, var int profile)
 func void TST_SetWalk (var C_NPC slf)
 {
 	AI_SetWalkmode (slf, NPC_WALK);
+};
+
+func int TST_HasMeleeWeapon (var C_NPC slf)
+{
+	return Npc_HasEquippedMeleeWeapon (slf);
+};
+
+// the mace the old sword practice gives to npcs without a weapon (spec 005 K3)
+func int TST_HasMace (var C_NPC slf)
+{
+	return Npc_HasItems (slf, ItMw_1h_Bau_Mace);
+};
+
+// B_RefreshAtInsert already gives an inserted militia npc without a weapon a mace in the
+// inventory: K3 checks that the practice adds none, from the mark to the end.
+var int TST_MaceMark;
+
+func void TST_MarkMace (var C_NPC slf)
+{
+	TST_MaceMark = Npc_HasItems (slf, ItMw_1h_Bau_Mace);
+};
+
+func int TST_MaceGained (var C_NPC slf)
+{
+	return Npc_HasItems (slf, ItMw_1h_Bau_Mace) - TST_MaceMark;
+};
+
+func int TST_IsPracticing (var C_NPC slf)
+{
+	if (Npc_IsInState (slf, ZS_Practice_Melee))
+	|| (Npc_IsInState (slf, ZS_Practice_Fist))
+	{
+		return TRUE;
+	};
+	return FALSE;
 };
 
 func int TST_IsFistMode (var C_NPC slf)
@@ -287,4 +328,56 @@ instance TST_Practice_Shift (Npc_Default)
 	B_SetNpcVisual 		(self, MALE, "Hum_Head_Bald", Face_N_Normal03, BodyTex_N, ITAR_MIL_L);
 	B_SetFightSkills 	(self, 80);
 	daily_routine 		= Rtn_Start_9916;
+};
+
+// ------------------------------------------------------------------
+// Bystander of spec 005 K6: a citizen that stands where it was
+// inserted, with the normal perceptions of humans, so it reacts to a
+// fight, a threat or damage as any citizen would.
+// ------------------------------------------------------------------
+
+func void ZS_TST_Bystander ()
+{
+	Perception_Set_Normal ();
+	B_ResetAll (self);
+	AI_StandUp (self);
+};
+
+func int ZS_TST_Bystander_Loop ()
+{
+	return LOOP_CONTINUE;
+};
+
+func void ZS_TST_Bystander_End ()
+{
+};
+
+instance TST_Practice_Bystander (Npc_Default)
+{
+	name 		= "Gapiący się mieszczanin";
+	guild 		= GIL_VLK;
+	id 			= 9917;
+	voice 		= 1;
+	flags       = 0;
+	npctype		= NPCTYPE_AMBIENT;
+	B_SetAttributesToChapter (self, 1);
+	fight_tactic		= FAI_HUMAN_COWARD;
+	B_SetNpcVisual 		(self, MALE, "Hum_Head_FatBald", Face_N_Normal03, BodyTex_N, ITAR_Vlk_L);
+	start_aistate		= ZS_TST_Bystander;
+};
+
+// still in its own state: no fight, no flight, no reaction (spec 005 K6)
+func int TST_IsCalm (var C_NPC slf)
+{
+	return Npc_IsInState (slf, ZS_TST_Bystander);
+};
+
+func int TST_IsMonsterCalm (var C_NPC slf)
+{
+	if (Npc_IsInState (slf, ZS_MM_Attack))
+	|| (Npc_IsInState (slf, ZS_MM_Flee))
+	{
+		return FALSE;
+	};
+	return TRUE;
 };

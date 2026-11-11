@@ -1,0 +1,23 @@
+# criterion: 005 K3
+# criterion: 005 K5
+# timeout: 360
+# Trening pięściami (005 K3), przebieg 3 (kontrola): postać z mieczem 1H w wariancie bronią
+# (TST_Practice_Master1H, CENTRE_01), 3 minuty czasu gry. Oczekiwane: ćwiczy swoją bronią (tryb broni),
+# combo dłuższe niż pięściami. K5 jak w K01.
+info told DIA_Xardas_Hello
+set time 10 0
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_02
+wait 1
+insert TST_Practice_Master1H
+ztimer multiplyer 2
+wait 180
+call TST_IsMeleeMode TST_Practice_Master1H
+call TST_IsFistMode TST_Practice_Master1H
+quit
+
+expect log scenario: call: TST_ISMELEEMODE = 1
+expect log scenario: call: TST_ISFISTMODE = 0
+expect TST_Practice_Master1H combo.max >= 3
+expect TST_Practice_Master1H practice.start_dist.max_cm <= 75
+expect TST_Practice_Master1H practice.wp_angle.max_deg <= 15
+expect nolog not implemented call [AI_PRACTICEMOVE]
