@@ -1,0 +1,21 @@
+# criterion: 005 K10
+# timeout: 300
+# save: build/testsaves/001-K9-v0.1.0-pal230.sav
+# Zapis z wersji 0.1.0 moda wczytany w wersji z treningiem (005 K10): gra się wczytuje, a postać
+# testowa z nowym planem dnia ćwiczy na placu koszar. Strażnik 329 ma w tym zapisie dalej stary
+# trening z mieczem (plan dnia jest częścią zapisu).
+set time 10 0
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_02
+wait 1
+insert TST_Practice_Master1H
+ztimer multiplyer 2
+wait 90
+call TST_IsPracticing TST_Practice_Master1H
+call TST_IsOldPractice Mil_329_Miliz
+quit
+
+expect log scenario: call: TST_ISPRACTICING = 1
+expect log scenario: call: TST_ISOLDPRACTICE = 1
+expect TST_Practice_Master1H practice.series >= 3
+expect TST_Practice_Master1H res.hit == 0
+expect nolog not implemented call [AI_PRACTICEMOVE]

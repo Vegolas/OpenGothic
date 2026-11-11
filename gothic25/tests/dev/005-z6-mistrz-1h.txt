@@ -1,0 +1,39 @@
+# criterion: 005 Z6
+# timeout: 420
+# Zadanie Z6 (spec. 005): trening skryptów na manekinie testowym z mieczem 1H i talentem mistrza,
+# na placu koszar, waypoint NW_CITY_HABOUR_KASERN_CENTRE_01. Stan treningu startuje bez planu
+# dnia (TST_StartPractice). 6 minut czasu gry przy przyspieszonym czasie.
+# Uruchomienie: tools/test.ps1 -Scenario dev/005-z6-mistrz-1h
+info told DIA_Xardas_Hello
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_01
+wait 1
+insert TST_ComboDummy
+wait 1
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_02
+call TST_SetWp TST_ComboDummy NW_CITY_HABOUR_KASERN_CENTRE_01
+call TST_Arm TST_ComboDummy 1 80
+call TST_StartPractice TST_ComboDummy 0
+ztimer multiplyer 2
+wait 60
+screenshot trening.png
+wait 300
+quit
+
+expect TST_ComboDummy practice.series >= 20
+expect TST_ComboDummy practice.series.fwd >= 1
+expect TST_ComboDummy practice.series.combo >= 1
+expect TST_ComboDummy practice.series.left >= 1
+expect TST_ComboDummy practice.series.right >= 1
+expect TST_ComboDummy practice.series.mixed >= 1
+expect TST_ComboDummy combo.max == 4
+expect TST_ComboDummy practice.series_per_defend >= 3
+expect TST_ComboDummy practice.series_per_defend <= 10
+expect TST_ComboDummy practice.pause.min_ms >= 500
+expect TST_ComboDummy practice.pause.max_ms <= 2000
+expect TST_ComboDummy practice.rest.count >= 1
+expect TST_ComboDummy practice.start_dist.max_cm <= 75
+expect TST_ComboDummy practice.wp_dist.max_cm <= 350
+expect TST_ComboDummy practice.wp_angle.max_deg <= 15
+expect TST_ComboDummy res.hit == 0
+expect nolog not implemented call [AI_PRACTICEMOVE]
+expect nolog not implemented call [AI_READYFIST]

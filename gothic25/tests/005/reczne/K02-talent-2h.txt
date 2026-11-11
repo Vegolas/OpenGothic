@@ -1,0 +1,17 @@
+# criterion: 005 K2
+# timeout: 3600
+# Część wizualna 005 K2 (tryb ręczny): nowicjusz 2H (CENTRE_03) i mistrz 2H (CENTRE_04) ćwiczą obok
+# siebie na placu koszar. Bohater stoi kilka metrów dalej. Patrz przez kilka minut:
+# - czy obaj nie ruszają się w jednym rytmie,
+# - czy mistrza da się rozpoznać (dłuższe combo, szybsze ciosy, krótsze przerwy),
+# - czy trening wygląda jak walka z cieniem (ciosy z różnych stron, czasem blok albo odskok, powrót
+#   na miejsce po serii).
+# Liczby liczy raport, jak w K02. Uruchomienie: tools/test.ps1 -Scenario 005/reczne/K02-talent-2h -Manual
+info told DIA_Xardas_Hello
+set time 10 0
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_02
+wait 1
+call B_RemoveNpc Mil_330_Miliz
+call B_RemoveNpc Mil_331_Miliz
+insert TST_Practice_Novice2H
+insert TST_Practice_Master2H

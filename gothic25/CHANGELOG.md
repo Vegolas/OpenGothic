@@ -54,6 +54,19 @@ Format: [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/), wersje według
     deweloperskim: `play ani` i `ani info`. Bez moda animacje są jak w oryginale.
   - Scenariusze testowe: nagłówek `# anim-extra:` z lokalnymi danymi animacji, oczekiwania
     `expect log` i `expect nolog`, czasy trafienia i podpięcia ciosu w raporcie walki.
+- Trening walki wręcz NPC ([specyfikacja 005](specs/005-trening-walki-wrecz-npc/spec.md)):
+  - Plany dnia `TA_Practice_Melee` (swoją bronią, bez broni pięściami) i `TA_Practice_Fist` (pięściami).
+    NPC ćwiczy w miejscu ciosy z walki: proste, combo do przodu przycięte talentem, ataki z boków,
+    serie mieszane, a czasem blok i odskok. Robi przerwy zależne od talentu i co kilka serii
+    odpoczywa. Po każdej serii wraca na swoje miejsce.
+  - Ciosy treningowe nikogo nie ranią i nie wywołują walki. Proporcje i przerwy ustawiają profile
+    w skryptach. Na razie żaden NPC świata nie ma tego planu dnia.
+  - Silnik: funkcje dla skryptów `AI_PracticeMove` i `AI_ReadyFist`
+    ([ADR 0010](decisions/0010-nowe-funkcje-zewnetrzne-silnika.md)). Wymaga silnika z tego wydania.
+    Starszy silnik ignoruje te wywołania, więc postać z nowym treningiem tylko stoi z dobytą bronią.
+  - Dziennik walki: zdarzenia `practice`, `ai` i `wait`, miary treningu w raporcie (`practice.*`)
+    i oczekiwania dla wszystkich postaci dziennika (`all`). Nowe polecenie konsoli w trybie
+    deweloperskim: `wp info`.
 
 ### Poprawiono
 

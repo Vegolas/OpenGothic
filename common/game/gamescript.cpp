@@ -278,6 +278,8 @@ void GameScript::initCommon() {
   bindExternal("ai_stoppointat",                 &GameScript::ai_stoppointat);
   bindExternal("ai_drawweapon",                  &GameScript::ai_drawweapon);
   bindExternal("ai_readymeleeweapon",            &GameScript::ai_readymeleeweapon);
+  bindExternal("ai_readyfist",                   &GameScript::ai_readyfist);
+  bindExternal("ai_practicemove",                &GameScript::ai_practicemove);
   bindExternal("ai_readyrangedweapon",           &GameScript::ai_readyrangedweapon);
   bindExternal("ai_readyspell",                  &GameScript::ai_readyspell);
   bindExternal("ai_attack",                      &GameScript::ai_attack);
@@ -3178,6 +3180,20 @@ void GameScript::ai_readymeleeweapon(std::shared_ptr<zenkit::INpc> npcRef) {
   auto npc = findNpc(npcRef);
   if(npc!=nullptr)
     npc->aiPush(AiQueue::aiReadyMeleeWeapon());
+  }
+
+// extension: fists, also when a melee weapon is equipped
+void GameScript::ai_readyfist(std::shared_ptr<zenkit::INpc> npcRef) {
+  auto npc = findNpc(npcRef);
+  if(npc!=nullptr)
+    npc->aiPush(AiQueue::aiReadyFist());
+  }
+
+// extension: one fight move of a practice, without a target: 0 - forward attack, 1 - left, 2 - right, 3 - block, 4 - jump back
+void GameScript::ai_practicemove(std::shared_ptr<zenkit::INpc> npcRef, int move) {
+  auto npc = findNpc(npcRef);
+  if(npc!=nullptr)
+    npc->aiPush(AiQueue::aiPracticeMove(move));
   }
 
 void GameScript::ai_readyrangedweapon(std::shared_ptr<zenkit::INpc> npcRef) {

@@ -1,0 +1,22 @@
+# criterion: 005 Z6
+# timeout: 200
+# Zadanie Z6 (spec. 005), diagnoza: stan treningu z profilem testowym 99 (same ciosy z lewej,
+# przerwa 2 s) na manekinie mistrzu 1H na placu koszar.
+# Uruchomienie: tools/test.ps1 -Scenario dev/005-z6-profil99
+info told DIA_Xardas_Hello
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_01
+wait 1
+insert TST_ComboDummy
+wait 1
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_02
+call TST_SetWp TST_ComboDummy NW_CITY_HABOUR_KASERN_CENTRE_01
+call TST_Arm TST_ComboDummy 1 80
+call TST_SetProfile TST_ComboDummy 99
+call TST_StartPractice TST_ComboDummy 0
+wait 60
+quit
+
+expect TST_ComboDummy practice.move.left >= 10
+expect TST_ComboDummy practice.move.right == 0
+expect TST_ComboDummy practice.pause.min_ms == 2000
+expect TST_ComboDummy practice.pause.max_ms == 2000

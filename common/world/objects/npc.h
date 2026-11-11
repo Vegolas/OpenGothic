@@ -72,6 +72,15 @@ class Npc final {
       BC_Invest,
       };
 
+    // moves of AI_PracticeMove; the values are part of the script interface
+    enum PracticeMove : int32_t {
+      PM_Attack   = 0,
+      PM_AttackL  = 1,
+      PM_AttackR  = 2,
+      PM_Block    = 3,
+      PM_JumpBack = 4,
+      };
+
     using Anim = AnimationSolver::Anim;
 
     Npc(World &owner, size_t instance, std::string_view waypoint, NpcProcessPolicy aiPolicy = NpcProcessPolicy::AiNormal);
@@ -408,7 +417,8 @@ class Npc final {
     bool      haveOutput() const;
     void      setAiOutputBarrier(uint64_t dt, bool overlay);
 
-    bool      doAttack(Anim anim, BodyState bs);
+    bool      doAttack(Anim anim, BodyState bs, bool practice = false);
+    bool      isPracticeHit() const { return practiceHit; }
     void      commitSpell();
     void      takeDamage(Npc& other, const Bullet* b);
     void      takeDamage(Npc& other, const Bullet* b, const VisualFx* vfx, int32_t splId);
@@ -501,6 +511,7 @@ class Npc final {
     bool      implGoTo   (uint64_t dt, float destDist);
     bool      implAttack (uint64_t dt);
     bool      implComboLink();
+    bool      implPracticeMove(int32_t move, bool linkNext);
     bool      implAiTick (uint64_t dt);
     void      implAiWait (uint64_t dt);
     void      implAniWait(uint64_t dt);
@@ -633,6 +644,8 @@ class Npc final {
 
     MoveAlgo                       mvAlgo;
     FightAlgo                      fghAlgo;
+    // current hit comes from AI_PracticeMove and hurts nobody; not serialized
+    bool                           practiceHit = false;
     uint64_t                       lastEventTime=0;
 
     float                          angleY   = 0.f;

@@ -34,6 +34,7 @@ class AiQueue {
     void     load(Serialize& fin);
 
     size_t   size() const { return aiActions.size(); }
+    auto     front() const -> const AiAction* { return aiActions.empty() ? nullptr : &aiActions.front(); }
     void     clear();
     void     pushBack (AiAction&& a);
     void     pushFront(AiAction&& a);
@@ -68,6 +69,8 @@ class AiQueue {
     static AiAction aiTeleport(const WayPoint& to);
     static AiAction aiDrawWeapon();
     static AiAction aiReadyMeleeWeapon();
+    static AiAction aiReadyFist();
+    static AiAction aiPracticeMove(int32_t move);
     static AiAction aiReadyRangedWeapon();
     static AiAction aiReadySpell(int32_t spell, int32_t mana);
     static AiAction aiAttack();

@@ -1,0 +1,32 @@
+# criterion: 005 Z3
+# timeout: 180
+# Zadanie Z3 (spec. 005): ruchy treningowe nikogo nie ranią. Manekin z mieczem 1H ma jako cel
+# bohatera, jak gdyby został mu po walce. Pierwszy ruch treningowy czyści cel, a każda klatka
+# trafienia kończy się pudłem "practice", bez obrażeń. Bohater nie traci życia.
+# Uruchomienie: tools/test.ps1 -Scenario dev/005-z3-bez-obrazen
+info told DIA_Xardas_Hello
+insert TST_ComboDummy
+wait 1
+call TST_Arm TST_ComboDummy 1 80
+call TST_ReadyMelee TST_ComboDummy
+wait 3
+call TST_SetTarget TST_ComboDummy hero
+call TST_HasTarget TST_ComboDummy
+call TST_PracticeMove TST_ComboDummy 0
+call TST_PracticeMove TST_ComboDummy 0
+call TST_PracticeMove TST_ComboDummy 0
+call TST_PracticeMove TST_ComboDummy 0
+wait 5
+call TST_PracticeMove TST_ComboDummy 1
+call TST_PracticeMove TST_ComboDummy 2
+wait 3
+call TST_HasTarget TST_ComboDummy
+call TST_HpLost hero
+quit
+
+expect TST_ComboDummy attacks == 6
+expect TST_ComboDummy res.miss.practice == 6
+expect TST_ComboDummy res.hit == 0
+expect log scenario: call: TST_HASTARGET = 1
+expect log scenario: call: TST_HASTARGET = 0
+expect log scenario: call: TST_HPLOST = 0

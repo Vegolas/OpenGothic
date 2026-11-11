@@ -95,6 +95,7 @@ Nowe polecenia konsoli (działają też ręcznie po `F2`):
 | `info told <kwestia>` | kwestia dialogowa (instancja `C_INFO`) liczy się jako przegadana z bohaterem; `info told DIA_Xardas_Hello` na początku scenariusza zatrzymuje powitanie Xardasa w nowej grze |
 | `play ani <postać> <animacja>` | postać (`hero` albo instancja) odtwarza animację po nazwie; gdy postaci albo animacji nie ma, zgłasza błąd. Bez postaci (`play ani <animacja>`) działa jak dotąd na bohatera |
 | `ani info <postać> <animacja>` | wypisuje definicję animacji z modelu postaci tak, jak ją trzyma gra (nakładki przed modelem): pochodzenie (`game` albo `mod`, z `<MODEL>.EXT.MDS`), warstwę, `next`, przejścia, flagi, kierunek, zakres klatek, fps i liczbę klatek MAN, a pod spodem zdarzenia. Format jak w `tools/anim.py defs <MODEL> <animacja> --mans build/anims/_COMPILED` (spec. 004 W9); w scenariuszu linie trafiają do `log.txt` z przedrostkiem `scenario: `. Gdy postaci albo animacji nie ma, zgłasza błąd |
+| `wp info <waypoint>` | wypisuje pozycję waypointu w cm i jego kierunek w tysięcznych, np. `wp info: NW_CITY_HABOUR_KASERN_CENTRE_01 pos 4363 800 6974 dir 857 0 515`; w scenariuszu linia trafia do `log.txt` z przedrostkiem `scenario: `. Służy do wyliczenia punktu dla `goto pos`, np. pół metra przed postacią, która stoi na waypoincie zwrócona jak on (spec. 005 K6). Gdy waypointu nie ma, zgłasza błąd |
 | `quit` | kończy grę (w scenariuszu: kończy scenariusz, zob. polecenia sterujące) |
 
 Argumenty `call` dobierane są według typu parametru funkcji:
@@ -211,7 +212,7 @@ jako `\u00XX`. `fightlog.py` odkodowuje je jako cp1250.
 | Pole | Typ | Znaczenie |
 |---|---|---|
 | `t` | int | czas gry w ms (`ztimer multiplyer` go skaluje) |
-| `ev` | string | rodzaj zdarzenia: `meta`, `attack`, `result`, `break`, `state`, `marker` |
+| `ev` | string | rodzaj zdarzenia: `meta`, `attack`, `result`, `break`, `state`, `practice`, `ai`, `wait`, `marker` |
 | `who` | string | instancja postaci, której dotyczy zdarzenie (np. `PAL_230_RITTER`) |
 | `who_id` | int | numer postaci w tym dzienniku, od 1 w kolejności pojawienia się; odróżnia postacie tej samej instancji |
 | `player` | bool | czy to bohater |
@@ -246,8 +247,8 @@ a nie przy każdym żądaniu ataku.
 | `link` | string | `new` (cios od postawy), `fwd` (połączenie do przodu), `side` (połączenie w bok) |
 | `win_pct` | int | przy połączeniu: chwila w oknie combo poprzedniego ciosu, 0–100; inaczej `null` |
 | `skip_ms` | int | przy połączeniu do przodu: ile ms animacji poprzedniego ciosu pominięto; inaczej `0` |
-| `src` | string | `queue` (z serii FAI), `continue` (kontynuacja combo z `FA_MY_W_COMBO_<N>`), `player`, `other` (np. dobicie) |
-| `series` | string | rodzaj ruchu FAI: `attack`, `side`, `front`, `triple`, `whirl`, `master`; `combo` przy `src: continue`; `null` dla gracza i `other` |
+| `src` | string | `queue` (z serii FAI), `continue` (kontynuacja combo z `FA_MY_W_COMBO_<N>`), `player`, `practice` (ruch treningowy `AI_PracticeMove`, 005), `other` (np. dobicie) |
+| `series` | string | rodzaj ruchu FAI: `attack`, `side`, `front`, `triple`, `whirl`, `master`; `combo` przy `src: continue`; `null` dla gracza, `practice` i `other` (serie treningu są w zdarzeniu `practice`) |
 | `series_id` | int | numer serii tej postaci, od 1; `null` poza `src: queue` |
 | `series_pos` | int | który to cios serii, od 1; pozycja przeskakuje, gdy silnik pominie cios (np. cel poza zasięgiem), a wychodzi poza `series_len`, gdy w kolejce została reszta przerwanej serii |
 | `series_len` | int | ile ciosów ma ruch FAI |
@@ -261,7 +262,7 @@ Zapisywany w chwili, w której cios mógł trafić (ramka trafienia animacji).
 | `n` | int | numer ciosu atakującego (pole `n` z `attack`) |
 | `tgt`, `tgt_id` | string, int | cel; `null` przy pudle bez celu |
 | `res` | string | `hit`, `block`, `jumpback`, `miss` |
-| `why` | string | przy `miss`: `no_target`, `range`, `angle`, `down` (cel już leżał); inaczej `null` |
+| `why` | string | przy `miss`: `no_target`, `range`, `angle`, `down` (cel już leżał), `practice` (cios treningowy, nikogo nie rani, 005 W6); inaczej `null` |
 | `combo` | int | etap combo do przodu ciosu, od 1 |
 | `dmg` | int | przy `hit`: obrażenia wyliczone przez grę; inaczej `0` |
 | `bonus` | int | przy `hit`: premia za cios combo do przodu w procentach, już wliczona w `dmg` (002); `100` bez premii, inaczej `0` |
@@ -289,7 +290,7 @@ Przyczyny:
 | `target_lost` | cel poza zasięgiem albo kątem przy `break_on_lost` (001 W6); po ciosie, który trafił, poza zasięgiem G |
 | `defend` | mistrz przerywa serię, żeby się bronić (001 W5) |
 | `block` | postać zaczyna blok w trakcie combo |
-| `talent` | ostatni etap combo do przodu, dalsze ciosy do przodu usunięte (001 W4) |
+| `talent` | ostatni etap combo do przodu, dalsze ciosy do przodu usunięte (001 W4); w treningu każdy przepadły cios do przodu osobno, z `series` `combo` |
 | `no_window` | kolejny cios poza oknem combo albo animacja nie ma dalszego okna |
 
 ### `state`: stan postaci
@@ -298,6 +299,39 @@ Przyczyny:
 |---|---|
 | `state` | `stumble` (zachwianie), `fly` (odrzut), `lie` (upadek po odrzucie), `unconscious`, `dead` |
 | `by`, `by_id` | kto spowodował, jeśli wiadomo; inaczej `null` |
+
+### `practice`: ruch treningowy (005)
+
+Każdy ruch z `AI_PracticeMove`, który się wykonał albo przepadł. Cios ma też zwykłe zdarzenie
+`attack` (`src: practice`) i `result` (`miss`, `why: practice`).
+
+| Pole | Typ | Znaczenie |
+|---|---|---|
+| `move` | string | `fwd`, `left`, `right`, `block`, `jumpback`; cios pięścią bez sierpowych z boku to `fwd` |
+| `link` | string | cios: `new` (od postawy), `fwd`, `side` jak w `attack`, albo `dropped` (cios do przodu przepadł przez limit talentu); `null` przy bloku i odskoku |
+| `pseries` | int | numer serii treningowej tej postaci, od 1; nową serię zaczyna cios od postawy (`link: new`), blok i odskok |
+| `end_ms` | int | przewidywany czas gry końca ruchu (ms, jak `t`): koniec trafienia ciosu albo animacji bloku i odskoku; `null` przy `dropped` |
+| `wp` | string | waypoint planu dnia postaci (`wp` w skryptach); `null`, gdy go nie ma w świecie |
+| `wp_dist` | int | odległość od waypointu w poziomie, w cm, w chwili ruchu; `null` bez waypointu |
+| `wp_angle` | int | odchylenie kierunku postaci od kierunku waypointu, 0–180°; `null` bez waypointu albo gdy waypoint nie ma kierunku |
+
+### `ai`: stan AI postaci (005)
+
+Postać zaczyna stan AI (`ZS_*`, np. zmiana pory planu dnia, rozmowa, walka). Zapisywany tylko dla
+postaci, które już są w dzienniku, żeby dziennik nie wypisywał AI całego świata.
+
+| Pole | Znaczenie |
+|---|---|
+| `state` | nazwa stanu ze skryptów, np. `ZS_PRACTICE_MELEE`, `ZS_TALK` |
+
+### `wait`: czekanie postaci (005)
+
+Postać zaczyna czekać przez `AI_Wait` albo `AI_WaitMs`. Zapisywane tylko dla postaci, które już są
+w dzienniku, tak jak `ai`.
+
+| Pole | Znaczenie |
+|---|---|
+| `ms` | długość czekania w ms czasu gry |
 
 ### `marker`: znacznik
 
@@ -314,7 +348,8 @@ Przyczyny:
 expect <kto> <miara> <op> <wartość>
 ```
 
-- `<kto>`: `hero` albo nazwa instancji. Miara sumuje wszystkie postacie tej instancji.
+- `<kto>`: `hero`, nazwa instancji albo `all` (wszystkie postacie dziennika; także gdy nie ma w nim
+  żadnej, np. `expect all practice.moves == 0`). Miara sumuje wszystkie postacie tej instancji.
 - `<op>`: `==`, `!=`, `<`, `<=`, `>`, `>=`.
 - `<wartość>`: liczba.
 
@@ -344,6 +379,18 @@ Miary liczą się z całego dziennika przebiegu:
 | `state.<stan>` | liczba zdarzeń `state` postaci |
 | `hit.<dir>.min_ms`, `hit.<dir>.max_ms` | ile ms po początku ciosu danego rodzaju przychodzi jego wynik (klatka trafienia); liczą się ciosy z własną animacją (`link` `new` albo `side`), bo połączenie do przodu wskakuje w środek animacji. Porównanie z `DEF_OPT_FRAME` definicji (004 K6) |
 | `link.after.<dir>.min_ms`, `link.after.<dir>.max_ms` | ile ms po początku ciosu danego rodzaju z własną animacją pada następny cios podpięty w jego oknie combo; porównanie z `DEF_WINDOW` (004 K6) |
+| `practice.moves`, `practice.move.<ruch>` | ruchy treningowe (005), które się wykonały: razem i według `move` (`fwd`, `left`, `right`, `block`, `jumpback`) |
+| `practice.dropped` | ciosy treningowe, które przepadły przez limit talentu (`link: dropped`) |
+| `practice.series`, `practice.series.<rodzaj>` | serie ciosów treningu (ruchy jednego `pseries`, bez bloków i odskoków): razem i według rodzaju: `fwd` (jeden cios do przodu), `combo` (same ciosy do przodu, co najmniej 2), `left`, `right` (jeden cios z boku), `mixed` (pozostałe). Seria, której pierwszy ruch w dzienniku jest już podpięty (`link` `fwd` albo `side`), zaczęła się przed dziennikiem, np. przed wczytaniem zapisu: nie liczy się ani tu, ani do `start_dist` i `wp_angle` |
+| `practice.series_per_defend` | serie ciosów na jeden blok albo odskok, np. 5 to „blok albo odskok mniej więcej co 5 serii” |
+| `practice.pause.count`, `practice.pause.min_ms`, `practice.pause.max_ms`, `practice.pause.median_ms` | przerwy po seriach ciosów: zdarzenia `wait` zaraz po ruchu treningowym z ciosem, po których postać dalej ćwiczy, krótsze niż 5,5 s (pole `ms`, czyli przerwa zlecona przez skrypt). Powrót na waypoint i obrót się nie wliczają |
+| `practice.rest.count`, `practice.series_per_rest` | odpoczynki (takie `wait` co najmniej 5,5 s) i serie ciosów na jeden odpoczynek |
+| `practice.period.min` | najkrótszy okres ciągu rodzajów serii ciosów, powtórzony co najmniej dwa razy; równy liczbie serii, gdy ciąg się nie powtarza. Mała wartość to trening w stałym cyklu (005 W3) |
+| `practice.wp_dist.max_cm` | największe `wp_dist` ciosu treningowego, czyli jak daleko od waypointu zaczął się cios (005 W5) |
+| `practice.start_dist.max_cm` | największe `wp_dist` pierwszego ruchu serii (także bloku i odskoku), czyli jak daleko od waypointu postać zaczęła serię po powrocie na miejsce (005 W5) |
+| `practice.wp_angle.max_deg` | największe `wp_angle` pierwszego ruchu serii, czyli jak postać stała po powrocie na miejsce (005 W5) |
+| `practice.sync_pct` | procent ciosów treningowych postaci, które zaczęły się mniej niż 200 ms od ciosu treningowego innej postaci (005 K2); brak danych, gdy nikt inny nie ćwiczy |
+| `practice.after_ai.max_ms` | najdłuższy czas od zdarzenia `ai` ze stanem spoza treningu (nie `ZS_PRACTICE*`) do ruchu treningowego po nim; 0, gdy po nim nie było ruchu (005 K8); brak danych bez takiego zdarzenia |
 
 Gdy miara nie ma danych (np. `skip.avg_ms` bez połączeń albo `bonus.*` w dzienniku bez pola `bonus`),
 oczekiwanie jest niezaliczone z wartością „brak danych”. Liczniki (np. `series.triple`, `break.hit`)

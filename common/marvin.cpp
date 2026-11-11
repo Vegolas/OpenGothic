@@ -91,6 +91,7 @@ Marvin::Marvin() {
     {"play ani %c %s",             C_PlayAniNpc},
     {"play ani %s",                C_PlayAni},
     {"ani info %c %s",             C_AniInfo},
+    {"wp info %s",                 C_WpInfo},
     {"play faceani %s",            C_Invalid},
     {"remove overlaymds %s",       C_Invalid},
     {"toggle aniinfo",             C_Invalid},
@@ -588,6 +589,24 @@ bool Marvin::exec(std::string_view v) {
       if(world==nullptr)
         return false;
       return aniInfo(*world, ret.argv[0], ret.argv[1]);
+      }
+    case C_WpInfo: {
+      World* world = Gothic::inst().world();
+      if(world==nullptr)
+        return false;
+      auto wpoint = world->findPoint(ret.argv[0]);
+      if(wpoint==nullptr) {
+        print("wp info: no such waypoint");
+        return false;
+        }
+      // position in cm, direction in thousandths
+      auto p = wpoint->position();
+      auto d = wpoint->direction();
+      std::string s = "wp info: " + wpoint->name;
+      s += " pos " + std::to_string(int(p.x)) + " " + std::to_string(int(p.y)) + " " + std::to_string(int(p.z));
+      s += " dir " + std::to_string(int(d.x*1000)) + " " + std::to_string(int(d.y*1000)) + " " + std::to_string(int(d.z*1000));
+      print(s);
+      return true;
       }
 
     case C_ToggleGI:

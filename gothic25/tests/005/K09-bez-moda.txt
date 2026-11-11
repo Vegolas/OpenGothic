@@ -1,0 +1,22 @@
+# criterion: 005 K9
+# timeout: 240
+# mod: off
+# Bez moda bez zmian (005 K9): ten sam silnik bez moda, strażnicy 329 (CENTRE_02), 330 (CENTRE_03)
+# i 331 (CENTRE_04) w porze treningu ćwiczą oryginalne kata z mieczem. Zrzuty ocenia człowiek albo
+# Claude przy weryfikacji. Dziennik nie ma żadnego ruchu treningowego.
+# Regresja walki z K9 to zestawy tools/test.ps1 -Spec 001 i -Spec 004 (Z11).
+info told DIA_Xardas_Hello
+set time 10 0
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_01
+wait 1
+ztimer multiplyer 2
+wait 10
+screenshot kata-1.png
+wait 2
+screenshot kata-2.png
+wait 2
+screenshot kata-3.png
+wait 20
+quit
+
+expect all practice.moves == 0

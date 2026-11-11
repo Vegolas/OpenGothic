@@ -3,6 +3,7 @@
 #include <Tempest/Log>
 #include <Tempest/TextCodec>
 
+#include <cmath>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -12,6 +13,7 @@
 
 #include "game/fightalgo.h"
 #include "world/objects/npc.h"
+#include "world/waypoint.h"
 #include "world/world.h"
 #include "commandline.h"
 #include "gothic.h"
@@ -91,6 +93,7 @@ class Json final {
 struct Character final {
   uint32_t                    id      = 0;
   uint32_t                    attacks = 0;
+  uint32_t                    practiceSeries = 0;  // series of practice moves, a new one starts from the stance
   bool                        comboBroken = false; // continuation break logged since the last attack
   std::weak_ptr<zenkit::INpc> handle;
   };
@@ -239,6 +242,8 @@ void FightLog::attack(Npc& npc, AnimationSolver::Anim anim, BodyState bs, const 
   std::string_view src = "other";
   if(npc.isPlayer())
     src = "player";
+  else if(npc.isPracticeHit())
+    src = "practice";
   else if(fai.hasInstructions())
     src = "queue";
   else if(anim!=AnimationSolver::AttackFinish)
@@ -381,6 +386,86 @@ void FightLog::seriesBreak(Npc& npc, const FightAlgo::Series& ser, bool queued, 
   if(!detail.empty())
     j.str("detail",detail);
   write(j.done());
+  }
+
+void FightLog::practice(Npc& npc, std::string_view move, std::string_view link, int64_t endTime) {
+  if(!enabled)
+    return;
+
+  auto& c = character(npc);
+  if(c.practiceSeries==0 || link=="new" || move=="block" || move=="jumpback")
+    c.practiceSeries++;
+
+  Json j(npc.world().tickCount(),"practice");
+  who(j,npc,c);
+  j.str("move",move);
+  if(!link.empty())
+    j.str("link",link); else
+    j.null("link");
+  j.num("pseries",c.practiceSeries);
+  if(endTime>=0)
+    j.num("end_ms",endTime); else
+    j.null("end_ms");
+
+  // place of the practice: waypoint of the daily routine, distance in cm and turn away from its direction in degrees
+  const auto&     name = npc.handle().wp;
+  const WayPoint* wp   = name.empty() ? nullptr : npc.world().findPoint(name,false);
+  if(wp!=nullptr) {
+    const auto  d  = npc.position() - wp->position();
+    j.str("wp",wp->name).num("wp_dist",int64_t(std::sqrt(d.x*d.x + d.z*d.z)));
+    if(wp->dir.x!=0.f || wp->dir.z!=0.f) {
+      const float a = 180.f*std::atan2(wp->dir.z,wp->dir.x)/float(M_PI);
+      j.num("wp_angle",int64_t(std::abs(std::remainder(npc.rotation()-a,360.f))));
+      } else {
+      j.null("wp_angle");
+      }
+    } else {
+    j.null("wp").null("wp_dist").null("wp_angle");
+    }
+  write(j.done());
+  }
+
+// characters already in the log only: the log of a fight should not list the ai of the whole world
+static Character* loggedCharacter(Npc& npc) {
+  auto it = characters.find(&npc);
+  if(it==characters.end() || it->second.id==0 || it->second.handle.lock()!=npc.handlePtr())
+    return nullptr;
+  return &it->second;
+  }
+
+void FightLog::aiState(Npc& npc, std::string_view st) {
+  if(!enabled)
+    return;
+  auto c = loggedCharacter(npc);
+  if(c==nullptr)
+    return;
+  Json j(npc.world().tickCount(),"ai");
+  who(j,npc,*c);
+  j.str("state",st);
+  write(j.done());
+  }
+
+void FightLog::aiWait(Npc& npc, int32_t ms) {
+  if(!enabled)
+    return;
+  auto c = loggedCharacter(npc);
+  if(c==nullptr)
+    return;
+  Json j(npc.world().tickCount(),"wait");
+  who(j,npc,*c);
+  j.num("ms",ms);
+  write(j.done());
+  }
+
+std::string_view FightLog::linkName(Pose::ComboLink link) {
+  switch(link) {
+    case Pose::CL_New:     return "new";
+    case Pose::CL_Forward: return "fwd";
+    case Pose::CL_Side:    return "side";
+    case Pose::CL_Block:   return "block";
+    case Pose::CL_None:    return "none";
+    }
+  return "none";
   }
 
 void FightLog::marker(std::string_view what, int32_t line, std::string_view text, std::string_view file) {

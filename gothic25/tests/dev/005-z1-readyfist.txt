@@ -1,0 +1,26 @@
+# criterion: 005 Z1
+# timeout: 120
+# Zadanie Z1 (spec. 005): AI_ReadyFist dobywa pięści także przy założonej broni,
+# a gdy broń jest dobyta, najpierw ją chowa. Manekin testowy z 002 stoi w miejscu
+# z wyłączonymi percepcjami, więc nic nie zmienia mu trybu walki.
+# Uruchomienie: tools/test.ps1 -Scenario dev/005-z1-readyfist
+info told DIA_Xardas_Hello
+insert TST_ComboDummy
+wait 1
+call TST_Arm TST_ComboDummy 1 80
+wait 1
+call TST_ReadyMelee TST_ComboDummy
+wait 3
+call TST_IsMeleeMode TST_ComboDummy
+screenshot miecz.png
+call TST_ReadyFist TST_ComboDummy
+wait 4
+call TST_IsFistMode TST_ComboDummy
+call TST_IsMeleeMode TST_ComboDummy
+screenshot piesci.png
+quit
+
+expect log scenario: call: TST_ISMELEEMODE = 1
+expect log scenario: call: TST_ISFISTMODE = 1
+expect log scenario: call: TST_ISMELEEMODE = 0
+expect nolog not implemented call [AI_READYFIST]

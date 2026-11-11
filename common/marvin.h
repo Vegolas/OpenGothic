@@ -64,6 +64,7 @@ class Marvin {
       C_PlayAni,
       C_PlayAniNpc,
       C_AniInfo,
+      C_WpInfo,
 
       C_Give,
       C_Equip,

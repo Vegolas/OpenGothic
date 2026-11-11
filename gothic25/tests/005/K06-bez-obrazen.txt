@@ -1,0 +1,43 @@
+# criterion: 005 K6
+# timeout: 600
+# Trening nikogo nie rani (005 K6): mistrz 1H ćwiczy na CENTRE_01 (pozycja 4363 800 6974, kierunek
+# 0,857 0 0,515 z polecenia wp info). Bohater bez nieśmiertelności staje 70 cm przed waypointem na tej
+# osi, czyli około pół metra przed ćwiczącym, na 3 minuty czasu gry. Potem obok staje mieszczanin
+# (TST_Practice_Bystander, zwykłe percepcje ludzi), a na koniec owca: insert stawia ich 2 m przed
+# bohaterem, czyli 1-3 m od ćwiczącego (decyzja właściciela przy Z9).
+# Bohater zaczyna na placu, nie w koszarach: strażnicy atakują intruza w swoich pomieszczeniach,
+# a ćwiczący ma gildię straży. Strażnicy 330 i 331 są usuwani, żeby ich reakcje nie mieszały się
+# z wynikiem.
+# Oczekiwane: żadnych trafień, życie bohatera, mieszczanina i owcy bez zmian, mieszczanin dalej stoi
+# w swoim stanie, owca nie atakuje i nie ucieka, ćwiczący dalej ćwiczy i nie obraca się do bohatera.
+info told DIA_Xardas_Hello
+set time 10 0
+goto waypoint NW_CITY_HABOUR_KASERN_CENTRE_02
+wait 1
+call B_RemoveNpc Mil_330_Miliz
+call B_RemoveNpc Mil_331_Miliz
+insert TST_Practice_Master1H
+ztimer multiplyer 2
+wait 40
+goto pos 4423 800 7010
+wait 180
+screenshot bohater.png
+insert TST_Practice_Bystander
+wait 90
+insert Sheep
+wait 90
+screenshot postronni.png
+call TST_HpLostSum hero TST_Practice_Bystander Sheep
+call TST_IsCalm TST_Practice_Bystander
+call TST_IsMonsterCalm Sheep
+call TST_IsPracticing TST_Practice_Master1H
+quit
+
+expect TST_Practice_Master1H res.hit == 0
+expect TST_Practice_Master1H res.miss.practice >= 20
+expect TST_Practice_Master1H practice.wp_angle.max_deg <= 15
+expect log scenario: call: TST_HPLOSTSUM = 0
+expect log scenario: call: TST_ISCALM = 1
+expect log scenario: call: TST_ISMONSTERCALM = 1
+expect log scenario: call: TST_ISPRACTICING = 1
+expect nolog not implemented call [AI_PRACTICEMOVE]

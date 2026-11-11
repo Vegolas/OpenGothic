@@ -1,0 +1,14 @@
+# criterion: 005 K10
+# timeout: 300
+# save: build/test/profile/save_slot_1.sav
+# Wczytanie zapisu z K10a (005 K10): mistrz 1H dalej ćwiczy na swoim miejscu i nikogo nie rani.
+# Dziennik i przyspieszenie czasu nie są częścią zapisu, więc scenariusz włącza je od nowa.
+ztimer multiplyer 2
+wait 90
+call TST_IsPracticing TST_Practice_Master1H
+quit
+
+expect log scenario: call: TST_ISPRACTICING = 1
+expect TST_Practice_Master1H practice.series >= 3
+expect TST_Practice_Master1H practice.start_dist.max_cm <= 75
+expect TST_Practice_Master1H res.hit == 0

@@ -57,6 +57,53 @@ Składowe `C_FightAI_Combo`:
 - `break_on_lost`: `TRUE`, gdy NPC przerywa serię, kiedy przeciwnik wyjdzie z zasięgu broni albo
   z pola widzenia z przodu. Przy `FALSE` NPC dokańcza serię, także w powietrze.
 
+### Funkcje zewnętrzne
+
+Funkcje silnika forka, które mod wywołuje ze skryptów ([ADR 0010](../../decisions/0010-nowe-funkcje-zewnetrzne-silnika.md)).
+Każda ma deklarację `extern func` na początku pliku funkcji, która jej używa. Oryginalne skrypty ich
+nie wywołują, więc bez moda silnik działa jak upstream. Starszy silnik ignoruje wywołanie i raz
+wypisuje do logu `not implemented call [NAZWA]`.
+
+| Funkcja | Gdzie | Co robi | Spec. |
+|---|---|---|---|
+| `AI_ReadyFist(npc)` | `Content/AI/Human/TA_Human/Practice_Melee.d` | Czynność kolejki AI: dobycie pięści, także gdy NPC ma założoną broń białą. Dobytą broń najpierw chowa. Broń zostaje założona. | [005](../../specs/005-trening-walki-wrecz-npc/spec.md) |
+| `AI_PracticeMove(npc, move)` | jw. | Czynność kolejki AI: jeden ruch treningowy bez celu, który nikogo nie rani: `PRACTICE_FRONT`, `_LEFT`, `_RIGHT` (ciosy), `_BLOCK`, `_JUMPBACK`. Ciosy z kolejnych `AI_PracticeMove` łączą się w oknie combo, a talent przycina combo do przodu jak w walce. Pięści biją z boku sierpowymi z 004. Ruch czyści cel NPC. | [005](../../specs/005-trening-walki-wrecz-npc/spec.md) |
+
+### Trening walki wręcz
+
+Plany dnia z `Content/AI/Human/TA_Human/Practice_Melee.d` ([005](../../specs/005-trening-walki-wrecz-npc/spec.md)):
+
+- `TA_Practice_Melee`: NPC ćwiczy swoją bronią białą, a bez niej pięściami. Nie dostaje broni do treningu.
+- `TA_Practice_Fist`: NPC ćwiczy pięściami, także gdy ma broń. Napadnięty walczy bronią
+  (`B_SelectWeapon`).
+
+Na razie żaden NPC świata ich nie używa. Plan dnia jest częścią zapisu gry, więc przypisanie treningu
+istniejącym NPC działa od nowej gry albo od chwili, w której skrypty wymienią im plan dnia.
+
+Jeden przebieg pętli stanu to jedna seria:
+
+1. co kilka serii blok albo odskok i powrót na miejsce;
+2. seria ciosów losowego rodzaju: prosty, combo do przodu, z lewej, z prawej albo mieszana;
+3. powrót na waypoint i ustawienie się jak on;
+4. przerwa zależna od poziomu talentu broni, a co kilka serii dłuższy odpoczynek.
+
+Ustawienia ustawia przed każdą serią `B_PracticeMelee_Settings`. Najpierw ładuje profil 0, a potem
+profil NPC z `aivar[AIV_PracticeProfile]` (indeks 90), który ustawia się w instancji NPC. Nowy profil
+to nowy warunek w tej funkcji. Profil 99 (`PRACTICE_PROFILE_TEST`) służy tylko testom: same ciosy
+z lewej, przerwa 2 s.
+
+| Zmienna | Profil 0 | Znaczenie |
+|---|---|---|
+| `PracticeMelee_Fwd`, `_Combo`, `_Left`, `_Right`, `_Mixed` | 20, 30, 15, 15, 20 | wagi rodzajów serii |
+| `PracticeMelee_ComboMax`, `_MixedMax` | 4, 3 | najdłuższe zlecane combo (talent je przytnie) i seria mieszana |
+| `PracticeMelee_DefendMin`, `_DefendMax` | 3, 7 | blok albo odskok co tyle serii; 0 - nigdy |
+| `PracticeMelee_PauseMin`, `_PauseMax` | nowicjusz 2000-5000, wojownik 1000-3500, mistrz 500-2000 ms; pięści jak wojownik | przerwa po serii |
+| `PracticeMelee_RestEveryMin`, `_RestEveryMax` | 4, 8 | odpoczynek co tyle serii; 0 - nigdy |
+| `PracticeMelee_RestMin`, `_RestMax` | 6000, 10000 ms | odpoczynek |
+
+Liczniki serii do bloku i do odpoczynku są w `aivar` 91 i 92 (`AIV_PracticeDefend`, `AIV_PracticeRest`).
+Postacie i funkcje dla scenariuszy (`TST_Practice_*`, id 9910-9916) są w `Practice_MeleeTest.d`.
+
 ## Numery symboli a zapisy gry
 
 OpenGothic zapisuje NPC i przedmioty numerem symbolu w `GOTHIC.DAT`. Zmiana w istniejącym pliku nie
