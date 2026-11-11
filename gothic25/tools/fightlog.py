@@ -220,6 +220,8 @@ def practice_metrics(events: list[dict], ids: set[int], m: dict[str, float]) -> 
         kinds = []
         for cur in (s for s in series if s):
             first = cur[0]
+            if first["link"] in ("fwd", "side"):
+                continue  # the series began before the log, e.g. a game loaded mid-series
             if first["wp_dist"] is not None:
                 start_dist.append(first["wp_dist"])
             if first["wp_angle"] is not None:
